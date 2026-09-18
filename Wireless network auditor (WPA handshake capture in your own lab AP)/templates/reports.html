@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% from '_icons.html' import icon %}
+{% block title %}Reports · Wireless Network Auditor{% endblock %}
+{% block heading %}{{ icon('reports') }} Audit Reports{% endblock %}
+
+{% block content %}
+<div class="card pad18 mb">
+  <div class="flex wrap between" style="flex-wrap:wrap;gap:12px">
+    <div>
+      <h3 style="margin-bottom:6px">{{ icon('reports') }} Generated HTML reports</h3>
+      <div class="muted" style="font-size:12px">Each report is a self-contained HTML audit document. Download it and keep it as evidence of your lab assessment.</div>
+    </div>
+    <button class="btn sec" onclick="boot()">{{ icon('gear') }} Refresh</button>
+  </div>
+</div>
+
+<div class="tblwrap mb">
+  <table class="tbl">
+    <thead><tr>
+      <th>ID</th><th>Target SSID</th><th>BSSID</th><th>Generated</th><th>Score</th><th>Actions</th>
+    </tr></thead>
+    <tbody id="repRows">
+      <tr><td colspan="6"><div class="empty">{{ icon('reports') }}<b>No reports yet</b>Complete a handshake on the <b>Capture</b> page and generate its report.</div></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="banner ok">{{ icon('shield') }}
+  <div><b>What you can learn from these reports.</b> Handshake completeness, encryption posture, captured-message integrity and actionable hardening steps for your lab AP.</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function repRow(r) {
+  const gradeTxt = r.score >= 85 ? "A" : r.score >= 70 ? "B" : r.score >= 55 ? "C" : r.score >= 40 ? "D" : "F";
+  const gradeCls = r.score >= 70 ? "b-g" : r.score >= 55 ? "b-a" : "b-r";
+  return `<tr>
+    <td class="mono">#${String(r.id).padStart(4, "0")}</td>
+    <td><b>${esc(r.ssid)}</b></td>
+    <td class="mono sub">${esc(r.bssid)}</td>
+    <td class="sub">${fmtTime(r.generated_at)}</td>
+    <td><span class="badge ${gradeCls}">${esc(r.score)} · ${gradeTxt}</span></td>
+    <td style="white-space:nowrap">
+      <a class="btn sec sm" href="/reports/${r.id}/html" target="_blank" title="Preview">${icon('eye')} Preview</a>
+      <a class="btn go sm" href="/api/reports/${r.id}/download" title="Download .html">${icon('download')} Download</a>
+      <button class="iconbtn" onclick="delReport(${r.id})" title="Delete">${icon('trash')}</button>
+    </td>
+  </tr>`;
+}
+
+async function boot() {
+  try {
+    const d = await get("/api/reports");
+    const rows = document.getElementById("repRows");
+    if (!d.reports || !d.reports.length) {
+      rows.innerHTML = `<tr><td colspan="6"><div class="empty">${icon('reports')}<b>No reports yet</b>Complete a handshake on the <b>Capture</b> page and generate its report.</div></td></tr>`;
+      return;
+    }
+    rows.innerHTML = d.reports.map(repRow).join("");
+  } catch (e) { toastErr("Could not load reports: " + esc(e.message)); }
+}
+
+async function delReport(id) {
+  if (!confirm("Delete this report permanently?")) return;
+  try {
+    await post(`/api/reports/${id}/delete`);
+    toastOk("<b>Report deleted.</b>");
+    boot();
+  } catch (e) { toastErr("Delete failed: " + esc(e.message)); }
+}
+
+boot();
+</script>
+{% endblock %}

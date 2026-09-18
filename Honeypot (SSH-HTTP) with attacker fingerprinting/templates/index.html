@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Honeypot Intelligence Center | SSH-HTTP</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon">&#x1F6A8;</div>
+      <div>
+        <div class="brand-name">Honeypot Center</div>
+        <div class="brand-sub">Threat Intelligence</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="#dashboard" class="nav-link active" data-section="dashboard">
+        <span class="nav-ico">&#9632;</span> Dashboard
+      </a>
+      <a href="#events" class="nav-link" data-section="events">
+        <span class="nav-ico">&#9776;</span> Live Events
+      </a>
+      <a href="#attackers" class="nav-link" data-section="attackers">
+        <span class="nav-ico">&#9880;</span> Attackers
+      </a>
+      <a href="#analysis" class="nav-link" data-section="analysis">
+        <span class="nav-ico">&#128269;</span> Analysis
+      </a>
+      <a href="#reports" class="nav-link" data-section="reports">
+        <span class="nav-ico">&#128196;</span> Reports
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="server-status" id="serverStatus">
+        <span class="dot"></span><span>Checking services...</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="page-title">
+        <h1 id="pageTitle">Security Dashboard</h1>
+        <p id="pageSubtitle">Real-time monitoring of attempted intrusions</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-outline" id="btnRefresh" title="Refresh data">
+          &#8635; Refresh
+        </button>
+        <button class="btn btn-danger" id="btnStop">&#9632; Stop Honeypots</button>
+        <button class="btn btn-success" id="btnStart">&#9654; Start Honeypots</button>
+      </div>
+    </header>
+
+    <!-- Dashboard Section -->
+    <section id="section-dashboard" class="section active">
+      <div class="status-banner" id="statusBanner">
+        <div class="banner-left">
+          <span class="dot large" id="bannerDot"></span>
+          <span id="bannerText">Initializing honeypot...</span>
+        </div>
+        <div class="banner-right">
+          SSH: <code id="bannerSsh">-</code> &nbsp;&nbsp;|&nbsp;&nbsp; HTTP: <code id="bannerHttp">-</code>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card primary">
+          <div class="stat-icon">&#128064;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTotalEvents">0</div>
+            <div class="stat-label">Total Events</div>
+          </div>
+          <div class="stat-trend" id="trendToday">Today: 0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">&#9880;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statAttackers">0</div>
+            <div class="stat-label">Fingerprinted</div>
+          </div>
+          <div class="stat-trend">Attackers identified</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">&#127760;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statIps">0</div>
+            <div class="stat-label">Unique IPs</div>
+          </div>
+          <div class="stat-trend">Source addresses</div>
+        </div>
+        <div class="stat-card ssh-shade">
+          <div class="stat-icon">&#128421;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statSsh">0</div>
+            <div class="stat-label">SSH Attempts</div>
+          </div>
+          <div class="stat-trend">Portunus tame</div>
+        </div>
+        <div class="stat-card http-shade">
+          <div class="stat-icon">&#127760;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statHttp">0</div>
+            <div class="stat-label">HTTP Probes</div>
+          </div>
+          <div class="stat-trend">Web scanner hits</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-icon">&#9888;</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statHighRisk">0</div>
+            <div class="stat-label">High Risk</div>
+          </div>
+          <div class="stat-trend">Score &gt;= 50</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Activity Timeline (24h)</h3>
+            <span class="legend"><span class="lg lg-ssh"></span> SSH <span class="lg lg-http"></span> HTTP</span>
+          </div>
+          <div class="panel-body">
+            <canvas id="timelineChart"></canvas>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Protocol Distribution</h3>
+          </div>
+          <div class="panel-body">
+            <canvas id="protocolChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Top Attacking IPs</h3>
+            <a href="#" class="link" data-jump="events">View all</a>
+          </div>
+          <div class="panel-body table-wrap">
+            <table class="data-table" id="topIpsTable">
+              <thead><tr><th>IP Address</th><th>Attempts</th><th>Protocols</th><th>Last Seen</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Geographic Sources</h3>
+          </div>
+          <div class="panel-body table-wrap">
+            <table class="data-table" id="geoTable">
+              <thead><tr><th>Country</th><th>Unique IPs</th><th>Total</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Events Section -->
+    <section id="section-events" class="section">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Live Event Stream</h3>
+          <div class="filters">
+            <select id="filterProtocol">
+              <option value="">All Protocols</option>
+              <option value="ssh">SSH</option>
+              <option value="http">HTTP</option>
+            </select>
+            <select id="filterType">
+              <option value="">All Types</option>
+              <option value="ssh_auth">SSH Auth</option>
+              <option value="ssh_command">SSH Command</option>
+              <option value="http_probe">HTTP Probe</option>
+            </select>
+            <button class="btn btn-small" id="btnApplyFilter">Apply</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="table-wrap tall">
+            <table class="data-table" id="eventsTable">
+              <thead>
+                <tr>
+                  <th>Time</th><th>Proto</th><th>Source IP</th><th>Type</th>
+                  <th>Username</th><th>Raw Data</th><th>Risk</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Attackers Section -->
+    <section id="section-attackers" class="section">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Attacker Fingerprints</h3>
+          <span class="muted">Identified by behavioral fingerprint analysis</span>
+        </div>
+        <div class="panel-body table-wrap">
+          <table class="data-table" id="attackersTable">
+            <thead>
+              <tr>
+                <th>Fingerprint</th><th>First Seen</th><th>Last Seen</th>
+                <th>Attacks</th><th>Risk Score</th><th>Tools Detected</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Analysis Section -->
+    <section id="section-analysis" class="section">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><h3>Top Usernames Tried</h3></div>
+          <div class="panel-body">
+            <div id="usernamesBars" class="bars"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Top Passwords Tried</h3></div>
+          <div class="panel-body">
+            <div id="passwordsBars" class="bars"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reports Section -->
+    <section id="section-reports" class="section">
+      <div class="reports-grid">
+        <div class="report-card">
+          <div class="report-ico">&#128196;</div>
+          <h3>HTML Report</h3>
+          <p>Complete intelligence report with statistics, top attackers, credentials tried, and full event log in a styled HTML document.</p>
+          <a href="/api/report/html" class="btn btn-success btn-block" download>Download HTML Report</a>
+        </div>
+        <div class="report-card">
+          <div class="report-ico">&#123;&#125;</div>
+          <h3>JSON Export</h3>
+          <p>Machine-readable export of all collected data ready for ingestion by SIEM, Elasticsearch, or your own analysis pipeline.</p>
+          <a href="/api/report/json" class="btn btn-outline btn-block" download>Download JSON Export</a>
+        </div>
+      </div>
+      <div class="panel info-panel">
+        <div class="panel-head"><h3>Report Contents</h3></div>
+        <div class="panel-body">
+          <ul class="report-list">
+            <li>Summary statistics (total events, unique IPs, SSH/HTTP split)</li>
+            <li>Top attacker IPs with first/last seen and attempt counts</li>
+            <li>Fingerprinted attackers with persistent risk scoring</li>
+            <li>Tool identification (nmap, hydra, sqlmap, metasploit, etc.)</li>
+            <li>Geographic source distribution</li>
+            <li>Top usernames and passwords attempted</li>
+            <li>Full event log with timestamps</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/static/js/script.js"></script>
+</body>
+</html>

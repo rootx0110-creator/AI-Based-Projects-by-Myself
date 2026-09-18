@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQLInspect — Report {{ rid }}</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<style>
+  .rep-hero { padding: 30px 22px; }
+  .rep-head-row { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:center; }
+  .technique-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .technique-table td { padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .technique-table td:first-child { color:var(--cyan); font-family:var(--mono); width:210px; }
+</style>
+</head>
+<body>
+<div class="glow-orb a"></div><div class="glow-orb b"></div>
+
+<header class="app-header">
+  <div class="container nav">
+    <div class="brand">
+      <div class="logo" style="display:grid;place-items:center;border:1px solid var(--border);border-radius:14px">🛡</div>
+      <div><h1>SQL<span>Inspect</span></h1><div class="tagline">SCAN REPORT</div></div>
+    </div>
+    <div class="nav-right"><a class="btn btn-ghost" href="/" style="padding:9px 16px">← New scan</a></div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="breadcrumb"><a href="/">SQLInspect</a> / report {{ rid }}</div>
+
+  <section id="reportWrap"></section>
+
+  <div class="panel panel-pad" style="margin-top:22px">
+    <div class="section-title"><span class="idx">⇩</span> EXPORT REPORT</div>
+    <div class="dl-btns">
+      <button class="btn btn-primary" onclick="dl('pdf')">Download PDF</button>
+      <button class="btn btn-ghost" onclick="dl('csv')">CSV</button>
+      <button class="btn btn-ghost" onclick="dl('json')">JSON</button>
+      <button class="btn btn-ghost" onclick="dl('html')">Standalone HTML</button>
+    </div>
+  </div>
+
+  <div class="panel panel-pad" style="margin-top:22px">
+    <div class="section-title"><span class="idx">i</span> DETECTION TECHNIQUES</div>
+    <table class="technique-table">
+      <tr><td>signature</td><td>match against canonical payload library</td></tr>
+      <tr><td>pattern</td><td>classic SQLi syntax constructs (UNION, comments, breakouts)</td></tr>
+      <tr><td>error_signature</td><td>DBMS error text (MySQL / MSSQL / Oracle / PG / SQLite)</td></tr>
+      <tr><td>keyword_density</td><td>cleared SQL vocabulary weight</td></tr>
+      <tr><td>meta_character</td><td>quotes, semicolons, comment markers in risky context</td></tr>
+      <tr><td>boolean_blind</td><td>true/false response deltas (offline &amp; live)</td></tr>
+      <tr><td>time_based</td><td>SLEEP / pg_sleep / WAITFOR DELAY timing signals</td></tr>
+      <tr><td>stacked_queries</td><td>chained statements after ;</td></tr>
+      <tr><td>dbms_fingerprint</td><td>DBMS-specific artefacts in the parameter or response</td></tr>
+    </table>
+  </div>
+</main>
+
+<footer style="text-align:center;color:var(--muted);font-size:12px;padding:36px 0 46px">
+  SQLInspect · defensive-oriented detection · generated {{ data.summary.scanned_at }}
+</footer>
+
+<script>
+  const RID = {{ rid | tojson }};
+  const DATA = {{ data | tojson }};
+  const COL = {Critical:"var(--crit)",High:"var(--high)",Medium:"var(--medium)",Low:"var(--low)",Safe:"var(--safe)"};
+  const esc = (s) => String(s==null?"":s).replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  function render(){
+    const s = DATA.summary; let html = "";
+    html += `<section class="panel rep-hero">
+      <div class="rep-head-row">
+        <div>
+          <div style="font-size:12px;color:var(--muted);letter-spacing:1px">SCAN ID ${RID}</div>
+          <h2 style="margin:6px 0;font-size:26px">SQL Injection Risk Assessment</h2>
+          <div style="color:var(--muted);font-size:13px">${esc(s.scanned_at)} · mode ${s.mode.toUpperCase()} · live ${s.live?"ON":"OFF"}</div>
+        </div>
+        <span class="risk-badge risk-${s.overall_risk}">${s.overall_risk}</span>
+      </div>
+      <div class="grid-4" style="margin-top:20px">
+        <div class="stat-card panel" style="--statc:var(--cyan)"><div class="k">Targets</div><div class="v">${s.targets}</div></div>
+        <div class="stat-card panel" style="--statc:var(--violet)"><div class="k">Parameters</div><div class="v">${s.total_params}</div></div>
+        <div class="stat-card panel" style="--statc:var(--red)"><div class="k">Vulnerable</div><div class="v">${s.vulnerable}</div></div>
+        <div class="stat-card panel" style="--statc:var(--amber)"><div class="k">Overall score</div><div class="v">${s.overall_score}<span style="font-size:14px;color:var(--muted)">/100</span></div></div>
+      </div></section>`;
+
+    DATAS = DATA.targets;
+    DATAS.forEach((t, ti) => {
+      html += `<section class="panel panel-pad" style="margin-top:20px">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+          <span class="risk-badge risk-${t.risk}">${t.risk}</span>
+          <div style="flex:1;min-width:220px">
+            <h3 style="font-family:var(--mono);font-size:15px;word-break:break-all">${esc(t.url)}</h3>
+            <div style="font-size:12px;color:var(--muted)">${t.method} · ${t.param_count} params · ${t.duration_ms} ms
+              ${t.vulnerable ? ' <span style="color:var(--high)">· FLAGGED</span>':""}
+              ${t.flagged_params.length ? " · flagged: "+esc(t.flagged_params.join(", ")):""}
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="finder">
+          <thead><tr><th>Parameter</th><th>Loc</th><th>Risk</th><th>Score</th><th>DBMS</th><th>Evidence</th><th>Verdict</th></tr></thead>
+          <tbody>${(t.findings||[]).map(fr).join("") || '<tr><td colspan="7" style="color:var(--muted)">No parameters found.</td></tr>'}</tbody>
+        </table></div>
+      </section>`;
+    });
+    document.getElementById("reportWrap").innerHTML = html;
+  }
+  function fr(f){
+    const col = COL[f.risk]||"var(--muted)";
+    const ev = f.techniques[0]?esc(f.techniques[0].evidence||"-"):"–";
+    return `<tr><td class="param-name">${esc(f.name)}</td>
+      <td style="color:var(--muted);font-size:12px">${esc(f.location)}</td>
+      <td><span class="risk-badge risk-${f.risk}">${f.risk}</span></td>
+      <td style="color:${col};font-weight:700">${f.score}</td>
+      <td style="font-size:12px;color:var(--muted)">${(f.dbms||[]).join(", ")||"–"}</td>
+      <td class="exp-cell">${ev}</td>
+      <td>${f.flagged?'<span style="color:var(--high);font-weight:700">FLAG</span>':'<span style="color:var(--safe)">ok</span>'}</td></tr>`;
+  }
+  function dl(fmt){ const a=document.createElement("a"); a.href=`/api/report/${RID}/download/${fmt}`; a.download=""; document.body.appendChild(a); a.click(); a.remove(); }
+  render();
+</script>
+</body>
+</html>

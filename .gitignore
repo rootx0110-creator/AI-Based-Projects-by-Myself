@@ -1,0 +1,120 @@
+# ---- Virtual environments ----
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+*.egg
+build/
+dist/
+wheelhouse/
+.coverage
+htmlcov/
+
+# ---- Node ----
+node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Compiled / binary artifacts ----
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.lib
+*.a
+*.pak
+*.pkg
+*.whl
+*.class
+*.jar
+
+# ---- Archives (large, usually data) ----
+*.zip
+*.tar
+*.gz
+*.tgz
+*.bz2
+*.7z
+*.rar
+
+# ---- Malware samples / analysis artifacts ----
+samples/
+sample/
+malware/
+captures/
+pcap/
+*.pcap
+*.pcapng
+*.bin
+*.raw
+
+# ---- Datasets / wordlists / large data ----
+datasets/
+dataset/
+wordlists/
+wordlist/
+*.db
+*.sqlite
+*.sqlite3
+*.h5
+*.hdf5
+*.npz
+*.npy
+*.jsonl
+*.pkl
+
+# ---- Reports / generated output ----
+reports/
+results/
+output/
+artifacts/
+*.log
+*.tmp
+*.swp
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# ---- Misc ----
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.ico
+*.mp4
+*.mov
+*.pdf
+*.docx
+*.pptx
+*.xlsx
+# ---- Secrets ----
+*.secret
+*.pem
+*.key
+*.pfx
+*.p12
+.env
+

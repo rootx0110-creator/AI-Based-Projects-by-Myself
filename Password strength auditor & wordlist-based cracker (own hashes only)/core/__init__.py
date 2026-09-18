@@ -1,0 +1,1 @@
+"""VaultGuard core package: hashing, strength auditing, cracking and reporting."""

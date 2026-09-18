@@ -1,0 +1,8 @@
+flask==3.0.0
+paramiko==3.4.0
+requests==2.31.0
+user-agents==2.2.0
+geoip2==4.8.0
+maxminddb==1.6.0
+fpdf2==2.7.6
+apscheduler==3.10.4

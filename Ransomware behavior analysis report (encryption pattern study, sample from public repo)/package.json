@@ -1,0 +1,16 @@
+{
+  "name": "cyberforge-ransomware-analysis",
+  "version": "2.4.1",
+  "description": "CyberForge - Ransomware Behavior Analysis Platform",
+  "main": "main.js",
+  "author": "CyberForge Security Intelligence",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-packager . \"CyberForge\" --platform=win32 --arch=x64 --out=dist --overwrite --asar --ignore=\"^/(node_modules/.*)$\" --ignore=\"^/(dist)$\" --icon=assets/icon.ico"
+  },
+  "devDependencies": {
+    "electron": "^44.4.1",
+    "electron-packager": "^17.1.2"
+  }
+}

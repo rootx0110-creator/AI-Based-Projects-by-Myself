@@ -1,0 +1,31 @@
+TODO LIST - Deleted File Recovery Tool
+======================================
+
+DONE
+----
+[x] Project scaffolding (app, core, ui, utils, tests)
+[x] Windows drive enumeration (logical + physical + volume GUIDs)
+[x] Boot-sector filesystem detection (NTFS / FAT12 / FAT16 / FAT32 / exFAT)
+[x] FAT deleted-entry scanning (0xE5 marker) + chain recovery
+[x] NTFS MFT mining for deleted records + resident/non-resident DATA recovery
+[x] Raw carving engine with ~50 signature families and footer detection
+[x] Beautiful dark tabbed UI (customtkinter)
+[x] Results search/filter, stats
+[x] Recovery tab: Select All / Clear / single-click toggle, progress, bulk recovery
+[x] HTML report (embedded CSS) - browser open + Save As download
+[x] PyInstaller one-file EXE build
+[x] build.bat and requirements.txt
+[x] Unit-style tests: FAT, NTFS, carver
+
+BACKLOG (future / nice-to-have)
+--------------------------------
+[ ] exFAT deleted-entry parsing
+[ ] FAT long-file-name reconstruction for deleted entries
+[ ] NTFS $LogFile / journal replay for better names after deletion
+[ ] Multi-threaded carver bands for faster large-disk scans
+[ ] File preview pane and image thumbnails
+[ ] Export report also as CSV / PDF
+[ ] Progress ETA estimate in Scan tab
+[ ] Drive health indicators (S.M.A.R.T. strings) - needs admin
+[ ] Localization framework
+[ ] Auto-updater

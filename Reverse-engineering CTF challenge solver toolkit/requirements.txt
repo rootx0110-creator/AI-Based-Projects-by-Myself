@@ -1,0 +1,4 @@
+# Runtime / build requirements
+customtkinter>=5.2.2
+# Build only (not needed at runtime):
+# pyinstaller>=6.0

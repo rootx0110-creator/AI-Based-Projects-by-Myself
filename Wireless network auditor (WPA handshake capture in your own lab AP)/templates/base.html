@@ -1,0 +1,65 @@
+{% from '_icons.html' import icon %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Wireless Network Auditor{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+</head>
+<body>
+<div class="layout">
+  <div class="backdrop" id="backdrop"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">WA</div>
+      <div>
+        <div class="t">Wireless Network<br>Auditor</div>
+        <div class="s">WPA &middot; Handshake Lab</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="/" class="{{ 'active' if page == 'dashboard' else '' }}">{{ icon('dashboard') }} Dashboard</a>
+      <a href="/scanner" class="{{ 'active' if page == 'scanner' else '' }}">{{ icon('scanner') }} Scanner</a>
+      <a href="/capture" class="{{ 'active' if page == 'capture' else '' }}">{{ icon('capture') }} Capture</a>
+      <a href="/reports" class="{{ 'active' if page == 'reports' else '' }}">{{ icon('reports') }} Reports</a>
+    </nav>
+
+    <div class="side-foot">
+      <div class="flex" style="gap:6px;margin-bottom:6px">
+        <span class="chip eng">📡</span>
+        <span class="chip {{ 'live' if engine == 'live' else 'sim' }}">
+          <span class="dot"></span>{{ engine.upper() }}
+        </span>
+      </div>
+      <div>v1.0.0 &middot; Authorized lab use only.</div>
+      <div style="margin-top:4px">Run against <b style="color:var(--acc)">your own AP</b>.</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="iconbtn menu-btn" id="menuBtn">{{ icon('menu') }}</button>
+      <h1>{% block heading %}{% endblock %}</h1>
+      <div class="spacer"></div>
+      <span class="chip" id="sysState" title="System state">
+        <span class="dot" style="background:var(--acc-2)"></span><span id="sysStateTxt">Checking…</span>
+      </span>
+      <span class="chip " id="adapterChip" style="display:none"></span>
+    </header>
+
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<script>window.ENGINE = {{ engine|tojson }};</script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

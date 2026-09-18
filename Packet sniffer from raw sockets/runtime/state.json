@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "phase": "idle",
+  "session": {},
+  "last_interface": "192.168.56.1  \u2014  Ethernet adapter Ethernet",
+  "filter": "",
+  "quick_filters": [],
+  "stats_snapshot": {
+    "total_packets": 0,
+    "total_bytes": 0,
+    "by_protocol": {},
+    "top_talkers": [],
+    "top_conversations": []
+  },
+  "last_report": {},
+  "errors": [],
+  "saved_at": "2026-09-12T14:14:06"
+}

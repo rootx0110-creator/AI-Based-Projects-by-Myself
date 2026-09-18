@@ -1,0 +1,3 @@
+# Runtime deps: none — pure Python standard library.
+# Build-time only:
+pyinstaller>=6.0 ; python_version >= "3.10"

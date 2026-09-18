@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyber">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FRAMC · Firewall Rule Auditor</title>
+<meta name="description" content="Security posture audit for firewall rule-sets: shadowing, ordering, permissiveness, duplicates.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+<script>
+  (function () {
+    var t = localStorage.getItem('framc.theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+</head>
+<body>
+
+<svg class="bg-grid" aria-hidden="true"></svg>
+<div class="bg-orb orb-a" aria-hidden="true"></div>
+<div class="bg-orb orb-b" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">F</div>
+    <div class="brand-text">
+      <h1>FRAMC</h1>
+      <span>Firewall Rule Auditor &amp; Misconfiguration Checker</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <div class="theme-switch" id="themeSwitch" title="Toggle theme">
+      <button data-theme-key="cyber" class="ts-btn active">Cyber</button>
+      <button data-theme-key="night" class="ts-btn">Night</button>
+      <button data-theme-key="light" class="ts-btn">Light</button>
+    </div>
+    <span class="conn-pill" id="connPill">
+      <i class="dot"></i> <span id="connLabel">connecting…</span>
+    </span>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <nav class="side-nav" id="sideNav">
+    <button class="nav-item active" data-route="dashboard">
+      <span class="nav-icon">◈</span><span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-route="rules">
+      <span class="nav-icon">▤</span><span>Rules</span>
+      <span class="nav-count" id="navRules" hidden></span>
+    </button>
+    <button class="nav-item" data-route="findings">
+      <span class="nav-icon">⚠</span><span>Findings</span>
+      <span class="nav-count warn" id="navFindings" hidden></span>
+    </button>
+    <button class="nav-item" data-route="report">
+      <span class="nav-icon">◫</span><span>Report</span>
+    </button>
+    <button class="nav-item" data-route="analyze">
+      <span class="nav-icon accent-cta">⌁</span><span>Analyze</span>
+    </button>
+    <button class="nav-item" data-route="about">
+      <span class="nav-icon">?</span><span>About</span>
+    </button>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="posture-mini" id="postureMini" hidden>
+      <div class="pm-ring" id="pmRing">
+        <span id="pmScore">--</span>
+      </div>
+      <div>
+        <div class="pm-grade" id="pmGrade">—</div>
+        <div class="pm-label">POSTURE</div>
+      </div>
+    </div>
+    <div class="ver">FRAMC v1.0 · engine ready</div>
+  </div>
+</aside>
+
+<main class="content" id="mainContent">
+
+  <!-- ============================ DASHBOARD ============================ -->
+  <section class="panel route-panel active" data-panel="dashboard">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Security Posture Dashboard</h2>
+        <p class="panel-sub" id="dashSub">Upload a firewall configuration to begin an audit.</p>
+      </div>
+      <button class="btn primary" id="dashAnalyzeBtn">⌁ New Analysis</button>
+    </div>
+
+    <div class="empty-state" id="dashEmpty">
+      <div class="empty-shield">◈</div>
+      <h3>No audit loaded yet</h3>
+      <p>Drop a config file or paste firewall rules, then run an analysis to
+         get posture scores, misconfiguration findings, and actionable fixes.</p>
+      <button class="btn primary big" id="dashEmptyGo">Start an Analysis</button>
+      <button class="btn ghost big" id="loadSample">Try a sample config</button>
+    </div>
+
+    <div id="dashFilled" hidden>
+      <div class="kpi-row">
+        <div class="posture-card card glass" id="postureCard">
+          <canvas id="gaugeCanvas" width="190" height="112"></canvas>
+          <div class="pc-legend">
+            <div><span class="pc-score" id="pcScore">--</span><span class="pc-grade" id="pcGrade">—</span></div>
+            <div class="pc-deets">
+              <span id="pcAllow">0 allow</span> ·
+              <span id="pcDeny">0 deny</span>
+            </div>
+          </div>
+        </div>
+        <div class="kpi card glass">
+          <div class="kpi-icon crit">⚠</div>
+          <div class="kpi-body"><span class="kpi-value" id="kpiCrit">0</span>
+            <span class="kpi-label">Critical findings</span></div>
+        </div>
+        <div class="kpi card glass">
+          <div class="kpi-icon warn">◑</div>
+          <div class="kpi-body"><span class="kpi-value" id="kpiHigh">0</span>
+            <span class="kpi-label">High findings</span></div>
+        </div>
+        <div class="kpi card glass">
+          <div class="kpi-icon med">△</div>
+          <div class="kpi-body"><span class="kpi-value" id="kpiMed">0</span>
+            <span class="kpi-label">Medium findings</span></div>
+        </div>
+        <div class="kpi card glass">
+          <div class="kpi-icon info">⚕</div>
+          <div class="kpi-body"><span class="kpi-value" id="kpiRules">0</span>
+            <span class="kpi-label">Rules audited</span></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card glass chart-card">
+          <h3 class="card-title">Findings by severity</h3>
+          <div class="chart-wrap"><canvas id="chartSev"></canvas></div>
+        </div>
+        <div class="card glass chart-card">
+          <h3 class="card-title">Rule action / protocol mix</h3>
+          <div class="chart-wrap"><canvas id="chartMix"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card glass">
+          <h3 class="card-title">Top risk rules</h3>
+          <div class="list-skeleton" id="topRules"></div>
+        </div>
+        <div class="card glass span-2">
+          <h3 class="card-title">Recent high-severity findings</h3>
+          <div class="list-skeleton" id="topFindings"></div>
+          <button class="btn ghost small right" data-go="findings">View all findings →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ RULES ============================ -->
+  <section class="panel route-panel" data-panel="rules">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Firewall Rules</h2>
+        <p class="panel-sub" id="rulesSub">Parsed, normalized rules in evaluation order.</p>
+      </div>
+    </div>
+    <div class="empty-state" data-for="rules">
+      <div class="empty-shield">▤</div>
+      <h3>No rules to display</h3>
+      <p>Run an analysis to populate this table.</p>
+      <button class="btn primary" data-go="analyze">Analyze a config</button>
+    </div>
+    <div id="rulesFilled" hidden>
+      <div class="table-tools">
+        <input class="input search" id="rulesSearch" type="search" placeholder="Search src / dst / port / description…">
+        <select class="input" id="rulesFilterAction">
+          <option value="">All actions</option>
+          <option>ALLOW</option><option>DENY</option><option>DROP</option><option>REJECT</option>
+        </select>
+        <select class="input" id="rulesFilterSev">
+          <option value="">Any risk</option>
+          <option value="CRITICAL">CRITICAL</option>
+          <option value="HIGH">HIGH</option>
+          <option value="MEDIUM">MEDIUM</option>
+          <option value="LOW">LOW</option>
+          <option value="INFO">INFO</option>
+          <option value="NONE">Clean</option>
+        </select>
+        <span class="table-count" id="rulesCount"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="table rules-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Action</th><th>Direction</th><th>Protocol</th>
+              <th>Source</th><th>Source port</th><th>Destination</th>
+              <th>Dest port</th><th>Risk</th><th>Findings</th>
+            </tr>
+          </thead>
+          <tbody id="rulesBody"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button class="btn ghost small" id="rulesPrev">← Prev</button>
+        <span id="rulesPageInfo"></span>
+        <button class="btn ghost small" id="rulesNext">Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FINDINGS ============================ -->
+  <section class="panel route-panel" data-panel="findings">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Misconfiguration Findings</h2>
+        <p class="panel-sub" id="findingsSub">Detected issues with severity, impact, and fixes.</p>
+      </div>
+      <div class="head-actions">
+        <select class="input" id="findingsSevFilter">
+          <option value="ALL">All severities</option>
+          <option value="CRITICAL">CRITICAL only</option>
+          <option value="HIGH">HIGH only</option>
+          <option value="MEDIUM">MEDIUM only</option>
+          <option value="LOW">LOW only</option>
+          <option value="INFO">INFO</option>
+        </select>
+      </div>
+    </div>
+    <div class="empty-state" data-for="findings">
+      <div class="empty-shield">⚠</div>
+      <h3>No findings yet</h3>
+      <p>Run an analysis to scan for misconfigurations.</p>
+      <button class="btn primary" data-go="analyze">Analyze a config</button>
+    </div>
+    <div id="findingsFilled" hidden>
+      <div class="findings-grouped" id="findingsList"></div>
+      <div class="center"><button class="btn ghost" id="findingsMore">Load more findings</button></div>
+    </div>
+  </section>
+
+  <!-- ============================ REPORT ============================ -->
+  <section class="panel route-panel" data-panel="report">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Audit Report</h2>
+        <p class="panel-sub">Downloadable artifacts from the last analysis.</p>
+      </div>
+      <div class="head-actions">
+        <a class="btn ghost" id="exportJson" href="/api/export?kind=json">↓ JSON report</a>
+        <a class="btn ghost" id="exportRules" href="/api/export?kind=rules-csv">↓ Rules CSV</a>
+        <a class="btn ghost" id="exportFindings" href="/api/export?kind=findings-csv">↓ Findings CSV</a>
+      </div>
+    </div>
+    <div class="empty-state" data-for="report">
+      <div class="empty-shield">◫</div>
+      <h3>Nothing to export yet</h3>
+      <p>Complete an analysis first — exports reflect the most recent audit.</p>
+      <button class="btn primary" data-go="analyze">Analyze a config</button>
+    </div>
+    <div id="reportFilled" hidden>
+      <div class="report-meta card glass" id="reportMeta"></div>
+      <div class="grid-2">
+        <div class="card glass chart-card">
+          <h3 class="card-title">Severity contribution to posture</h3>
+          <div class="chart-wrap"><canvas id="chartContrib"></canvas></div>
+        </div>
+        <div class="card glass">
+          <h3 class="card-title">Remediation checklist</h3>
+          <div class="checklist" id="remediationChecklist"></div>
+        </div>
+      </div>
+      <div class="card glass">
+        <h3 class="card-title">Warnings during parsing</h3>
+        <ul class="warnings" id="reportWarnings"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ ANALYZE ============================ -->
+  <section class="panel route-panel" data-panel="analyze">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">Analyze Configuration</h2>
+        <p class="panel-sub">Paste or upload a firewall rule-set. Max 2 MB.</p>
+      </div>
+    </div>
+    <div class="analyze-layout">
+      <div class="card glass">
+        <h3 class="card-title">1 · Choose format</h3>
+        <div class="format-grid" id="formatGrid"></div>
+      </div>
+      <div class="card glass">
+        <h3 class="card-title">2 · Provide configuration</h3>
+        <label class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".conf,.cfg,.txt,.xml,.json,.csv,.log,.acls,.fw" hidden>
+          <div class="dz-icon">⇪</div>
+          <div class="dz-title">Drag &amp; drop a file here</div>
+          <div class="dz-sub">or click to browse · .conf .cfg .txt .xml .csv</div>
+        </label>
+        <div class="or-divider"><span>or paste directly</span></div>
+        <textarea class="textarea" id="configText" rows="10"
+          placeholder="Paste firewall rules here, e.g.&#10;-A INPUT -p tcp --dport 22 -s 10.0.0.0/8 -j ACCEPT&#10;access-list OUTSIDE extended permit tcp any any eq 443&#10;…"></textarea>
+        <div class="analyze-row">
+          <input class="input grow" id="configName" placeholder="Config label (e.g. edge-fw-v3)">
+          <button class="btn primary big" id="analyzeBtn" disabled>Run Analysis</button>
+        </div>
+        <div class="analyze-hint" id="analyzeHint">
+          Tip: try the included sample configs — <button class="link" id="sampleLink">load a sample</button>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ ABOUT ============================ -->
+  <section class="panel route-panel" data-panel="about">
+    <div class="panel-head">
+      <div>
+        <h2 class="panel-title">About FRAMC</h2>
+        <p class="panel-sub">Architecture, methodology and limitations.</p>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="card glass">
+        <h3 class="card-title">What it checks</h3>
+        <ul class="about-list">
+          <li><b>Shadowed rules</b> — later rules unreachable behind a superset</li>
+          <li><b>Ordering overrides</b> — ALLOW before covering DENY (critical)</li>
+          <li><b>World-open ANY/ANY</b> permits</li>
+          <li><b>Sensitive-port exposure</b> (SSH, RDP, SQL…)</li>
+          <li><b>Duplicates &amp; dead rules</b>, missing default-deny</li>
+          <li><b>Invalid CIDR / notation</b>, non-logged allows</li>
+        </ul>
+      </div>
+      <div class="card glass">
+        <h3 class="card-title">Supported formats</h3>
+        <ul class="about-list" id="aboutFormats"></ul>
+      </div>
+      <div class="card glass">
+        <h3 class="card-title">How posture is graded</h3>
+        <p>Posture starts at 100 and is reduced per finding severity
+           (CRITICAL −18, HIGH −10, MEDIUM −5, LOW −2, INFO −0.5) with
+           rewards for default-deny and full logging.</p>
+        <div class="grade-bands">
+          <span class="gb g-a">A 85+</span>
+          <span class="gb g-b">B 70</span>
+          <span class="gb g-c">C 55</span>
+          <span class="gb g-d">D 40</span>
+          <span class="gb g-f">F &lt;40</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<canvas id="scanline" aria-hidden="true"></canvas>
+<div class="toast-holder" id="toasts"></div>
+
+<div class="loading-overlay" id="loadingOverlay" hidden>
+  <div class="loader">
+    <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="lg rg-a"/><circle cx="60" cy="60" r="52" class="lg rg-b" id="loaderArc"/></svg>
+    <div class="loader-text">Auditing rule-set…</div>
+  </div>
+</div>
+
+<template id="ruleRow">
+  <tr>
+    <td class="mono rule-id">{id}</td>
+    <td><span class="badge {action-class}">{action}</span></td>
+    <td>{direction}</td>
+    <td class="mono">{protocol}</td>
+    <td class="mono">{src}</td>
+    <td class="mono">{sport}</td>
+    <td class="mono">{dst}</td>
+    <td class="mono">{dport}</td>
+    <td><span class="risk-bar"><em style="width:{risk}%"></em></span></td>
+    <td><span class="sev-labels">{sev}</span></td>
+  </tr>
+</template>
+
+<template id="findingCard">
+  <div class="finding-card f-{sevclass}">
+    <div class="f-left">
+      <div class="f-sev">{sev}</div>
+      <div class="f-tags" style="display:none">{tags}</div>
+    </div>
+    <div class="f-body">
+      <div class="f-title">{title}</div>
+      <div class="f-detail">{detail}</div>
+      <div class="f-meta">
+        <span class="f-cat">{category}</span>
+        <span class="f-rules">{rules}</span>
+      </div>
+    </div>
+    <div class="f-fix">
+      <div class="f-fix-label">Recommended fix</div>
+      <div class="f-fix-text">{fix}</div>
+    </div>
+  </div>
+</template>
+
+<script src="/static/vendor/chart.umd.min.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

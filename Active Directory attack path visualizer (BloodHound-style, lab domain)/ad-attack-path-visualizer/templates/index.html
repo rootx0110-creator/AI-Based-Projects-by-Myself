@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AD Attack Path Visualizer</title>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-crosshairs"></i>
+                    <span>AD Attack Path Visualizer</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search nodes...">
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" onclick="loadDemoData()">
+                    <i class="fas fa-database"></i> Load Demo
+                </button>
+                <button class="btn btn-secondary" onclick="showImportModal()">
+                    <i class="fas fa-upload"></i> Import
+                </button>
+                <button class="btn btn-accent" onclick="showReportModal()">
+                    <i class="fas fa-file-alt"></i> Report
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <aside class="sidebar left-sidebar">
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" onclick="switchTab('nodes')">
+                        <i class="fas fa-project-diagram"></i> Nodes
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('filters')">
+                        <i class="fas fa-filter"></i> Filters
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('analysis')">
+                        <i class="fas fa-crosshairs"></i> Analysis
+                    </button>
+                </div>
+
+                <!-- Nodes Tab -->
+                <div class="tab-content active" id="nodesTab">
+                    <div class="stats-panel">
+                        <h3>Graph Statistics</h3>
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <span class="stat-value" id="totalNodes">0</span>
+                                <span class="stat-label">Nodes</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value" id="totalEdges">0</span>
+                                <span class="stat-label">Edges</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="node-list">
+                        <h3>Nodes</h3>
+                        <div id="nodeListContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Filters Tab -->
+                <div class="tab-content" id="filtersTab">
+                    <div class="filter-section">
+                        <h3>Node Types</h3>
+                        <div class="filter-group">
+                            <label class="filter-item">
+                                <input type="checkbox" checked onchange="applyFilters()"> 
+                                <span class="filter-color" style="background: #4A90D9"></span> User
+                            </label>
+                            <label class="filter-item">
+                                <input type="checkbox" checked onchange="applyFilters()"> 
+                                <span class="filter-color" style="background: #50C878"></span> Computer
+                            </label>
+                            <label class="filter-item">
+                                <input type="checkbox" checked onchange="applyFilters()"> 
+                                <span class="filter-color" style="background: #FFB347"></span> Group
+                            </label>
+                            <label class="filter-item">
+                                <input type="checkbox" checked onchange="applyFilters()"> 
+                                <span class="filter-color" style="background: #DDA0DD"></span> OU
+                            </label>
+                            <label class="filter-item">
+                                <input type="checkbox" checked onchange="applyFilters()"> 
+                                <span class="filter-color" style="background: #FF6B6B"></span> Domain
+                            </label>
+                            <label class="filter-item">
+                                <input type="checkbox" checked onchange="applyFilters()"> 
+                                <span class="filter-color" style="background: #87CEEB"></span> GPO
+                            </label>
+                        </div>
+                    </div>
+                    <div class="filter-section">
+                        <h3>Edge Types</h3>
+                        <div class="filter-group" id="edgeFilters"></div>
+                    </div>
+                    <div class="filter-section">
+                        <h3>Layout</h3>
+                        <select id="layoutSelect" onchange="changeLayout()">
+                            <option value="force">Force Directed</option>
+                            <option value="hierarchical">Hierarchical</option>
+                        </select>
+                    </div>
+                    <div class="filter-section">
+                        <h3>Physics</h3>
+                        <label class="filter-item">
+                            <input type="checkbox" id="physicsToggle" checked onchange="togglePhysics()"> Enable Physics
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Analysis Tab -->
+                <div class="tab-content" id="analysisTab">
+                    <div class="analysis-panel">
+                        <h3>Attack Path Analysis</h3>
+                        <div class="analysis-form">
+                            <div class="form-group">
+                                <label>Source Node</label>
+                                <select id="sourceNode">
+                                    <option value="">Select source...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Target Node</label>
+                                <select id="targetNode">
+                                    <option value="">Select target...</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary btn-block" onclick="findAttackPaths()">
+                                <i class="fas fa-search"></i> Find Paths
+                            </button>
+                        </div>
+                        <div id="pathResults" class="path-results"></div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Graph Area -->
+            <main class="graph-area">
+                <div class="graph-toolbar">
+                    <button class="tool-btn" onclick="graph.fit()" title="Fit to screen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="tool-btn" onclick="graph.zoomIn()" title="Zoom in">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="tool-btn" onclick="graph.zoomOut()" title="Zoom out">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="tool-btn" onclick="resetView()" title="Reset view">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div id="graphContainer"></div>
+            </main>
+
+            <!-- Right Sidebar (Node Details) -->
+            <aside class="sidebar right-sidebar" id="rightSidebar">
+                <div class="sidebar-header">
+                    <h3>Node Details</h3>
+                    <button class="close-btn" onclick="closeSidebar()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="nodeDetails">
+                    <div class="empty-state">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <p>Click a node to see details</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Import BloodHound Data</h3>
+                <button class="close-btn" onclick="closeModal('importModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag and drop JSON file here</p>
+                    <p>or</p>
+                    <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">
+                        Browse Files
+                    </button>
+                    <input type="file" id="fileInput" accept=".json" style="display: none" onchange="handleFileUpload(event)">
+                </div>
+                <div id="uploadProgress" class="upload-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <span class="progress-text">Uploading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Generate Report</h3>
+                <button class="close-btn" onclick="closeModal('reportModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Report Type</label>
+                    <select id="reportType">
+                        <option value="full">Full Report</option>
+                        <option value="summary">Summary Only</option>
+                        <option value="paths">Attack Paths Only</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Include Graph Visualization</label>
+                    <input type="checkbox" id="includeGraph" checked>
+                </div>
+                <div class="form-group">
+                    <label>Include Recommendations</label>
+                    <input type="checkbox" id="includeRecommendations" checked>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="generateReport()">
+                    <i class="fas fa-file-alt"></i> Generate Report
+                </button>
+                <div id="reportResult" class="report-result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

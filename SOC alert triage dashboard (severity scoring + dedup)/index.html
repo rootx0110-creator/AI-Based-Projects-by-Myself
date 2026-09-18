@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOC Alert Triage Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  .turquoise-status { color: #37d5de; }
+</style>
+</head>
+<body>
+  <div id="app">
+    <!-- ===== TOP NAVIGATION BAR ===== -->
+    <header class="top-nav">
+      <div class="brand-area">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 8v4l3 2"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>SOC Shield</h1>
+          <span>Alert Triage &amp; Deduplication</span>
+        </div>
+      </div>
+
+      <div class="global-search">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="globalSearch" placeholder="Search alerts, IPs, MITRE IDs..." autocomplete="off">
+        <span class="search-hint">Ctrl K</span>
+      </div>
+
+      <div class="nav-actions">
+        <div class="live-status">
+          <span class="pulse-dot"></span>
+          <span>LIVE</span>
+        </div>
+        <button class="btn btn-ghost" id="refreshBtn" title="Refresh data">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+        <button class="btn btn-export" id="exportReportBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Report
+        </button>
+        <button class="btn btn-icon" id="menuBtn" title="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ===== MAIN LAYOUT ===== -->
+    <div class="main-wrapper">
+
+      <!-- Sidebar Filter Panel -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h3>Filters</h3>
+          <button class="btn btn-xs" id="clearFiltersBtn">Clear All</button>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">Severity</label>
+          <div class="chip-group" id="severityFilter">
+            <button class="chip chip-critical active" data-severity="Critical">Critical</button>
+            <button class="chip chip-high active" data-severity="High">High</button>
+            <button class="chip chip-medium active" data-severity="Medium">Medium</button>
+            <button class="chip chip-low active" data-severity="Low">Low</button>
+            <button class="chip chip-info active" data-severity="Info">Info</button>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">Source</label>
+          <div class="source-list" id="sourceFilter">
+            <label><input type="checkbox" class="source-cb" data-source="Suricata" checked> Suricata IDS</label>
+            <label><input type="checkbox" class="source-cb" data-source="CrowdStrike" checked> CrowdStrike</label>
+            <label><input type="checkbox" class="source-cb" data-source="Splunk" checked> Splunk SIEM</label>
+            <label><input type="checkbox" class="source-cb" data-source="Windows Defender" checked> Defender</label>
+            <label><input type="checkbox" class="source-cb" data-source="AWS CloudTrail" checked> CloudTrail</label>
+            <label><input type="checkbox" class="source-cb" data-source="Zeek" checked> Zeek</label>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">Status</label>
+          <div class="chip-group">
+            <button class="chip chip-status active" data-status="New">New</button>
+            <button class="chip chip-status active" data-status="Investigating">Investigating</button>
+            <button class="chip chip-status active" data-status="Resolved">Resolved</button>
+            <button class="chip chip-status active" data-status="False Positive">False Positive</button>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">Time Range</label>
+          <select class="select-input" id="timeRangeFilter">
+            <option value="all">All Time</option>
+            <option value="1h">Last 1 Hour</option>
+            <option value="6h">Last 6 Hours</option>
+            <option value="24h" selected>Last 24 Hours</option>
+            <option value="7d">Last 7 Days</option>
+          </select>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">Deduplication</label>
+          <div class="toggle-row">
+            <span>Show duplicates</span>
+            <label class="switch">
+              <input type="checkbox" id="showDuplicatesToggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Merge duplicates by default</span>
+            <label class="switch">
+              <input type="checkbox" id="autoMergeToggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">Min Severity Score</label>
+          <input type="range" id="minScoreFilter" min="0" max="10" value="0" step="0.5">
+          <div class="range-labels"><span>0</span><span id="minScoreLabel">0.0</span><span>10</span></div>
+        </div>
+
+        <div class="filter-section sidebar-footer-info">
+          <div class="filter-count" id="filterCount">Showing <strong>0</strong> alerts</div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="content">
+        <!-- Stats Row -->
+        <section class="stats-grid" id="statsGrid">
+          <div class="stat-card stat-total">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 7H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statTotal">0</span>
+              <span class="stat-label">Total Alerts</span>
+            </div>
+            <span class="stat-trend up" id="statTotalTrend">+0%</span>
+          </div>
+
+          <div class="stat-card stat-critical">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86l-8.07 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3l-8.07-14a2 2 0 0 0-3.46 0z"/></svg></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statCritical">0</span>
+              <span class="stat-label">Critical</span>
+            </div>
+            <span class="stat-trend up" id="statCriticalTrend">0%</span>
+          </div>
+
+          <div class="stat-card stat-high">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v5M12 18h.01M10.29 3.86l-8.07 14A2 2 0 0 0 4 23h16a2 2 0 0 0 1.73-3l-8.07-14a2 2 0 0 0-3.46 0z"/></svg></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statHigh">0</span>
+              <span class="stat-label">High</span>
+            </div>
+            <span class="stat-trend up" id="statHighTrend">0%</span>
+          </div>
+
+          <div class="stat-card stat-dedup">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statUnique">0</span>
+              <span class="stat-label">Unique Alerts</span>
+            </div>
+            <span class="stat-trend good" id="statDedupRate">0% dedup</span>
+          </div>
+
+          <div class="stat-card stat-avg">
+            <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            <div class="stat-content">
+              <span class="stat-value" id="statAvgScore">0.0</span>
+              <span class="stat-label">Avg Severity</span>
+            </div>
+            <span class="stat-trend neutral" id="statRiskScore">Risk DB</span>
+          </div>
+        </section>
+
+        <!-- Charts Row -->
+        <section class="charts-row">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Severity Distribution</h3>
+              <div class="chart-legend" id="severityLegend"></div>
+            </div>
+            <div class="chart-body">
+              <div class="donut-container">
+                <div class="donut" id="severityDonut"></div>
+                <div class="donut-center">
+                  <span class="donut-main" id="donutCenterValue">0</span>
+                  <span class="donut-sub" id="donutCenterLabel">Total</span>
+                </div>
+              </div>
+              <div class="severity-bars" id="severityBars"></div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>Alert Timeline</h3>
+              <div class="chart-range-select">
+                <button class="range-btn" data-range="6h">6H</button>
+                <button class="range-btn active" data-range="24h">24H</button>
+                <button class="range-btn" data-range="7d">7D</button>
+              </div>
+            </div>
+            <div class="chart-body">
+              <div class="timeline-chart" id="timelineChart"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Alerts Section -->
+        <section class="alerts-section">
+          <div class="alerts-heading">
+            <div class="heading-left">
+              <h2>Alert Queue</h2>
+              <span class="heading-badge" id="queueCount">0 alerts</span>
+            </div>
+            <div class="heading-actions">
+              <div class="view-toggles" id="dedupViewToggle">
+                <button class="view-btn active" data-view="merged">Merged</button>
+                <button class="view-btn" data-view="all">All Alerts</button>
+              </div>
+              <button class="btn btn-sm" id="sortHeaderBtn">
+                Sort: <span id="sortLabel">Score ↓</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M7 12h10M10 18h4"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="alert-table">
+              <thead>
+                <tr>
+                  <th class="col-check"><input type="checkbox" id="selectAllCheckbox"></th>
+                  <th class="col-severity sortable" data-sort="severity">Severity <span class="sort-indicator">↓</span></th>
+                  <th class="col-score sortable" data-sort="score">Score <span class="sort-indicator"></span></th>
+                  <th class="col-alert sortable" data-sort="title">Alert</th>
+                  <th class="col-source sortable" data-sort="source">Source</th>
+                  <th class="col-ip">Source IP</th>
+                  <th class="col-category sortable" data-sort="category">Category</th>
+                  <th class="col-status sortable" data-sort="status">Status</th>
+                  <th class="col-time sortable" data-sort="timestamp">Time</th>
+                  <th class="col-dedup">Dup</th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="alertsTableBody"></tbody>
+            </table>
+            <div class="empty-state" id="emptyState" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+              <h3>No alerts match the current filters</h3>
+              <p>Try adjusting your filter criteria or clearing the search</p>
+              <button class="btn btn-sm" id="emptyStateReset">Reset Filters</button>
+            </div>
+          </div>
+
+          <div class="pagination-bar">
+            <span class="pagination-info" id="paginationInfo">Showing 0-0 of 0</span>
+            <div class="pagination-controls">
+              <button class="page-btn" id="prevPageBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+              <div class="page-indicator" id="pageIndicator">1 / 1</div>
+              <button class="page-btn" id="nextPageBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+              <select class="page-size-select" id="pageSizeSelect">
+                <option value="10">10 / page</option>
+                <option value="25" selected>25 / page</option>
+                <option value="50">50 / page</option>
+                <option value="100">100 / page</option>
+              </select>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Slide-in Alert Detail Panel -->
+    <div class="detail-overlay" id="detailOverlay"></div>
+    <aside class="detail-panel" id="detailPanel">
+      <div class="detail-header">
+        <div class="detail-title">
+          <span class="detail-severity-badge" id="detailSeverityBadge">CRITICAL</span>
+          <h2 id="detailTitle">Alert Detail</h2>
+        </div>
+        <button class="btn btn-icon close-detail" id="closeDetailBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="detail-score-section">
+        <div class="score-ring-wrap">
+          <svg class="score-ring" viewBox="0 0 120 120">
+            <circle class="score-ring-bg" cx="60" cy="60" r="52"/>
+            <circle class="score-ring-fg" id="scoreRingFg" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="score-ring-center">
+            <span class="score-value" id="detailScore">8.5</span>
+            <span class="score-max">/ 10</span>
+          </div>
+        </div>
+        <div class="score-breakdown" id="scoreBreakdown"></div>
+      </div>
+
+      <div class="detail-meta">
+        <div class="meta-item"><span class="meta-label">Alert ID</span><span class="meta-value mono" id="detailAlertId">-</span></div>
+        <div class="meta-item"><span class="meta-label">Timestamp</span><span class="meta-value" id="detailTimestamp">-</span></div>
+        <div class="meta-item"><span class="meta-label">Source</span><span class="meta-value" id="detailSource">-</span></div>
+        <div class="meta-item"><span class="meta-label">Category</span><span class="meta-value" id="detailCategory">-</span></div>
+        <div class="meta-item"><span class="meta-label">MITRE ATT&amp;CK</span><span class="meta-value mono" id="detailMitre">-</span></div>
+        <div class="meta-item"><span class="meta-label">Source IP</span><span class="meta-value mono" id="detailSrcIP">-</span></div>
+        <div class="meta-item"><span class="meta-label">Dest IP</span><span class="meta-value mono" id="detailDstIP">-</span></div>
+        <div class="meta-item"><span class="meta-label">Ports</span><span class="meta-value mono" id="detailPorts">-</span></div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Description</h4>
+        <p class="detail-description" id="detailDescription">-</p>
+      </div>
+
+      <div class="detail-section">
+        <h4>Deduplication</h4>
+        <div class="dedup-info" id="detailDedupInfo">
+          <span class="dedup-badge unique">Unique Alert</span>
+          <span class="dedup-text" id="detailDedupText">No duplicates detected</span>
+        </div>
+        <div class="dedup-history" id="dedupHistory"></div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Scoring Factors</h4>
+        <div class="factor-list" id="factorList"></div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Recommended Action</h4>
+        <div class="recommendation-box" id="detailRecommendation">-</div>
+      </div>
+
+      <div class="detail-actions">
+        <select class="select-input" id="detailStatusSelect">
+          <option value="New">New</option>
+          <option value="Investigating">Investigating</option>
+          <option value="Resolved">Resolved</option>
+          <option value="False Positive">False Positive</option>
+        </select>
+        <button class="btn btn-primary" id="markDuplicateBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          Mark Duplicate
+        </button>
+      </div>
+    </aside>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Keyboard shortcut modal -->
+    <div class="modal-backdrop" id="kbdModal" style="display:none">
+      <div class="modal">
+        <h3>Keyboard Shortcuts</h3>
+        <div class="kbd-grid">
+          <div><kbd>Ctrl</kbd> + <kbd>K</kbd> <span>Focus search</span></div>
+          <div><kbd>Ctrl</kbd> + <kbd>E</kbd> <span>Export report</span></div>
+          <div><kbd>Ctrl</kbd> + <kbd>R</kbd> <span>Refresh data</span></div>
+          <div><kbd>←</kbd> / <kbd>→</kbd> <span>Navigate pages</span></div>
+          <div><kbd>Escape</kbd> <span>Close panel / modal</span></div>
+          <div><kbd>?</kbd> <span>Show shortcuts</span></div>
+        </div>
+        <button class="btn btn-primary" onclick="document.getElementById('kbdModal').style.display='none'">Close</button>
+      </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal-backdrop" id="reportModal" style="display:none">
+      <div class="modal report-modal">
+        <h3>Report Export</h3>
+        <p class="modal-desc">Choose what to include in your HTML report:</p>
+        <div class="report-options">
+          <label class="checkbox-card">
+            <input type="checkbox" id="reportOptSummary" checked>
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+            <span class="card-label">Executive Summary</span>
+          </label>
+          <label class="checkbox-card">
+            <input type="checkbox" id="reportOptStats" checked>
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></span>
+            <span class="card-label">Statistics &amp; Charts</span>
+          </label>
+          <label class="checkbox-card">
+            <input type="checkbox" id="reportOptAlerts" checked>
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+            <span class="card-label">All Alert Details</span>
+          </label>
+          <label class="checkbox-card">
+            <input type="checkbox" id="reportOptDedup" checked>
+            <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <span class="card-label">Deduplication Report</span>
+          </label>
+        </div>
+        <div class="report-actions">
+          <button class="btn btn-ghost" onclick="document.getElementById('reportModal').style.display='none'">Cancel</button>
+          <button class="btn btn-export" id="generateReportBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Generate &amp; Download
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/reports.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

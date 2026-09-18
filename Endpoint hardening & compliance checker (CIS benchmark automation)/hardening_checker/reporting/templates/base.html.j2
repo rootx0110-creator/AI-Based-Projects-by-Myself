@@ -1,0 +1,298 @@
+{% set sev_order = ['critical','high','medium','low','info'] %}
+{% set status_order = ['fail','error','manual','skipped','not_applicable','pass'] %}
+{% set total = summary.total if summary.total > 0 else 1 %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compliance Report {{ report.scan_id }} &mdash; {{ platform.hostname }}</title>
+<style>
+:root{
+  --bg:#0b1220; --panel:#111a2e; --panel2:#0e1626; --line:#1f2a40;
+  --text:#e8eefc; --muted:#8fa3c4; --accent:#22d3ee;
+  --pass:#34d399; --fail:#f87171; --err:#fbbf24; --na:#94a3b8; --info:#60a5fa;
+  --critical:#f43f5e; --high:#fb923c; --medium:#facc15; --low:#38bdf8;
+  --mono:'Cascadia Code','Consolas',monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:14px/1.55 'Segoe UI',system-ui,-apple-system,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+a{color:var(--accent)}
+
+/* ---------- header ---------- */
+.header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#0891b2,#0e7490);font-size:22px}
+.brand h1{margin:0;font-size:18px;font-weight:600}
+.brand small{color:var(--muted)}
+.host-block h2{margin:0 0 4px;font-size:24px}
+.meta-badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:11.5px;
+  border:1px solid var(--line);background:var(--panel2);color:var(--muted)}
+.badge.ok{color:var(--pass);border-color:rgba(52,211,153,.35)}
+.badge.warn{color:var(--err);border-color:rgba(251,191,36,.35)}
+
+/* ---------- score hero ---------- */
+.hero{display:grid;grid-template-columns:280px 1fr;gap:18px;margin-bottom:22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.score-num{font-size:56px;font-weight:700;line-height:1}
+.grade{display:inline-block;margin-left:10px;padding:3px 14px;border-radius:10px;
+  font-size:22px;font-weight:700;vertical-align:middle}
+.g-A,.g-Ap{background:rgba(52,211,153,.15);color:var(--pass)}
+.g-B{background:rgba(96,165,250,.15);color:var(--info)}
+.g-C{background:rgba(250,204,21,.15);color:var(--medium)}
+.g-D,.g-E{background:rgba(251,146,60,.15);color:var(--high)}
+.g-F{background:rgba(248,113,113,.15);color:var(--fail)}
+.meter{height:10px;border-radius:6px;background:#0a0f1c;margin:14px 0 8px;overflow:hidden}
+.meter>span{display:block;height:100%;border-radius:6px;
+  background:linear-gradient(90deg,#0e7490,#22d3ee)}
+.score-sub{color:var(--muted);font-size:12.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile .n{font-size:28px;font-weight:700;line-height:1.1}
+.tile .l{color:var(--muted);font-size:12px;margin-top:2px}
+.tile.pass .n{color:var(--pass)} .tile.fail .n{color:var(--fail)}
+.tile.err .n{color:var(--err)} .tile.na .n{color:var(--na)}
+.tile.man .n{color:var(--info)}
+
+/* ---------- breakdown ---------- */
+.section-title{margin:30px 0 12px;font-size:15px;font-weight:600;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.08em}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.bar-row{display:flex;align-items:center;gap:10px;margin:9px 0}
+.bar-label{width:82px;font-size:12.5px;color:var(--muted);text-transform:capitalize}
+.bar-track{flex:1;height:14px;background:#0a0f1c;border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px}
+.bar-n{width:34px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.cat{width:100%;border-collapse:collapse;font-size:13px}
+table.cat th{text-align:left;color:var(--muted);font-weight:500;padding:6px 8px;
+  border-bottom:1px solid var(--line)}
+table.cat td{padding:7px 8px;border-bottom:1px solid rgba(31,42,64,.5)}
+table.cat td.num{text-align:right;font-variant-numeric:tabular-nums}
+.minibar{height:8px;border-radius:4px;background:#0a0f1c;overflow:hidden;min-width:90px}
+.minibar>span{display:block;height:100%;background:var(--pass)}
+.minibar>span>span{display:block;height:100%;background:var(--fail);float:right}
+
+/* ---------- findings ---------- */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 10px;align-items:center}
+.toolbar select,.toolbar input{background:var(--panel2);border:1px solid var(--line);
+  color:var(--text);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
+.toolbar input{min-width:220px}
+.toolbar .spacer{flex:1}
+.toolbar .linkbtn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:12.5px}
+table.findings{width:100%;border-collapse:collapse;font-size:13.5px}
+table.findings th{position:sticky;top:0;text-align:left;background:var(--panel2);
+  color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;
+  letter-spacing:.05em;padding:9px 10px;border-bottom:1px solid var(--line)}
+table.findings td{padding:10px;border-bottom:1px solid rgba(31,42,64,.5);vertical-align:top}
+tr.f:hover{background:rgba(34,211,238,.04)}
+.sev{display:inline-block;padding:1px 9px;border-radius:6px;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em}
+.sev-critical{background:rgba(244,63,94,.16);color:var(--critical)}
+.sev-high{background:rgba(251,146,60,.16);color:var(--high)}
+.sev-medium{background:rgba(250,204,21,.14);color:var(--medium)}
+.sev-low{background:rgba(56,189,248,.14);color:var(--low)}
+.sev-info{background:rgba(96,165,250,.14);color:var(--info)}
+.st{display:inline-block;padding:1px 10px;border-radius:6px;font-size:11px;font-weight:600}
+.st-pass{background:rgba(52,211,153,.14);color:var(--pass)}
+.st-fail{background:rgba(248,113,113,.16);color:var(--fail)}
+.st-error{background:rgba(251,191,36,.14);color:var(--err)}
+.st-skipped,.st-not_applicable{background:rgba(148,163,184,.12);color:var(--na)}
+.st-manual{background:rgba(96,165,250,.14);color:var(--info)}
+.rid{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.msg{color:var(--muted);font-size:12.5px;margin-top:3px}
+details.evi{margin-top:6px}
+details.evi summary{cursor:pointer;color:var(--accent);font-size:12px;user-select:none}
+details.evi pre{background:#0a0f1c;border:1px solid var(--line);border-radius:8px;
+  padding:10px;font-family:var(--mono);font-size:11.5px;overflow:auto;color:#a5f3fc;
+  max-height:220px;margin:6px 0 0}
+.rem{margin-top:8px;font-size:12.5px;background:rgba(52,211,153,.05);
+  border:1px solid rgba(52,211,153,.2);border-radius:8px;padding:10px 12px}
+.rem ol{margin:6px 0 0 18px;padding:0}
+.rem code{font-family:var(--mono);background:#0a0f1c;padding:1px 5px;border-radius:4px;
+  font-size:11.5px;color:#a5f3fc;display:block;white-space:pre-wrap;margin-top:6px}
+
+/* ---------- footer ---------- */
+.footer{margin-top:36px;border-top:1px solid var(--line);padding-top:14px;
+  color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hidden{display:none !important}
+@media print{ body{background:#fff;color:#000} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= header ================= -->
+  <div class="header">
+    <div class="brand">
+      <div class="logo">&#128737;</div>
+      <div>
+        <h1>Endpoint Hardening &amp; Compliance Checker</h1>
+        <small>CIS-style benchmark assessment &middot; read-only audit</small>
+      </div>
+    </div>
+    <div class="host-block">
+      <h2>{{ platform.hostname }}</h2>
+      <div class="meta-badges">
+        <span class="badge">{{ platform.os_name }} {{ platform.os_version }}</span>
+        {% if platform.build %}<span class="badge">build {{ platform.build }}</span>{% endif %}
+        <span class="badge">{{ platform.arch }}</span>
+        <span class="badge">{{ report.profile|replace('_',' ')|upper }}</span>
+        {% if platform.is_admin %}<span class="badge ok">elevated</span>
+        {% else %}<span class="badge warn">non-elevated</span>{% endif %}
+        {% if platform.domain_joined %}<span class="badge">domain-joined</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= score hero ================= -->
+  <div class="hero">
+    <div class="card">
+      <div class="score-sub">COMPLIANCE SCORE</div>
+      <div style="margin-top:6px">
+        <span class="score-num">{{ '%.1f'|format(report.score) }}</span><span
+          style="font-size:24px;color:var(--muted)">%</span><span
+          class="grade g-{{ report.grade|replace('+','p') }}">{{ report.grade }}</span>
+      </div>
+      <div class="meter"><span style="width:{{ report.score }}%"></span></div>
+      <div class="score-sub">
+        {{ summary.passed }} of {{ summary.total }} checks passed &middot;
+        scan {{ report.scan_id }}<br>
+        {{ report.started_at }} &rarr; {{ report.finished_at }}
+        ({{ '%.1f'|format(report.duration_seconds) }}s)
+      </div>
+    </div>
+    <div class="card">
+      <div class="tiles">
+        <div class="tile pass"><div class="n">{{ summary.passed }}</div><div class="l">Passed</div></div>
+        <div class="tile fail"><div class="n">{{ summary.failed }}</div><div class="l">Failed</div></div>
+        <div class="tile err"><div class="n">{{ summary.errors }}</div><div class="l">Errors</div></div>
+        <div class="tile na"><div class="n">{{ summary.not_applicable + summary.skipped }}</div><div class="l">N/A + Skipped</div></div>
+        <div class="tile man"><div class="n">{{ summary.manual }}</div><div class="l">Manual</div></div>
+      </div>
+      <div style="margin-top:14px">
+        {% for s in sev_order %}{% set n = severity_stats.get(s, 0) %}
+        <div class="bar-row">
+          <span class="bar-label">{{ s }}</span>
+          <div class="bar-track"><div class="bar-fill sev-{{ s }}"
+            style="width:{{ (n * 100 / total)|round(1) }}%;opacity:.85"></div></div>
+          <span class="bar-n">{{ n }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= category breakdown ================= -->
+  <div class="section-title">Category breakdown</div>
+  <div class="card">
+    <table class="cat">
+      <tr><th>Category</th><th style="text-align:right">Total</th>
+          <th style="text-align:right">Passed</th><th style="text-align:right">Failed</th>
+          <th style="width:180px">Pass rate</th></tr>
+      {% for c in category_stats %}
+      <tr>
+        <td>{{ c.category }}</td>
+        <td class="num">{{ c.total }}</td>
+        <td class="num" style="color:var(--pass)">{{ c.passed }}</td>
+        <td class="num" style="color:var(--fail)">{{ c.failed }}</td>
+        <td><div class="minibar"><span style="width:{{ c.rate }}%"><span
+          style="width:{{ 100 - c.rate }}%"></span></span></div></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- ================= findings ================= -->
+  <div class="section-title">Findings ({{ results|length }})</div>
+  <div class="toolbar">
+    <select id="f-sev">
+      <option value="">All severities</option>
+      {% for s in sev_order %}<option value="{{ s }}">{{ s|capitalize }}</option>{% endfor %}
+    </select>
+    <select id="f-st">
+      <option value="">All statuses</option>
+      {% for s in status_order %}<option value="{{ s }}">{{ s|replace('_',' ')|capitalize }}</option>{% endfor %}
+    </select>
+    <input id="f-q" type="search" placeholder="Search rule id, title, message&hellip;">
+    <span class="spacer"></span>
+    <button class="linkbtn" onclick="toggleAll(true)">Expand all</button>
+    <button class="linkbtn" onclick="toggleAll(false)">Collapse all</button>
+  </div>
+  <table class="findings">
+    <thead><tr>
+      <th style="width:88px">Severity</th><th style="width:118px">Rule</th>
+      <th>Check</th><th style="width:70px">Status</th>
+    </tr></thead>
+    <tbody id="fbody">
+      {% for r in results %}
+      <tr class="f" data-sev="{{ r.severity }}" data-st="{{ r.status }}"
+          data-search="{{ (r.rule_id ~ ' ' ~ r.title ~ ' ' ~ r.category ~ ' ' ~ r.message)|lower }}">
+        <td><span class="sev sev-{{ r.severity }}">{{ r.severity }}</span></td>
+        <td><span class="rid">{{ r.rule_id }}</span><br>
+            <span style="font-size:11px;color:var(--muted)">{{ r.category }}</span></td>
+        <td>
+          <strong>{{ r.title }}</strong>
+          <div class="msg">{{ r.message }}</div>
+          {% if r.evidence %}
+          <details class="evi"><summary>Evidence</summary>
+            {% for e in r.evidence %}
+            <pre>{{ e.source }}: {{ e.detail }}
+{{ e.raw }}{% if e.truncated %} &hellip;[truncated]{% endif %}</pre>
+            {% endfor %}
+          </details>
+          {% endif %}
+          {% set rem = remediations.get(r.rule_id) %}
+          {% if r.status == 'fail' and rem %}
+          <div class="rem">
+            <strong>Remediation:</strong> {{ rem.summary }}
+            {% if rem.steps %}<ol>{% for s in rem.steps %}<li>{{ s }}</li>{% endfor %}</ol>{% endif %}
+            {% if rem.script %}<code>{{ rem.script }}</code>
+              <div style="color:var(--muted);font-size:11px;margin-top:3px">
+                Suggested {{ rem.script_shell }} command &mdash; review before running; the
+                auditor itself never changes system state.</div>{% endif %}
+          </div>
+          {% endif %}
+        </td>
+        <td><span class="st st-{{ r.status }}">{{ r.status|replace('_',' ') }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- ================= footer ================= -->
+  <div class="footer">
+    <div>Generated {{ generated_at }} by Endpoint Hardening &amp; Compliance Checker v{{ app_version }}</div>
+    <div>Read-only assessment &mdash; no system settings were modified during this scan.</div>
+  </div>
+</div>
+
+<script>
+function applyFilter(){
+  var sev=document.getElementById('f-sev').value;
+  var st=document.getElementById('f-st').value;
+  var q=document.getElementById('f-q').value.toLowerCase();
+  var rows=document.querySelectorAll('#fbody tr.f');
+  rows.forEach(function(r){
+    var okS=!sev||r.dataset.sev===sev;
+    var okT=!st||r.dataset.st===st;
+    var okQ=!q||r.dataset.search.indexOf(q)>=0;
+    r.classList.toggle('hidden',!(okS&&okT&&okQ));
+  });
+}
+['f-sev','f-st','f-q'].forEach(function(id){
+  var el=document.getElementById(id);
+  el.addEventListener('change',applyFilter);
+  el.addEventListener('input',applyFilter);
+});
+function toggleAll(open){
+  document.querySelectorAll('details.evi').forEach(function(d){d.open=open;});
+}
+</script>
+</body>
+</html>

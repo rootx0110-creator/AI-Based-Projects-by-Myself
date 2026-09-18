@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ransomware Behavior Analysis Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    <div class="aurora-bg">
+        <div class="aurora aurora-1"></div>
+        <div class="aurora aurora-2"></div>
+        <div class="aurora aurora-3"></div>
+    </div>
+    <div class="grid-overlay"></div>
+
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="brand-title">CYBER<span>FORGE</span></h1>
+                <p class="brand-sub">Ransomware Behavior Analysis</p>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="#dashboard" class="nav-link active">Dashboard</a>
+            <a href="#patterns" class="nav-link">Encryption Patterns</a>
+            <a href="#behavior" class="nav-link">Behavior Analysis</a>
+            <a href="#timeline" class="nav-link">Attack Timeline</a>
+            <a href="#samples" class="nav-link">Sample Data</a>
+        </div>
+        <div class="nav-actions">
+            <div class="live-status">
+                <span class="live-dot"></span>
+                <span>LIVE ANALYSIS</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="scan-line"></div>
+
+    <header class="hero" id="dashboard">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="pulse-ring"></span>
+                CYBERSECURITY INTELLIGENCE
+            </div>
+            <h2 class="hero-title">Ransomware Behavior <span class="gradient-text">Analysis Report</span></h2>
+            <p class="hero-subtitle">Deep analysis of encryption patterns, file system behavior, and attack methodologies from public ransomware samples</p>
+            <div class="hero-actions">
+                <button class="btn btn-primary" onclick="generateReport('full')">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Download Report
+                </button>
+                <button class="btn btn-secondary" onclick="startScan()">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    Run Live Scan
+                </button>
+            </div>
+        </div>
+        <div class="hero-stat-card">
+            <div class="stat-scan"></div>
+            <div class="stat-values">
+                <div class="stat">
+                    <span class="stat-value" data-count="24">0</span>
+                    <span class="stat-label">Samples Analyzed</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" data-count="92">0</span>
+                    <span class="stat-label">Threat Vectors</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" data-count="47">0</span>
+                    <span class="stat-label">Patterns Found</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="scan-progress" id="scanProgress">
+        <div class="scan-progress-bar">
+            <div class="scan-fill"></div>
+        </div>
+        <div class="scan-progress-text">INITIALIZING ANALYSIS ENGINE...</div>
+    </div>
+
+    <main class="main-container">
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-icon kpi-red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <span class="kpi-tag">THREAT LEVEL</span>
+                </div>
+                <div class="kpi-value kpi-danger">CRITICAL</div>
+                <div class="kpi-gauge">
+                    <div class="gauge-fill" style="--gauge: 95%"></div>
+                </div>
+                <div class="kpi-footer">Severity: 9.5 / 10</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-icon kpi-orange">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <span class="kpi-tag">FAMILY</span>
+                </div>
+                <div class="kpi-value">Conti v3.7</div>
+                <div class="kpi-sub-gauge">
+                    <div class="kpi-sub-bars"><span style="--w: 100%"></span><span style="--w: 80%"></span><span style="--w: 60%"></span><span style="--w: 90%"></span><span style="--w: 70%"></span></div>
+                </div>
+                <div class="kpi-footer">SPECTRE Encryption Suite</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-icon kpi-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    </div>
+                    <span class="kpi-tag">CURRENT STAGE</span>
+                </div>
+                <div class="kpi-value kpi-blue-text">7 / 12</div>
+                <div class="stage-track">
+                    <div class="stage-dots">
+                        <span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span class="done"></span><span class="done active"></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+                <div class="kpi-footer">Encryption Execution Phase</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-icon kpi-purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                    </div>
+                    <span class="kpi-tag">DETECTION RATE</span>
+                </div>
+                <div class="kpi-value kpi-purple-text">98.3%</div>
+                <div class="radar-grid">
+                    <div class="radar-ring"></div>
+                    <div class="radar-ring r2"></div>
+                    <div class="radar-sweep"></div>
+                </div>
+                <div class="kpi-footer">ATTCK Matrix Coverage</div>
+            </div>
+        </section>
+
+        <section id="patterns" class="section">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="section-icon">◢</span>
+                    <div>
+                        <h3 class="section-title">Encryption Pattern Analysis</h3>
+                        <p class="section-desc">Advanced cryptographic behavior patterns </p>
+                    </div>
+                </div>
+                <div class="section-actions">
+                    <button class="filter-chip active">ALL</button>
+                    <button class="filter-chip">AES</button>
+                    <button class="filter-chip">RSA</button>
+                    <button class="filter-chip">XOR</button>
+                </div>
+            </div>
+            <div class="patterns-grid">
+                <div class="pattern-card glass-card">
+                    <div class="card-toolbar">
+                        <span class="card-num">01</span>
+                        <span class="status-pill success">DETECTED</span>
+                    </div>
+                    <h4 class="pattern-name">Hybrid AES-RSA Encryption</h4>
+                    <div class="pattern-meta">
+                        <span class="meta-tag">128-bit AES</span>
+                        <span class="meta-tag">2048-bit RSA</span>
+                    </div>
+                    <div class="pattern-visual">
+                        <div class="crypto-chain">
+                            <div class="chain-node node-a">AES</div>
+                            <div class="chain-line"></div>
+                            <div class="chain-node node-b">RSA</div>
+                            <div class="chain-line"></div>
+                            <div class="chain-node node-c">CBC</div>
+                        </div>
+                        <div class="chain-flow"></div>
+                    </div>
+                    <div class="pattern-stats">
+                        <div class="stat-mini">
+                            <span class="mini-label">KEY STRENGTH</span>
+                            <div class="mini-bar"><div class="mini-fill" style="width: 92%"></div></div>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="mini-label">DETECTION</span>
+                            <div class="mini-bar"><div class="mini-fill" style="width: 85%"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pattern-card glass-card">
+                    <div class="card-toolbar">
+                        <span class="card-num">02</span>
+                        <span class="status-pill warning">EVOLVING</span>
+                    </div>
+                    <h4 class="pattern-name">File Header Overwrite</h4>
+                    <div class="pattern-meta">
+                        <span class="meta-tag">64-byte</span>
+                        <span class="meta-tag">Marker Injection</span>
+                    </div>
+                    <div class="pattern-visual">
+                        <div class="file-block-visual">
+                            <div class="file-block block-1"></div>
+                            <div class="file-block block-2"></div>
+                            <div class="file-block block-3"></div>
+                            <div class="file-block block-4"></div>
+                            <div class="file-block block-marker">M</div>
+                        </div>
+                    </div>
+                    <div class="pattern-stats">
+                        <div class="stat-mini">
+                            <span class="mini-label">OVERWRITE</span>
+                            <div class="mini-bar"><div class="mini-fill" style="width: 78%"></div></div>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="mini-label">RECOVERY</span>
+                            <div class="mini-bar"><div class="mini-fill" style="width: 88%"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pattern-card glass-card">
+                    <div class="card-toolbar">
+                        <span class="card-num">03</span>
+                        <span class="status-pill success">DETECTED</span>
+                    </div>
+                    <h4 class="pattern-name">Sparse File Encryption</h4>
+                    <div class="pattern-meta">
+                        <span class="meta-tag">4KB Blocks</span>
+                        <span class="meta-tag">Interval Selection</span>
+                    </div>
+                    <div class="pattern-visual">
+                        <div class="sparse-visual">
+                            <div class="sparse-row">
+                                <span class="sparse-block filled"></span>
+                                <span class="sparse-block empty"></span>
+                                <span class="sparse-block filled"></span>
+                                <span class="sparse-block empty"></span>
+                                <span class="sparse-block filled"></span>
+                                <span class="sparse-block empty"></span>
+                            </div>
+                            <div class="sparse-row">
+                                <span class="sparse-block empty"></span>
+                                <span class="sparse-block filled"></span>
+                                <span class="sparse-block empty"></span>
+                                <span class="sparse-block filled"></span>
+                                <span class="sparse-block empty"></span>
+                                <span class="sparse-block filled"></span>
+                            </div>
+                            <div class="sparse-row">
+                                <span class="sparse-block filled"></span>
+                                <span class="sparse-block empty"></span>
+                                <span class="sparse-block filled"></span>
+                                <span class="sparse-block empty"></span>
+                                <span class="sparse-block filled"></span>
+                                <span class="sparse-block empty"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pattern-stats">
+                        <div class="stat-mini">
+                            <span class="mini-label">SPEED</span>
+                            <div class="mini-bar"><div class="mini-fill" style="width: 96%"></div></div>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="mini-label">STEALTH</span>
+                            <div class="mini-bar"><div class="mini-fill" style="width: 74%"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pattern-card glass-card">
+                    <div class="card-toolbar">
+                        <span class="card-num">04</span>
+                        <span class="status-pill danger">CRITICAL</span>
+                    </div>
+                    <h4 class="pattern-name">Multi-threaded Parallel Processing</h4>
+                    <div class="pattern-meta">
+                        <span class="meta-tag">16 Threads</span>
+                        <span class="meta-tag">Adaptive CPU</span>
+                    </div>
+                    <div class="pattern-visual">
+                        <div class="thread-visual">
+                            <div class="thread-line" style="--speed: 2s"><span class="thread-bar"></span></div>
+                            <div class="thread-line" style="--speed: 1.5s"><span class="thread-bar"></span></div>
+                            <div class="thread-line" style="--speed: 2.5s"><span class="thread-bar"></span></div>
+                            <div class="thread-line" style="--speed: 1.8s"><span class="thread-bar"></span></div>
+                            <div class="thread-line" style="--speed: 2.2s"><span class="thread-bar"></span></div>
+                        </div>
+                    </div>
+                    <div class="pattern-stats">
+                        <div class="stat-mini">
+                            <span class="mini-label">NYQUIST RATE</span>
+                            <div class="mini-bar"><div class="mini-fill" style="width: 90%"></div></div>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="mini-label">CPU UTIL</span>
+                            <div class="mini-bar"><div class="mini-fill" style="width: 82%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="behavior" class="section">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="section-icon">◢</span>
+                    <div>
+                        <h3 class="section-title">Behavioral Analysis</h3>
+                        <p class="section-desc">System-level behavioral patterns and indicators of compromise</p>
+                    </div>
+                </div>
+            </div>
+            <div class="behavior-grid">
+                <div class="behavior-map glass-card">
+                    <div class="chart-header">
+                        <h5>ATT&CK Technique Distribution</h5>
+                        <div class="chart-legend">
+                            <span><i class="lg-dot lg-1"></i>Execution</span>
+                            <span><i class="lg-dot lg-2"></i>Persistence</span>
+                            <span><i class="lg-dot lg-3"></i>Defense Evasion</span>
+                        </div>
+                    </div>
+                    <canvas id="attackChart"></canvas>
+                </div>
+                <div class="behavior-details glass-card">
+                    <div class="chart-header">
+                        <h5>Critical Behaviors Detected</h5>
+                    </div>
+                    <div class="behavior-list">
+                        <div class="behavior-item">
+                            <span class="behavior-icon b-danger">!</span>
+                            <div class="behavior-info">
+                                <span class="behavior-title">Shadow Copy Deletion</span>
+                                <div class="behavior-bar"><div class="behavior-fill" style="width: 95%"></div></div>
+                            </div>
+                            <span class="behavior-score">95%</span>
+                        </div>
+                        <div class="behavior-item">
+                            <span class="behavior-icon b-warning">⚠</span>
+                            <div class="behavior-info">
+                                <span class="behavior-title">Registry Persistence</span>
+                                <div class="behavior-bar"><div class="behavior-fill" style="width: 82%"></div></div>
+                            </div>
+                            <span class="behavior-score">82%</span>
+                        </div>
+                        <div class="behavior-item">
+                            <span class="behavior-icon b-danger">!</span>
+                            <div class="behavior-info">
+                                <span class="behavior-title">Ransom Note Creation</span>
+                                <div class="behavior-bar"><div class="behavior-fill" style="width: 100%"></div></div>
+                            </div>
+                            <span class="behavior-score">100%</span>
+                        </div>
+                        <div class="behavior-item">
+                            <span class="behavior-icon b-warning">⚠</span>
+                            <div class="behavior-info">
+                                <span class="behavior-title">WMI Event Subscription</span>
+                                <div class="behavior-bar"><div class="behavior-fill" style="width: 68%"></div></div>
+                            </div>
+                            <span class="behavior-score">68%</span>
+                        </div>
+                        <div class="behavior-item">
+                            <span class="behavior-icon b-info">i</span>
+                            <div class="behavior-info">
+                                <span class="behavior-title">Network Beacon Interval</span>
+                                <div class="behavior-bar"><div class="behavior-fill" style="width: 74%"></div></div>
+                            </div>
+                            <span class="behavior-score">74%</span>
+                        </div>
+                        <div class="behavior-item">
+                            <span class="behavior-icon b-danger">!</span>
+                            <div class="behavior-info">
+                                <span class="behavior-title">Anti-Debug Techniques</span>
+                                <div class="behavior-bar"><div class="behavior-fill" style="width: 88%"></div></div>
+                            </div>
+                            <span class="behavior-score">88%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="timeline" class="section">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="section-icon">◢</span>
+                    <div>
+                        <h3 class="section-title">Attack Execution Timeline</h3>
+                        <p class="section-desc">Sequential event analysis with timestamped kill-chain progression</p>
+                    </div>
+                </div>
+            </div>
+            <div class="timeline glass-card">
+                <div class="timeline-grid">
+                    <div class="timeline-slot active">
+                        <div class="slot-time">00:00.000</div>
+                        <div class="slot-node"></div>
+                        <span class="slot-label">Process Injection</span>
+                    </div>
+                    <div class="timeline-line-fill" style="--tp: 8%"></div>
+                    <div class="timeline-slot active">
+                        <div class="slot-time">00:01.234</div>
+                        <div class="slot-node"></div>
+                        <span class="slot-label">Persistence Install</span>
+                    </div>
+                    <div class="timeline-line-fill" style="--tp: 25%"></div>
+                    <div class="timeline-slot active">
+                        <div class="slot-time">00:02.891</div>
+                        <div class="slot-node"></div>
+                        <span class="slot-label">Privilege Escalation</span>
+                    </div>
+                    <div class="timeline-line-fill" style="--tp: 42%"></div>
+                    <div class="timeline-slot active">
+                        <div class="slot-time">00:03.452</div>
+                        <div class="slot-node"></div>
+                        <span class="slot-label">Defense Evasion</span>
+                    </div>
+                    <div class="timeline-line-fill" style="--tp: 60%"></div>
+                    <div class="timeline-slot active">
+                        <div class="slot-time">00:04.105</div>
+                        <div class="slot-node"></div>
+                        <span class="slot-label">Credential Access</span>
+                    </div>
+                    <div class="timeline-line-fill" style="--tp: 78%"></div>
+                    <div class="timeline-slot active">
+                        <div class="slot-time">00:05.876</div>
+                        <div class="slot-node"></div>
+                        <span class="slot-label">Lateral Movement</span>
+                    </div>
+                    <div class="timeline-line-fill" style="--tp: 92%"></div>
+                    <div class="timeline-slot damaging">
+                        <div class="slot-time">00:06.233</div>
+                        <div class="slot-node"></div>
+                        <span class="slot-label">File Encryption</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="samples" class="section">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="section-icon">◢</span>
+                    <div>
+                        <h3 class="section-title">Sample Repository Analysis</h3>
+                        <p class="section-desc">Curated ransomware samples from public IOC repositories</p>
+                    </div>
+                </div>
+                <div class="section-actions">
+                    <span class="repo-badge">source: malwarebazaar / virusTotal</span>
+                </div>
+            </div>
+            <div class="samples-table glass-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SAMPLE HASH</th>
+                            <th>FAMILY</th>
+                            <th>SIZE</th>
+                            <th>TYPE</th>
+                            <th>DETECTION</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="samplesTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <div class="section-title-wrap">
+                    <span class="section-icon">◢</span>
+                    <div>
+                        <h3 class="section-title">Memory & System Impact</h3>
+                        <p class="section-desc">Resource utilization and memory forensics analysis</p>
+                    </div>
+                </div>
+            </div>
+            <div class="memory-grid">
+                <div class="memory-visual glass-card">
+                    <div class="chart-header">
+                        <h5>Memory Allocation Pattern</h5>
+                        <span class="live-chip"><span class="live-dot"></span>REALTIME</span>
+                    </div>
+                    <canvas id="memoryChart"></canvas>
+                </div>
+                <div class="impact-cards">
+                    <div class="impact-card glass-card">
+                        <div class="impact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10z"/><path d="M12 6v6l4 2"/></svg>
+                        </div>
+                        <div class="impact-meta">
+                            <span class="impact-label">AVERAGE CPU LOAD</span>
+                            <span class="impact-value">72.4%</span>
+                            <div class="impact-mini-bar"><div class="impact-mini-fill" style="width: 72%"></div></div>
+                        </div>
+                    </div>
+                    <div class="impact-card glass-card">
+                        <div class="impact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        </div>
+                        <div class="impact-meta">
+                            <span class="impact-label">MEMORY ALLOCATION</span>
+                            <span class="impact-value">1.2 GB</span>
+                            <div class="impact-mini-bar"><div class="impact-mini-fill" style="width: 64%"></div></div>
+                        </div>
+                    </div>
+                    <div class="impact-card glass-card">
+                        <div class="impact-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                        </div>
+                        <div class="impact-meta">
+                            <span class="impact-label">NETWORK THROUGHPUT</span>
+                            <span class="impact-value">284 Kb/s</span>
+                            <div class="impact-mini-bar"><div class="impact-mini-fill" style="width: 48%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span class="footer-logo">CYBERFORGE</span>
+                <span class="footer-tag">Ransomware Behavioral Intelligence</span>
+            </div>
+            <div class="footer-meta">
+                <span>Version 2.4.1</span>
+                <span>|</span>
+                <span>Analysis Engine v7</span>
+                <span>|</span>
+                <span class="footer-status"><span class="live-dot"></span>OPERATIONAL</span>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h4 class="modal-title">Generate Analysis Report</h4>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="report-options">
+                    <div class="report-option selected" onclick="selectReportType('full', this)">
+                        <span class="report-opt-icon">📊</span>
+                        <div class="report-opt-info">
+                            <span class="report-opt-title">Full Analysis Report</span>
+                            <span class="report-opt-desc">Complete behavioral analysis with all metrics, patterns, and samples</span>
+                        </div>
+                        <span class="report-opt-check">✓</span>
+                    </div>
+                    <div class="report-option" onclick="selectReportType('summary', this)">
+                        <span class="report-opt-icon">📋</span>
+                        <div class="report-opt-info">
+                            <span class="report-opt-title">Executive Summary</span>
+                            <span class="report-opt-desc">High-level overview with key findings and IOC summary</span>
+                        </div>
+                        <span class="report-opt-check">✓</span>
+                    </div>
+                    <div class="report-option" onclick="selectReportType('technical', this)">
+                        <span class="report-opt-icon">🔬</span>
+                        <div class="report-opt-info">
+                            <span class="report-opt-title">Technical Deep-Dive</span>
+                            <span class="report-opt-desc">Cryptographic details, memory forensics, and chain-of-events</span>
+                        </div>
+                        <span class="report-opt-check">✓</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="generateAndDownload()">Generate & Download HTML</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="lib/chart.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

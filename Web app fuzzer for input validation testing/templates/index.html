@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web App Fuzzer — Input Validation Testing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l8 4v6c0 5.25-3.4 9.74-8 10-4.6-.26-8-4.75-8-10V6l8-4z'/%3E%3Cpath d='M12 8v4'/%3E%3Ccircle cx='12' cy='15' r='.5' fill='%234f46e5'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-logo">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5.25-3.4 9.74-8 10-4.6-.26-8-4.75-8-10V6l8-4z"/><path d="M12 8v4"/><circle cx="12" cy="15" r=".5"/></svg>
+      </span>
+      <div>
+        <div class="brand-name">Web App Fuzzer</div>
+        <div class="brand-sub">Input Validation Testing Suite · v{{ version }}</div>
+      </div>
+    </div>
+    <nav class="topnav">
+      <a href="#setup" class="active">Fuzz</a>
+      <a href="#results">Results</a>
+      <a href="#report">Report</a>
+      <a href="#help">Help</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Test input validation, <span>automatically</span>.</h1>
+      <p>Point the fuzzer at your web application endpoint, choose the payload
+         categories you care about, and get a clear, priority-sorted security
+         report you can download as HTML.</p>
+      <div class="hero-steps">
+        <span><b>1</b> Set target</span>
+        <span><b>2</b> Pick fields &amp; payloads</span>
+        <span><b>3</b> Scan &amp; download report</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <svg viewBox="0 0 200 140" width="200" height="140" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="20" y="25" width="160" height="40" rx="8" fill="#eef2ff"/>
+        <path d="M20 45h160"/>
+        <circle cx="35" cy="45" r="3" fill="#6366f1" stroke="none"/>
+        <circle cx="50" cy="45" r="3" fill="#818cf8" stroke="none"/>
+        <path d="M40 95h30l12-18 10 28 12-30 10 20h46"/>
+        <path d="M40 120h120" />
+        <circle cx="120" cy="105" r="4" fill="#ef4444" stroke="none"/>
+        <circle cx="150" cy="115" r="4" fill="#f59e0b" stroke="none"/>
+        <circle cx="70" cy="115" r="4" fill="#16a34a" stroke="none"/>
+      </svg>
+    </div>
+  </section>
+
+  <div class="notice" id="notice">
+    <strong>Authorized use only.</strong> {{ advice }}
+  </div>
+
+  <!-- ==================== STEP 1 ==================== -->
+  <section class="card" id="setup">
+    <div class="card-head">
+      <div class="step-badge">1</div>
+      <div>
+        <h2>Target your endpoint</h2>
+        <p>Which URL should the fuzzer attack, and how should it send the requests?</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <label class="field span-2">
+        <span class="label">Target URL <em>*</em></span>
+        <input type="url" id="in-url" placeholder="https://example.com/app/search" value="">
+        <small class="hint">Include the full path of the endpoint that accepts parameters.</small>
+      </label>
+
+      <label class="field">
+        <span class="label">HTTP method</span>
+        <select id="in-method">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="PATCH">PATCH</option>
+          <option value="DELETE">DELETE</option>
+          <option value="HEAD">HEAD</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span class="label">Cookies <small>(optional)</small></span>
+        <input type="text" id="in-cookies" placeholder="session=abc123; lang=en" value="">
+      </label>
+
+      <label class="field">
+        <span class="label">Parallel workers</span>
+        <div class="slider-row">
+          <input type="range" id="in-threads" min="1" max="12" value="4">
+          <span class="slider-val" id="threads-val">4</span>
+        </div>
+        <small class="hint">More workers = faster, but heavier on the target.</small>
+      </label>
+
+      <label class="field">
+        <span class="label">Delay between requests (s)</span>
+        <div class="slider-row">
+          <input type="range" id="in-delay" min="0" max="3" step="0.05" value="0">
+          <span class="slider-val" id="delay-val">0</span>
+        </div>
+        <small class="hint">Add a small delay to be gentle on production systems.</small>
+      </label>
+
+      <label class="field">
+        <span class="label">Request timeout (s)</span>
+        <input type="number" id="in-timeout" min="2" max="120" value="15">
+      </label>
+
+      <label class="field">
+        <span class="label">User-Agent</span>
+        <input type="text" id="in-user-agent" placeholder="Keep default or set your own">
+      </label>
+
+      <div class="field span-2 toggles">
+        <label class="toggle"><input type="checkbox" id="in-shuffle"><span>Shuffle request order</span></label>
+        <label class="toggle"><input type="checkbox" id="in-baseline" checked><span>Baseline timing probe</span></label>
+        <label class="toggle"><input type="checkbox" id="in-ssl" checked><span>Accept self-signed TLS certificates</span></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== STEP 2 ==================== -->
+  <section class="card" id="fields">
+    <div class="card-head">
+      <div class="step-badge">2</div>
+      <div>
+        <h2>Choose fields &amp; payload categories</h2>
+        <p>Fields are the request parameters to fuzz. Suggestions appear as you type.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <label class="field span-2">
+        <span class="label">Fields to fuzz</span>
+        <input type="text" id="in-fields" placeholder="q, name, user, id" value="q, name">
+        <small class="hint">Comma separated. A field is injected into query params (GET) or POST body unless excluded below.</small>
+        <div class="suggest-box" id="suggest-box"></div>
+      </label>
+
+      <div class="field span-3">
+        <span class="label">Injection points</span>
+        <div class="toggles wrap">
+          <label class="toggle"><input type="checkbox" id="in-inject-params" checked><span>Query parameters</span></label>
+          <label class="toggle"><input type="checkbox" id="in-inject-data" checked><span>Form body</span></label>
+          <label class="toggle"><input type="checkbox" id="in-inject-headers"><span>Custom headers</span></label>
+        </div>
+      </div>
+
+      <details class="advanced span-3">
+        <summary>Advanced request editing (optional)</summary>
+        <div class="form-grid">
+          <label class="field">
+            <span class="label">Query parameters <small>(name=value&...)</small></span>
+            <textarea id="in-params" rows="3" placeholder="category=tools&amp;page=1"></textarea>
+          </label>
+          <label class="field">
+            <span class="label">Form body <small>(name=value&...)</small></span>
+            <textarea id="in-data" rows="3" placeholder="username=admin&amp;comment=hello"></textarea>
+          </label>
+          <label class="field span-2">
+            <span class="label">Custom headers <small>(Header: value per line)</small></span>
+            <textarea id="in-headers" rows="3" placeholder="X-Forwarded-For: 192.168.1.1&#10;Accept-Language: en"></textarea>
+          </label>
+        </div>
+      </details>
+    </div>
+
+    <h3 class="sub-title">Payload categories</h3>
+    <div class="cat-grid" id="cat-grid">
+      {% for cid, cat in categories.items() %}
+      <label class="cat-card" data-cid="{{ cid }}">
+        <input type="checkbox" class="cat-check" value="{{ cid }}" checked>
+        <div class="cat-body">
+          <div class="cat-top">
+            <span class="cat-name">{{ cat.name }}</span>
+            <span class="sev sev-{{ cat.severity }}">{{ cat.severity }}</span>
+          </div>
+          <p class="cat-desc">{{ cat.description }}</p>
+          <p class="cat-help">{{ help_notes.get(cid, '') }}</p>
+        </div>
+        <span class="cat-count" id="count-{{ cid }}">{{ cat.payloads|length }} payloads</span>
+      </label>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- ==================== RUN ==================== -->
+  <section class="run-zone">
+    <button class="btn btn-primary btn-big" id="btn-run">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      Start fuzzing
+    </button>
+    <button class="btn" id="btn-stop" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      Stop
+    </button>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-meta">
+        <span id="progress-text">Ready</span>
+        <span id="progress-count">0 / 0</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== RESULTS ==================== -->
+  <section class="card" id="results">
+    <div class="card-head">
+      <div class="step-badge">3</div>
+      <div>
+        <h2>Results</h2>
+        <p>Live findings sorted by severity. Click any row to expand the payload and evidence.</p>
+      </div>
+      <div class="head-actions">
+        <span class="live-dot" id="live-dot"></span>
+      </div>
+    </div>
+
+    <div class="result-placeholder" id="result-placeholder">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h2"/></svg>
+      <p>Run a scan to see findings here. Anomalies, reflections and error
+         signatures will be prioritized automatically.</p>
+    </div>
+
+    <div class="results-hidden" id="results-area">
+      <div class="summary-cards" id="summary-cards"></div>
+
+      <div class="filter-bar">
+        <div class="sev-filter" id="sev-filter">
+          <label class="f-chip all active" data-sev="all">All</label>
+          <label class="f-chip fh" data-sev="high">High</label>
+          <label class="f-chip fm" data-sev="medium">Medium</label>
+          <label class="f-chip fl" data-sev="low">Low</label>
+          <label class="f-chip fi" data-sev="info">Info</label>
+          <label class="f-chip fo" data-sev="ok">OK</label>
+        </div>
+        <input type="search" id="in-filter" class="search" placeholder="Filter by field, payload or signal…">
+      </div>
+
+      <div class="table-scroll">
+        <table class="result-table" id="result-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Category</th>
+              <th>Payload</th>
+              <th>HTTP</th>
+              <th>Time</th>
+              <th>Signals</th>
+              <th>Severity</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="result-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== REPORT ==================== -->
+  <section class="card" id="report">
+    <div class="card-head">
+      <div class="step-badge">4</div>
+      <div>
+        <h2>Download report</h2>
+        <p>Export the current results as a polished, self-contained HTML report
+           you can save, print or share with your team.</p>
+      </div>
+    </div>
+    <div class="report-grid">
+      <div class="report-type" id="report-generation">
+        <div class="rep-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+        </div>
+        <h3>HTML report</h3>
+        <p>Complete scan report generated from your selected filters, including
+           payloads, evidence and severity breakdown. Opens in any browser.</p>
+        <button class="btn btn-primary" id="btn-report">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          Download HTML report
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== HELP ==================== -->
+  <section class="card" id="help">
+    <div class="card-head">
+      <div class="step-badge">?</div>
+      <div>
+        <h2>How it works</h2>
+        <p>Understanding the detection engine behind the fuzzer.</p>
+      </div>
+    </div>
+    <div class="help-grid">
+      <div class="help-item">
+        <h4>Detection signals</h4>
+        <ul>
+          <li><b>Reflection</b> — payload text echoed back unencoded.</li>
+          <li><b>Error leakage</b> — SQL, stack traces and framework errors.</li>
+          <li><b>Timing</b> — sleeps like <code>SLEEP(5)</code> delaying responses.</li>
+          <li><b>Status shifts</b> — 500s, 400s and redirects from payloads.</li>
+          <li><b>Content disclosure</b> — file contents (<code>/etc/passwd</code>).</li>
+        </ul>
+      </div>
+      <div class="help-item">
+        <h4>Reading the results</h4>
+        <ul>
+          <li><b>High</b> — strong evidence (SQL errors, LFI, time-based).</li>
+          <li><b>Medium</b> — likely issue (reflections, server errors).</li>
+          <li><b>Low</b> — suspicious behaviour worth manual review.</li>
+          <li><b>OK</b> — payload rejected, validation looks solid.</li>
+        </ul>
+      </div>
+      <div class="help-item">
+        <h4>Responsible use</h4>
+        <ul>
+          <li>Only scan systems you own or are authorized to test.</li>
+          <li>Start with 1 worker and a delay on unknown targets.</li>
+          <li>Payloads are benign by design; no destructive commands.</li>
+          <li>See <code>readme.txt</code> and <code>architecture.md</code> for details.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <span>Web App Fuzzer · Input Validation Testing</span>
+  <span>For authorized security testing only</span>
+</footer>
+
+<!-- Row detail template -->
+<template id="row-detail-tpl">
+  <div class="row-detail">
+    <div class="rd-grid">
+      <div><span class="rd-label">Payload</span><code class="rd-code" id="rd-payload"></code></div>
+      <div><span class="rd-label">Request field</span><code class="rd-code" id="rd-field"></code></div>
+    </div>
+    <div><span class="rd-label">Analysis</span><ul class="rd-list" id="rd-analysis"></ul></div>
+    <div><span class="rd-label">Matched signals</span><div class="rd-tags" id="rd-tags"></div></div>
+  </div>
+</template>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Feeds | ThreatIntel{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <h3>Threat Intelligence Feeds</h3>
+    <button class="btn btn-accent" id="btnNewFeed">+ Add Feed</button>
+  </div>
+
+  <div class="feed-form card hidden" id="feedForm">
+    <h4 id="feedFormTitle">Add New Feed</h4>
+    <div class="form-row">
+      <div class="field grow"><label>Feed Name</label><input id="fName" placeholder="e.g. Abuse.ch URLhaus" /></div>
+      <div class="field grow"><label>Feed URL</label><input id="fUrl" placeholder="https://…" /></div>
+      <div class="field"><label>Format</label>
+        <select id="fFormat"><option>TXT</option><option>CSV</option><option>JSON</option></select>
+      </div>
+      <div class="field"><label>IOC Types</label>
+        <select id="fTypes"><option value="IP,DOMAIN,URL,HASH">ALL</option><option value="IP">IP</option><option value="DOMAIN">DOMAIN</option><option value="URL">URL</option><option value="HASH">HASH</option><option value="IP,DOMAIN">IP + DOMAIN</option></select>
+      </div>
+      <div class="field"><label>Reputation (0–1)</label><input id="fRep" type="number" min="0" max="1" step="0.05" value="0.8" /></div>
+      <div class="field"><button class="btn btn-accent" id="fSave">Save</button> <button class="btn btn-ghost" id="fCancel">Cancel</button></div>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr><th>Feed</th><th>Format</th><th>Types</th><th>Rep</th><th>Status</th><th>Last Check</th><th>Auto</th><th style="text-align:right">Actions</th></tr>
+    </thead>
+    <tbody id="feedBody"><tr><td colspan="8" class="muted">Loading…</td></tr></tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/feeds.js') }}"></script>
+{% endblock %}

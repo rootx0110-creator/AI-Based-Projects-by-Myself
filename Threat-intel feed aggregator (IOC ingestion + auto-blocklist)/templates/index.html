@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | ThreatIntel{% endblock %}
+{% block content %}
+<div class="grid-stat" id="statGrid"></div>
+
+<div class="card">
+  <div class="card-head">
+    <h3>IOCs Ingested — Last 14 Days</h3>
+    <span class="sub">per day</span>
+  </div>
+  <div class="chart-holder"><canvas id="trendChart"></canvas></div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head"><h3>Feed Health</h3><span class="sub">last ingestion</span></div>
+    <table class="table">
+      <thead><tr><th>Feed</th><th>Status</th><th>Checked</th></tr></thead>
+      <tbody id="feedHealthBody"><tr><td colspan="3" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Recent Ingestion</h3><span class="sub">latest 10</span></div>
+    <table class="table">
+      <thead><tr><th>Feed</th><th>Status</th><th>New</th><th>Total</th><th>When</th></tr></thead>
+      <tbody id="historyBody"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

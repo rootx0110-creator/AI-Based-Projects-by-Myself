@@ -1,0 +1,7 @@
+aiohttp>=3.11.0
+PyQt6>=6.7.0
+qasync>=0.28.0
+pyqtgraph>=0.13.0
+pydantic>=2.9.0
+numpy>=2.2.0
+pyinstaller>=6.10.0

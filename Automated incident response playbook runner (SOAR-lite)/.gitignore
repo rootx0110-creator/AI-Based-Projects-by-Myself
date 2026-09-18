@@ -1,0 +1,4 @@
+node_modules/
+data/soar.json
+data/soar.json.tmp
+*.log

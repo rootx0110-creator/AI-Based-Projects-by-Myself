@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Settings | ThreatIntel{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head"><h3>Ingestion Settings</h3><span class="sub">control pipeline behavior</span></div>
+  <div class="form-col">
+    <div class="field"><label>Minimum confidence (blocklist threshold)</label>
+      <input id="sConf" type="number" min="0" max="1" step="0.05" />
+    </div>
+    <div class="field"><label>Auto-generate blocklist after ingestion</label>
+      <select id="sAuto"><option value="1">Enabled</option><option value="0">Disabled</option></select>
+    </div>
+    <div class="field"><label>IOC expiry (days)</label><input id="sExp" type="number" min="1" max="365" /></div>
+    <button class="btn btn-accent" id="btnSaveSettings">Save Settings</button>
+    <div class="hint" id="settingsMsg"></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>About</h3></div>
+  <div class="about">
+    <p><b>ThreatIntel Feed Aggregator</b> — a self-hosted threat-intelligence pipeline.</p>
+    <ul>
+      <li><b>Ingestion:</b> pull IOCs from open/public feeds (TXT / CSV / JSON).</li>
+      <li><b>Normalization:</b> deduplicate, classify (IP / domain / URL / hash / email).</li>
+      <li><b>Confidence scoring:</b> feed reputation weighted 0–1.</li>
+      <li><b>Auto-blocklist:</b> generates pf / iptables / hosts / BIND artifacts.</li>
+      <li><b>Reports:</b> CSV / JSON / TXT, downloaded from the browser.</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+{% endblock %}

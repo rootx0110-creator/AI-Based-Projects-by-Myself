@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% from '_icons.html' import icon %}
+{% block title %}Capture · Wireless Network Auditor{% endblock %}
+{% block heading %}{{ icon('capture') }} Capture Console{% endblock %}
+
+{% block content %}
+<div class="grid g3 mb">
+  <section style="grid-column:span 2">
+    <div class="card pad18 mb">
+      <h3>{{ icon('hand') }} Target access point</h3>
+      {% if engine == 'live' %}
+      <div class="muted" style="font-size:11.5px;margin-bottom:8px" id="liveIfaceNote">
+        Live capture on interface <b id="liveIfaceName">…</b> —
+        Npcap/Scapy EAPOL passive sniffing. Needs a Wi-Fi adapter.
+      </div>
+      {% endif %}
+      <div id="targetCard" class="target">
+        <div class="empty" style="padding:26px 20px">
+          {{ icon('wifi') }}
+          <b>No target selected</b>
+          Pick a lab AP from the <a href="/scanner">Scanner page</a>,<br class="mb">or enter SSID / BSSID manually below.
+        </div>
+      </div>
+
+      <hr class="hr">
+      <div class="grid g2" style="gap:12px 18px">
+        <div>
+          <label class="fld" style="margin-top:0">SSID (lab AP name)</label>
+          <input id="fSsid" placeholder="LAB-AP-2.4G" value="">
+        </div>
+        <div>
+          <label class="fld" style="margin-top:0">BSSID (MAC, optional)</label>
+          <input id="fBssid" class="mono" placeholder="AA:BB:CC:DD:EE:FF" value="">
+        </div>
+        <div>
+          <label class="fld" style="margin-top:0">Channel</label>
+          <input id="fChan" type="number" placeholder="6" value="6">
+        </div>
+        <div class="flex" style="align-items:flex-end;padding-bottom:4px">
+          <label class="toggle"><input type="checkbox" id="fDeauth"> Auto-deauth on start<br>(triggers handshake)</label>
+        </div>
+      </div>
+      <div class="flex mt">
+        <button class="btn pri" id="startBtn" onclick="startCapture()">{{ icon('play') }} Start capture</button>
+        <button class="btn danger" id="stopBtn" onclick="stopCapture()" disabled>{{ icon('stop') }} Stop</button>
+        <button class="btn sec" onclick="resetUI()">{{ icon('close') }} Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card pad18 mb">
+      <h3>{{ icon('activity') }} Capture status</h3>
+      <div class="flex wrap between mb">
+        <div id="stateBadge"><span class="chip idle"><span class="dot"></span>Idle</span></div>
+        <span class="chip eng">engine: {{ engine }}</span>
+      </div>
+      <div class="mono muted" id="statLine" style="font-size:12px">No data yet</div>
+      <div class="pbar mt ok" id="captureBarWrap"><i id="captureBar" style="width:0%"></i></div>
+      <div class="mt" style="display:none" id="reportPanel">
+        <button class="btn go" onclick="generateReport()" style="width:100%">{{ icon('reports') }} Generate &amp; download HTML report</button>
+      </div>
+    </div>
+
+    <div class="card pad18">
+      <h3>{{ icon('deauth') }} Deauth burst</h3>
+      <div class="flex wrap" style="gap:10px">
+        <button class="btn sec" id="deauthBtn" onclick="sendDeauth()" disabled>{{ icon('bolt') }} Trigger deauth</button>
+        <input type="number" id="deauthCount" value="5" min="1" max="50" style="width:76px" title="Frames per burst">
+      </div>
+      <div class="muted mb" style="font-size:11.5px;margin-top:8px">
+        Deauth frames force a client to re-associate, producing a fresh 4-way handshake.
+        In simulation this accelerates capture; in live mode it runs <span class="mono">aireplay-ng --deauth</span>.
+      </div>
+      <div id="deauthResult" class="banner info" style="display:none;margin:10px 0 0">{{ icon('info') }}<div></div></div>
+    </div>
+  </section>
+</div>
+
+<div class="card pad18 mb">
+  <h3>{{ icon('bolt') }} EAPOL 4-way handshake progress</h3>
+  <div class="steps" id="steps">
+    <div class="step" data-n="0"><b>0</b>Listening</div>
+    <div class="step" data-n="1"><b>1</b>Msg 1 · ANonce</div>
+    <div class="step" data-n="2"><b>2</b>Msg 2 · SNonce+MIC</div>
+    <div class="step" data-n="3"><b>3</b>Msg 3 · Key install</div>
+    <div class="step" data-n="4"><b>4</b>Msg 4 · ACK</div>
+  </div>
+  <div id="msgHint" class="muted" style="font-size:12px"></div>
+</div>
+
+<div class="card pad18">
+  <h3>{{ icon('activity') }} Capture log</h3>
+  <div class="term" id="term"><div class="ln"><span class="t">Waiting for target selection…</span></div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const LAST_TARGET = {{ last_target|safe }};
+const MSG_LABELS = { 1: "Message 1 received from AP (ANonce).", 2: "Message 2 received from client (SNonce + MIC).", 3: "Message 3 received (session key install).", 4: "Message 4 received (acknowledgement)." };
+let pollTimer = null;
+
+function term(msg, cls = "") { document.getElementById("term").innerHTML += `<div class="ln"><span class="${cls}">${msg}</span></div>`; scrollTerm(); }
+function scrollTerm() { const t = document.getElementById("term"); t.scrollTop = t.scrollHeight; }
+
+function setSteps(n) {
+  document.querySelectorAll("#steps .step").forEach(s => {
+    const k = Number(s.dataset.n);
+    s.className = "step" + (k === n ? " on" : (k < n ? " done" : ""));
+  });
+  const hint = document.getElementById("msgHint");
+  if (n === 0) hint.textContent = "Monitoring channel for IEEE 802.1X EAPOL frames (EtherType 0x888E)…";
+  else if (MSG_LABELS[n]) hint.textContent = "✓ " + MSG_LABELS[n];
+  else hint.textContent = "";
+}
+
+function prepState(s) {
+  document.getElementById("stateBadge").innerHTML = statusBadge(s.state);
+  const line = document.getElementById("statLine");
+  const durFmt = s.started_at ? fmtDur((Date.now() - new Date(s.started_at)) / 1000) : "—";
+  line.innerHTML = `packets <b>${s.packets}</b> · eapol <b>${s.eapol_messages}/4</b> · deauth <b>${s.deauth_sent}</b> · elapsed <b>${durFmt}</b>`;
+  const bar = document.getElementById("captureBar");
+  bar.style.width = (Math.min(s.eapol_messages, 4) / 4 * 100) + "%";
+  setSteps(s.eapol_messages);
+  document.getElementById("deauthBtn").disabled = !s.running;
+  document.getElementById("startBtn").disabled = s.running || s.terminal && !s.session_id;
+  document.getElementById("stopBtn").disabled = !s.running;
+  const panel = document.getElementById("reportPanel");
+  panel.style.display = (s.state === "HANDSHAKE_COMPLETE") ? "" : "none";
+}
+
+function populateTarget() {
+  const t = LAST_TARGET || {};
+  const ssid = t.ssid || (window.ENGINE === "live" ? "LAB-AP-2.4G" : "LAB-AP-2.4G");
+  document.getElementById("fSsid").value = ssid;
+  document.getElementById("fBssid").value = t.bssid || "";
+  document.getElementById("fChan").value = t.channel || 6;
+  if (t.deauth) document.getElementById("fDeauth").checked = true;
+  renderTargetCard(ssid, t.bssid || "", t.channel || 6, t.encryption || "", t.signal_dbm);
+  {% if engine == 'live' %}
+  (async () => {
+    try {
+      const d = await get("/api/system/interfaces");
+      const el = document.getElementById("liveIfaceName");
+      if (el) el.textContent = d.current || "none";
+      if (!d.npcap && window.ENGINE === "live") {
+        toastErr("<b>Npcap not detected.</b> Live capture needs Npcap installed (windows) or a monitor-mode adapter (Linux).");
+      }
+    } catch (e) {}
+  })();
+  {% endif %}
+}
+
+function renderTargetCard(ssid, bssid, chan, enc, sig) {
+  const card = document.getElementById("targetCard");
+  if (!ssid) return;
+  card.innerHTML = `<div class="hd">
+    <div class="ap">${icon('wifi', 20)}</div>
+    <div><div style="font-weight:800;color:var(--head);font-size:15px">${esc(ssid)}</div>
+    <div class="sub muted mono">${esc(bssid)}</div></div></div>
+    <div class="bd">
+      <div><div class="k">Channel</div><div class="v">${esc(chan)}</div></div>
+      <div><div class="k">Encryption</div><div class="v">${encBadge(enc)}</div></div>
+      <div><div class="k">Signal</div><div class="v">${sig ? esc(sig) + ' dBm' : '—'}</div></div>
+      <div><div class="k">Role</div><div class="v" style="color:var(--acc-2)">Lab target</div></div>
+    </div>`;
+}
+
+async function startCapture() {
+  const body = {
+    ssid: document.getElementById("fSsid").value.trim(),
+    bssid: document.getElementById("fBssid").value.trim(),
+    channel: Number(document.getElementById("fChan").value) || 1,
+    deauth: document.getElementById("fDeauth").checked,
+  };
+  if (!body.ssid) { toastErr("<b>Missing SSID.</b> Enter the lab AP name (e.g. LAB-AP-2.4G)."); return; }
+  if (!body.bssid) {
+    body.bssid = deriveFakeBssid(body.ssid);
+    document.getElementById("fBssid").value = body.bssid;
+  }
+  try {
+    const d = await post("/api/capture/start", body);
+    if (!d.ok) { toastErr(d.detail || "Failed to start."); return; }
+    renderTargetCard(body.ssid, body.bssid, body.channel, "", null);
+    term(`Started capture on <b style="color:var(--acc)">${esc(body.ssid)}</b> (${esc(body.bssid)}) ch ${body.channel}${body.deauth ? " + deauth" : ""}`, "ok");
+    toastOk("<b>Capture started.</b> State: Listening for EAPOL frames…");
+    prepState(d.status);
+    startPoll();
+  } catch (e) { toastErr("Could not start: " + esc(e.message)); }
+}
+function deriveFakeBssid(ssid) {
+  let h = 0;
+  for (const c of ssid) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const parts = [];
+  for (let i = 0; i < 6; i++) parts.push(String((h >> (8 * i)) & 0xff).padStart(2, "0").toUpperCase());
+  return parts.join(":");
+}
+
+function startPoll() { if (!pollTimer) pollTimer = setInterval(pollStatus, 1000); }
+function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+async function pollStatus() {
+  try {
+    const s = await get("/api/capture/status");
+    prepState(s);
+    if (s.error) {
+      stopPoll();
+      toastErr("<b>Capture error.</b> " + esc(s.error));
+      term(`Capture error: ${esc(s.error)}`, "err");
+    }
+    if (s.state === "HANDSHAKE_COMPLETE") {
+      stopPoll();
+      term("✓ <b>Handshake complete!</b> Session persisted. Generate the report below.", "ok");
+      const panel = document.getElementById("reportPanel");
+      panel.style.display = "";
+      panel.style.animation = "fadein .5s ease";
+    }
+  } catch (e) {}
+}
+
+async function stopCapture() {
+  try {
+    const d = await post("/api/capture/stop");
+    stopPoll();
+    prepState(d.final);
+    term("Stopped capture by user request.", "hl");
+    toastOk("<b>Capture stopped.</b>");
+  } catch (e) { toastErr(e.message); }
+}
+
+async function sendDeauth() {
+  const bssid = document.getElementById("fBssid").value.trim();
+  const count = Number(document.getElementById("deauthCount").value) || 5;
+  try {
+    const d = await post("/api/deauth", { bssid, count });
+    if (!d.ok) { toastErr(d.detail || "Deauth failed."); return; }
+    document.getElementById("deauthResult").style.display = "flex";
+    document.getElementById("deauthResult").querySelector("div").textContent = d.detail;
+    term(`Deauth burst: ${count} frames${d.eapol_messages ? ` → eapol now ${d.eapol_messages}/4` : ""}`, "hl");
+  } catch (e) { toastErr(e.message); }
+}
+
+async function generateReport() {
+  try {
+    toast("<b>Building report…</b> analyzing capture integrity");
+    const d = await post("/api/reports/generate", {});
+    if (!d.ok) { toastErr(d.detail || "Report failed."); return; }
+    toastOk(`<b>Report ready</b> (score ${d.score}). Downloading…`);
+    window.open(`/api/reports/${d.report_id}/download`, "_blank");
+    setTimeout(() => { location.href = "/reports"; }, 900);
+    term(`✓ Report #${d.report_id} generated: ${esc(d.file_name)} — download started`, "ok");
+  } catch (e) { toastErr("Report error: " + esc(e.message)); }
+}
+
+async function resetUI() {
+  try {
+    await get("/api/capture/clear");
+  } catch (e) {}
+  stopPoll();
+  document.getElementById("stateBadge").innerHTML = statusBadge("IDLE");
+  document.getElementById("reportPanel").style.display = "none";
+  document.getElementById("deauthBtn").disabled = true;
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
+  document.getElementById("captureBar").style.width = "0%";
+  document.getElementById("deauthResult").style.display = "none";
+  document.getElementById("term").innerHTML = `<div class="ln"><span class="t">Session cleared — ready for the next capture.</span></div>`;
+}
+
+populateTarget();
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Indicators | ThreatIntel{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <h3>Indicators of Compromise</h3>
+    <div class="filter-bar">
+      <input class="search" id="qSearch" placeholder="Search value…" />
+      <select id="fType">
+        <option value="">All types</option>
+        <option>IP</option><option>DOMAIN</option><option>URL</option><option>HASH</option><option>EMAIL</option>
+      </select>
+      <select id="fSeverity">
+        <option value="">All severities</option><option>high</option><option>medium</option><option>low</option>
+      </select>
+      <select id="fBlock">
+        <option value="">Blocklist: all</option><option value="1">Blocklisted</option><option value="0">Not blocked</option>
+      </select>
+      <button class="btn btn-ghost" id="btnClearFilters">Clear</button>
+      <button class="btn btn-accent" id="btnDownload">&#8681; CSV</button>
+    </div>
+  </div>
+  <div class="table-scroll">
+    <table class="table compact">
+      <thead>
+        <tr><th>Type</th><th>Value</th><th>Source Feed</th><th>Confidence</th><th>Severity</th><th>Last Seen</th><th>Blocked</th><th style="text-align:right">Action</th></tr>
+      </thead>
+      <tbody id="iocBody"><tr><td colspan="8" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="paging" id="paging"></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/iocs.js') }}"></script>
+{% endblock %}

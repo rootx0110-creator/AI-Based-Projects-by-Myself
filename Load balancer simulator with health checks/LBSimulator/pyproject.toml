@@ -1,0 +1,20 @@
+[project]
+name = "LBSimulator"
+version = "1.0.0"
+description = "Load Balancer Simulator with Health Checks - Visual desktop application"
+
+[build-system]
+requires = ["pyinstaller>=6.10.0"]
+build-backend = "pyinstaller.build_meta"
+
+[tool.pyinstaller]
+main_script = "src/main.py"
+one_file = true
+windowed = true
+icon = "assets/icon.ico"
+name = "LBSimulator"
+add_data = [
+    "assets;assets",
+    "scenarios;scenarios"
+]
+hidden_imports = ["aiohttp", "aiodns", "numpy", "pyqtgraph"]

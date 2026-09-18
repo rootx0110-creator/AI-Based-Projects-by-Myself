@@ -1,0 +1,26 @@
+{
+  "theme": "dark",
+  "history": [
+    {
+      "subject": "[Action Required] Your Microsoft account sign-in attempt",
+      "sender": "Microsoft Account Team <account-alert@microsoft-secure-alerts.info>",
+      "score": 100,
+      "verdict": "CRITICAL",
+      "url_count": 1,
+      "attachment_count": 0,
+      "id": "42a189b2",
+      "timestamp": "2026-09-15T17:28:39.849705+00:00"
+    },
+    {
+      "subject": "[Action Required] Your Microsoft account sign-in attempt",
+      "sender": "Microsoft Account Team <account-alert@microsoft-secure-alerts.info>",
+      "score": 100,
+      "verdict": "CRITICAL",
+      "url_count": 1,
+      "attachment_count": 0,
+      "id": "df2a86b3",
+      "timestamp": "2026-09-15T17:26:48.949353+00:00"
+    }
+  ],
+  "max_history": 10
+}

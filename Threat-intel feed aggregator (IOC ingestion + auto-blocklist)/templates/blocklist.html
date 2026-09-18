@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Blocklist | ThreatIntel{% endblock %}
+{% block content %}
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head"><h3>Generate Blocklist</h3><span class="sub">push to firewall / DNS</span></div>
+    <div class="form-col">
+      <div class="field"><label>Minimum confidence</label><input id="bConf" type="number" min="0" max="1" step="0.05" value="0.5" /></div>
+      <div class="field"><label>Output format</label>
+        <select id="bFmt">
+          <option value="pf">pf / PF Sense</option>
+          <option value="iptables">iptables</option>
+          <option value="hosts">hosts file</option>
+          <option value="bind">BIND zone</option>
+          <option value="domains">plain domain list</option>
+        </select>
+      </div>
+      <div class="field"><label>Indicator types</label>
+        <select id="bTypes"><option value="IP,DOMAIN,URL,HASH">ALL</option><option value="IP">IP</option><option value="DOMAIN">DOMAIN</option><option value="URL,HASH">URL + HASH</option></select>
+      </div>
+      <button class="btn btn-accent" id="btnGenBlock">Generate Blocklist</button>
+      <div class="hint">Generation uses only indicators at or above the confidence threshold.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>Last Blocklist Run</h3><span class="sub">summary</span></div>
+    <div id="blockSummary" class="muted">No run yet.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>Blocklist History</h3><button class="btn btn-outline" id="btnRefreshRuns">&#8635;</button></div>
+  <table class="table">
+    <thead><tr><th>Time</th><th>Format</th><th>Total</th><th>IP</th><th>Domains</th><th>URL</th><th>Hash</th><th style="text-align:right">Download</th></tr></thead>
+    <tbody id="runsBody"><tr><td colspan="8" class="muted">Loading…</td></tr></tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/blocklist.js') }}"></script>
+{% endblock %}

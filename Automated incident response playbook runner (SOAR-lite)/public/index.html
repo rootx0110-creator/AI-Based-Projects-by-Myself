@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOAR-Lite · Automated Incident Response Playbook Runner</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3z"/><path fill="none" stroke="currentColor" stroke-width="2" d="M8.5 12l2.5 2.5 4.5-5"/></svg></span>
+      <span class="brand-text"><b>SOAR-Lite</b><small>Incident Response Playbook Runner</small></span>
+    </div>
+
+    <nav class="tabs" id="tabs" aria-label="Primary">
+      <button class="tab active" data-tab="dashboard">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+        Dashboard
+      </button>
+      <button class="tab" data-tab="playbooks">
+        <svg viewBox="0 0 24 24"><path d="M20 2H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 7h12M6 11h12M6 15h8"/></svg>
+        Playbooks
+      </button>
+      <button class="tab" data-tab="incidents">
+        <svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3z"/></svg>
+        Incidents
+      </button>
+      <button class="tab" data-tab="automation">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"/></svg>
+        Automation
+        <span class="tab-badge" id="runningBadge" hidden>0</span>
+      </button>
+      <button class="tab" data-tab="reports">
+        <svg viewBox="0 0 24 24"><path d="M3 3v18h18v-2H5V3H3zm15.3 9.3l-3.6 3.6-3-3L8 16.2 6.8 15l4-4 3 3 2.6-2.6L21 14z"/></svg>
+        Reports
+      </button>
+      <button class="tab" data-tab="docs">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm1 2.5L18.5 8H15V4.5z"/></svg>
+        Docs
+      </button>
+    </nav>
+
+    <div class="topbar-right">
+      <div class="engine-pill" id="enginePill" title="Playbook engine status">
+        <span class="dot"></span><span id="engineLabel">Engine</span>
+      </div>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <section class="panel active" id="panel-dashboard">
+      <div class="panel-head">
+        <div>
+          <h1>Security Operations Dashboard</h1>
+          <p class="sub">Live pulse of incidents, playbooks and automation runs.</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn ghost" id="btnIngestDash">
+            <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+            Ingest Incident
+          </button>
+        </div>
+      </div>
+      <div id="dashboardBody" class="loading">Loading dashboard…</div>
+    </section>
+
+    <section class="panel" id="panel-playbooks">
+      <div class="panel-head">
+        <div>
+          <h1>Playbooks</h1>
+          <p class="sub">Defined, versioned response automations. Steps execute on the engine.</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn ghost" id="btnNewPlaybook">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            New Playbook
+          </button>
+        </div>
+      </div>
+      <div id="playbooksBody" class="loading">Loading playbooks…</div>
+    </section>
+
+    <section class="panel" id="panel-incidents">
+      <div class="panel-head">
+        <div>
+          <h1>Incident Queue</h1>
+          <p class="sub">Correlated security signals awaiting triage, response and closure.</p>
+        </div>
+        <div class="panel-actions">
+          <button class="btn primary" id="btnIngest">
+            <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>
+            Ingest (Simulate)
+          </button>
+        </div>
+      </div>
+      <div class="filters-row" id="incidentFilters">
+        <input class="field search" id="incSearch" type="search" placeholder="Search title, id, artifact…">
+        <select class="field" id="incSevFilter"><option value="">All severities</option></select>
+        <select class="field" id="incStatusFilter"><option value="">All statuses</option></select>
+        <select class="field" id="incCatFilter"><option value="">All categories</option></select>
+      </div>
+      <div id="incidentsBody" class="loading">Loading incidents…</div>
+    </section>
+
+    <section class="panel" id="panel-automation">
+      <div class="panel-head">
+        <div>
+          <h1>Automation &amp; Run Console</h1>
+          <p class="sub">Live execution of playbooks — step status, decisions, logs and control.</p>
+        </div>
+        <div class="panel-actions">
+          <select class="field" id="runScope" style="width:auto">
+            <option value="active">Active runs</option>
+            <option value="all">All runs</option>
+          </select>
+          <button class="btn ghost" id="btnRefreshRuns">
+            <svg viewBox="0 0 24 24"><path d="M17.65 6.35A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.76-4.24L13 11h8V3l-3.35 3.35z"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <div id="automationBody" class="loading">Loading runs…</div>
+    </section>
+
+    <section class="panel" id="panel-reports">
+      <div class="panel-head">
+        <div>
+          <h1>Reports &amp; Compliance</h1>
+          <p class="sub">Generate downloadable reports — HTML is the primary format.</p>
+        </div>
+      </div>
+      <div id="reportsBody" class="loading">Loading reports…</div>
+    </section>
+
+    <section class="panel" id="panel-docs">
+      <div class="panel-head">
+        <div>
+          <h1>Project Docs</h1>
+          <p class="sub">Architecture, current state and developer memory.</p>
+        </div>
+      </div>
+      <div id="docsBody" class="loading">Loading docs…</div>
+    </section>
+
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot" class="toasts"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+"""SeaSim tkinter UI package."""

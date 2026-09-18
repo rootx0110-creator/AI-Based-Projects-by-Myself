@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Reports | ThreatIntel{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head"><h3>Generate Report</h3><span class="sub">downloadable threat report</span></div>
+  <div class="form-row">
+    <div class="field"><label>Format</label>
+      <select id="rFmt"><option value="csv">CSV</option><option value="json">JSON</option><option value="txt">TXT</option></select>
+    </div>
+    <div class="field"><label>IOC type</label>
+      <select id="rType"><option value="">All</option><option>IP</option><option>DOMAIN</option><option>URL</option><option>HASH</option><option>EMAIL</option></select>
+    </div>
+    <div class="field"><label>Severity</label>
+      <select id="rSev"><option value="">All</option><option>high</option><option>medium</option><option>low</option></select>
+    </div>
+    <div class="field"><label>Search</label><input id="rSearch" placeholder="domain / ip…" /></div>
+    <div class="field"><button class="btn btn-accent" id="btnGenReport">Generate</button></div>
+  </div>
+  <div class="hint" id="rResult"></div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>Generated Files</h3><span class="sub">stored in /reports</span></div>
+  <table class="table">
+    <thead><tr><th>File</th><th>Size</th><th>Created</th><th style="text-align:right">Actions</th></tr></thead>
+    <tbody id="reportsBody"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+{% endblock %}

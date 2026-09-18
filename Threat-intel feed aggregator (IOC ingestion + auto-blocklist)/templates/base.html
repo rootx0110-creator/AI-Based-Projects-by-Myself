@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}ThreatIntel Aggregator{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-icon">&#9839;</div>
+        <div class="brand-text">
+          <span class="brand-name">ThreatIntel</span>
+          <span class="brand-sub">Feed Aggregator</span>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="nav-link" data-page="index" href="/"><span class="nav-ico">&#9673;</span>Dashboard</a>
+        <a class="nav-link" data-page="feeds" href="/feeds"><span class="nav-ico">&#8617;</span>&nbsp;Feeds</a>
+        <a class="nav-link" data-page="iocs" href="/iocs"><span class="nav-ico">&#9888;</span>Indicators</a>
+        <a class="nav-link" data-page="blocklist" href="/blocklist"><span class="nav-ico">&#128274;</span>Blocklist</a>
+        <a class="nav-link" data-page="reports" href="/reports"><span class="nav-ico">&#128196;</span>Reports</a>
+        <a class="nav-link" data-page="settings" href="/settings"><span class="nav-ico">&#9881;</span>Settings</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="sys-pill" id="sysPill"><span class="dot"></span><span id="sysText">offline</span></div>
+      </div>
+    </aside>
+    <main class="main" id="main">
+      <header class="topbar">
+        <button class="hamburger" id="hamburger">&#9776;</button>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="topbar-actions">
+          <button class="btn btn-outline" id="btnIngestAll"><span class="ico">&#8635;</span>Ingest All Feeds</button>
+          <div class="clock" id="clock"></div>
+        </div>
+      </header>
+      <div class="content" id="content">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

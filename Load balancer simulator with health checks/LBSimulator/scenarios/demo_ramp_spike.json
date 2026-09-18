@@ -1,0 +1,26 @@
+{
+  "name": "demo_ramp_spike",
+  "description": "Traffic ramps up from 50 to 500 RPS over 30s, then spikes to 1000 RPS for 5s",
+  "frontend_port": 8000,
+  "backend_count": 5,
+  "algorithm": "Least Response Time",
+  "traffic": {
+    "rps": 50,
+    "concurrency": 50,
+    "pattern": "ramp_spike",
+    "ramp": {"initial": 50, "target": 500, "duration_s": 30},
+    "spike": {"base": 500, "peak": 1000, "interval_s": 40, "width_s": 5}
+  },
+  "health": {
+    "interval_s": 5,
+    "timeout_s": 2,
+    "unhealthy_threshold": 3
+  },
+  "backends": [
+    {"id": "s1", "port": 12001, "weight": 1.0},
+    {"id": "s2", "port": 12002, "weight": 1.0},
+    {"id": "s3", "port": 12003, "weight": 1.0},
+    {"id": "s4", "port": 12004, "weight": 1.0},
+    {"id": "s5", "port": 12005, "weight": 1.0}
+  ]
+}

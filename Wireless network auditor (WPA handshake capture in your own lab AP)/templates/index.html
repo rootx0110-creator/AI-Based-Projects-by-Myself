@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% from '_icons.html' import icon %}
+{% block title %}Dashboard · Wireless Network Auditor{% endblock %}
+{% block heading %}{{ icon('dashboard') }} Dashboard{% endblock %}
+
+{% block content %}
+<div class="banner {{ 'warn' if engine == 'live' else 'info' }}">
+  {% if engine == 'live' %}
+  {{ icon('warn') }}
+  <div><b>Live mode engaged.</b> Real monitoring via {{ 'wlan0' }}. Only target access points you own or have explicit authorization to test.</div>
+  {% else %}
+  {{ icon('info') }}
+  <div><b>Simulation engine active.</b> Data shown is generated for lab demonstration. Set <code>AUDITOR_ENGINE=live</code> for real capture on Linux.</div>
+  {% endif %}
+</div>
+
+<div class="grid g4 mb">
+  <div class="card stat"><div class="ic">{{ icon('wifi') }}</div><div class="val" id="stNetworks">—</div><div class="lbl">Networks seen</div><div class="minibar"><i id="mbNetworks"></i></div></div>
+  <div class="card stat"><div class="ic">{{ icon('hand') }}</div><div class="val" id="stHandshakes">—</div><div class="lbl">Handshakes captured</div><div class="minibar"><i id="mbHandshakes"></i></div></div>
+  <div class="card stat"><div class="ic">{{ icon('activity') }}</div><div class="val"><span id="stSessions">—</span><small> sessions</small></div><div class="lbl">Capture attempts</div></div>
+  <div class="card stat"><div class="ic">{{ icon('reports') }}</div><div class="val" id="stReports">—</div><div class="lbl">Reports generated</div><div class="minibar"><i id="mbReports"></i></div></div>
+</div>
+
+<div class="grid g2">
+  <section>
+    <div class="card pad18 mb">
+      <h3>{{ icon('activity') }} Live capture status</h3>
+      <div class="flex wrap between" style="flex-wrap:wrap;gap:12px">
+        <div id="liveStatus">No capture running. Open the <b>Capture</b> page to begin.</div>
+      </div>
+      <div class="pbar mt" id="liveBarWrap" style="display:none"><i id="liveBar" style="width:0%"></i></div>
+      <div class="flex wrap mt" id="liveQs" style="display:none"></div>
+    </div>
+
+    <div class="card pad18">
+      <h3>{{ icon('reports') }} Recent sessions</h3>
+      <div class="scroll-x"><table class="tbl" style="min-width:520px">
+        <thead><tr><th>Target</th><th>Status</th><th>EAPOL</th><th>Date</th></tr></thead>
+        <tbody id="recentRows"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card pad18 mb">
+      <h3>{{ icon('bolt') }} Quick actions</h3>
+      <div class="flex wrap" style="gap:10px;flex-wrap:wrap">
+        <a class="btn pri" href="/scanner">{{ icon('scan') }} Scan networks</a>
+        <a class="btn sec" href="/capture">{{ icon('play') }} Start capture</a>
+        <a class="btn go" href="/reports">{{ icon('reports') }} View reports</a>
+      </div>
+      <hr class="hr">
+      <div class="muted" style="font-size:12px;line-height:1.8">
+        <b style="color:var(--txt)">Typical audit flow</b><br>
+        1. Scan for your lab AP → 2. Target it &amp; start capture →<br>
+        3. Optionally trigger a deauth burst → 4. Generate &amp; download the HTML report.
+      </div>
+    </div>
+
+    <div class="card pad18">
+      <h3>{{ icon('shield') }} Lab security posture</h3>
+      <div class="flex wrap between" style="flex-wrap:wrap">
+        <div style="font-size:12px;color:var(--muted)">WPA/WPA2 networks in range</div>
+        <div style="font-size:20px;font-weight:800;color:var(--head)" id="stWpa">—</div>
+      </div>
+      <div class="pbar mt ok"><i id="wpaBar" style="width:0%"></i></div>
+      <hr class="hr">
+      <div style="font-size:12px;color:var(--muted)">Deauth frames injected (all-time)</div>
+      <div style="font-size:20px;font-weight:800;color:var(--head)" id="stDeauth">—</div>
+      <hr class="hr">
+      <div class="muted" style="font-size:11.5px">{{ icon('info', 13) }} A captured handshake proves an attacker can perform offline
+        brute-force. Strong passphrases (12+) are the mitigating control.</div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadStats() {
+  try {
+    const d = await get("/api/stats");
+    const s = d.stats;
+    document.getElementById("stNetworks").textContent = s.networks;
+    document.getElementById("stHandshakes").textContent = s.handshakes;
+    document.getElementById("stSessions").textContent = s.sessions;
+    document.getElementById("stReports").textContent = s.reports;
+    document.getElementById("stWpa").textContent = s.networks_wpawpa2;
+    document.getElementById("stDeauth").textContent = s.deauth_total;
+    const mbN = document.getElementById("mbNetworks"), mbH = document.getElementById("mbHandshakes"), mbR = document.getElementById("mbReports");
+    const tot = Math.max(1, s.networks);
+    if (mbN) mbN.style.width = Math.min(100, s.networks / tot * 100) + "%";
+    if (mbH) mbH.style.width = Math.min(100, s.handshakes / Math.max(1, s.captures) * 100) + "%";
+    if (mbR) mbR.style.width = Math.min(100, s.reports / Math.max(1, s.sessions) * 100) + "%";
+    document.getElementById("wpaBar").style.width = tot ? Math.min(100, s.networks_wpawpa2 / tot * 100) + "%" : "0%";
+  } catch (e) { toastErr("<b>Stats unavailable.</b> " + esc(e.message)); }
+}
+
+async function refreshRecent() {
+  try {
+    const d = await get("/api/sessions");
+    const rows = document.getElementById("recentRows");
+    rows.innerHTML = "";
+    if (!d.sessions.length) {
+      rows.innerHTML = `<tr><td colspan="4" class="muted">No sessions yet. Run a scan and capture.</td></tr>`;
+      return;
+    }
+    for (const s of d.sessions.slice(0, 6)) {
+      const st = s.status === "COMPLETE" ? `<span class="badge b-g">COMPLETE</span>` :
+                 s.status === "PARTIAL" ? `<span class="badge b-a">PARTIAL</span>` :
+                 (s.status === "ABORTED" ? `<span class="badge b-r">ABORTED</span>` : `<span class="badge b-m">${esc(s.status)}</span>`);
+      const eapol = `${s.eapol_messages || 0}/4`;
+      rows.innerHTML += `<tr>
+        <td><b>${esc(s.ssid)}</b><div class="sub mono">${esc(s.bssid||"")}</div></td>
+        <td>${st}</td><td>${eapol}</td>
+        <td class="sub">${fmtTime(s.started_at)}</td></tr>`;
+    }
+  } catch (e) {}
+}
+
+async function refreshLive() {
+  try {
+    const st = await get("/api/capture/status");
+    const e = document.getElementById("liveStatus");
+    const bar = document.getElementById("liveBar");
+    const wrap = document.getElementById("liveBarWrap");
+    const qs = document.getElementById("liveQs");
+    if (st.running || st.session_id) {
+      wrap.style.display = "";
+      bar.style.width = (st.eapol_messages / 4 * 100) + "%";
+      e.innerHTML = `${statusBadge(st.state)} &nbsp; <span class="muted">target:</span> <b>${esc(st.ssid)}</b> &nbsp; ${sigBarsFirst(st)}`;
+      qs.innerHTML = st.running
+        ? `<span class="chip listening">● capturing…</span>`
+        : (st.state === "HANDSHAKE_COMPLETE" || st.session_id)
+          ? `<button class="btn go sm" onclick="location.href='/reports'">${icon('reports')} View/Download report</button>`
+          : "";
+    } else {
+      wrap.style.display = "none";
+      qs.innerHTML = "";
+      e.innerHTML = `No capture running. Open the <b>Capture</b> page to begin.`;
+    }
+  } catch (e) {}
+}
+function sigBarsFirst(st) { return `<span class="muted">bssid:</span> <span class="mono">${esc(st.bssid||"")}</span>`; }
+
+loadStats();
+refreshRecent();
+refreshLive();
+setInterval(async () => { await refreshLive(); }, 2000);
+setInterval(loadStats, 6000);
+</script>
+{% endblock %}

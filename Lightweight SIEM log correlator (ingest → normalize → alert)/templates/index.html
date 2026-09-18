@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIEM Log Correlator</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<!-- ░░░ SIDEBAR ░░░ -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo"><span class="icon">◆</span> SIEM<span class="dim">Box</span></div>
+  <nav>
+    <a href="#" class="nav-item active" data-view="dashboard"><span class="icon">◉</span>Dashboard</a>
+    <a href="#" class="nav-item" data-view="logs"><span class="icon">≡</span>Raw Logs</a>
+    <a href="#" class="nav-item" data-view="events"><span class="icon">▹</span>Events</a>
+    <a href="#" class="nav-item" data-view="correlations"><span class="icon">◈</span>Correlations</a>
+    <a href="#" class="nav-item" data-view="alerts"><span class="icon">⚠</span>Alerts<span id="alert-badge" class="badge" style="display:none">0</span></a>
+    <a href="#" class="nav-item" data-view="rules"><span class="icon">⬡</span>Rules</a>
+  </nav>
+  <div class="sidebar-footer">
+    <button id="btn-generate" class="btn btn-accent btn-sm full">Generate Logs</button>
+    <button id="btn-reset" class="btn btn-danger btn-sm full" style="margin-top:6px">Reset</button>
+  </div>
+</aside>
+
+<!-- ░░░ MAIN ░░░ -->
+<main class="main">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="hamburger" id="hamburger">☰</button>
+    <h1 class="topbar-title">SIEM <span class="dim">Correlator</span></h1>
+    <div class="topbar-actions">
+      <label class="btn btn-sm btn-ghost" id="upload-label">
+        Upload File
+        <input type="file" id="file-upload" accept=".log,.json,.txt,.csv" hidden>
+      </label>
+      <button id="btn-report" class="btn btn-sm btn-accent">⬇ Download Report</button>
+      <button id="btn-ingest-json" class="btn btn-sm btn-ghost">Ingest JSON</button>
+    </div>
+  </header>
+
+  <!-- VIEWS -->
+  <div class="views">
+    <!-- ===== DASHBOARD ===== -->
+    <section class="view active" id="view-dashboard">
+      <div class="kpi-grid" id="kpis"></div>
+      <div class="grid-2">
+        <div class="card"><h2>Events Over Time</h2><div class="chart-bars" id="chart-timeline"></div></div>
+        <div class="card"><h2>Severity Distribution</h2><div class="severity-bar" id="chart-severity"></div><div id="sev-legend" class="sev-legend"></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><h2>Top Source IPs</h2><div id="chart-top-src" class="bars-v"></div></div>
+        <div class="card"><h2>Top Event Types</h2><div id="chart-top-types" class="bars-v"></div></div>
+      </div>
+      <div class="card"><h2>Recent Alerts</h2><table class="tbl" id="tbl-dash-alerts"><thead><tr>
+        <th>ID</th><th>Title</th><th>Sev</th><th>Risk</th><th>Count</th><th>Status</th>
+      </tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <!-- ===== LOGS ===== -->
+    <section class="view" id="view-logs">
+      <div class="view-header"><h2>Raw Ingested Logs</h2><span class="dim" id="log-count">0</span></div>
+      <pre class="log-viewer" id="log-viewer"></pre>
+    </section>
+
+    <!-- ===== EVENTS ===== -->
+    <section class="view" id="view-events">
+      <div class="view-header"><h2>Normalized Events</h2><span class="dim" id="event-count">0</span></div>
+      <table class="tbl" id="tbl-events"><thead><tr>
+        <th>#</th><th>Time</th><th>Source</th><th>Type</th><th>Severity</th>
+        <th>Src IP</th><th>Dst IP</th><th>User</th><th>Message</th>
+      </tr></thead><tbody></tbody></table>
+    </section>
+
+    <!-- ===== CORRELATIONS ===== -->
+    <section class="view" id="view-correlations">
+      <div class="view-header"><h2>Correlation Events</h2><span class="dim" id="corr-count">0</span></div>
+      <table class="tbl" id="tbl-corr"><thead><tr>
+        <th>Rule</th><th>Time</th><th>Severity</th><th>Risk</th><th>Count</th><th>Actor</th><th>Description</th>
+      </tr></thead><tbody></tbody></table>
+    </section>
+
+    <!-- ===== ALERTS ===== -->
+    <section class="view" id="view-alerts">
+      <div class="view-header"><h2>Alerts</h2><div>
+        <select id="alert-filter" class="select-sm">
+          <option value="">All</option><option value="open">Open</option><option value="acknowledged">Ack</option><option value="closed">Closed</option>
+        </select>
+      </div></div>
+      <table class="tbl" id="tbl-alerts"><thead><tr>
+        <th>ID</th><th>Title</th><th>Severity</th><th>Risk</th><th>Count</th><th>Actor</th><th>Status</th><th>Actions</th>
+      </tr></thead><tbody></tbody></table>
+    </section>
+
+    <!-- ===== RULES ===== -->
+    <section class="view" id="view-rules">
+      <div class="view-header"><h2>Correlation Rules</h2></div>
+      <div id="rules-list" class="rules-grid"></div>
+    </section>
+  </div>
+</main>
+
+<!-- JSON Ingest Modal -->
+<dialog id="json-modal" class="modal">
+  <form method="dialog" class="modal-body">
+    <h3>Paste JSON Event</h3>
+    <textarea id="json-input" rows="10" placeholder='{"timestamp":"2026-09-13T10:00:00Z","source":"custom","event_type":"auth_failed","src_ip":"1.2.3.4","user":"admin","severity":"high","message":"forced auth"}'></textarea>
+    <div class="modal-actions">
+      <button type="button" id="json-cancel" class="btn btn-ghost btn-sm">Cancel</button>
+      <button type="button" id="json-submit" class="btn btn-accent btn-sm">Ingest</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+Build a complete Windows desktop GUI application (.exe) for a "Load Balancer Simulator 
+with Health Checks". The application must simulate a reverse proxy load balancer that 
+distributes incoming HTTP traffic across multiple backend servers, continuously performs 
+health checks, and visually demonstrates routing decisions, failover, and recovery in 
+real time. It must be production-ready, well-architected, and include full documentation.
+
+═══════════════════════════════════════════════════════════════
+PROJECT REQUIREMENTS
+═══════════════════════════════════════════════════════════════
+
+TECH STACK (choose ONE and justify):
+  - Python 3.11 + PyQt6/PySide6 + aiohttp + aioprocessing  →  recommended
+  - OR Python + FastAPI (control plane) + CustomTkinter (UI)
+  - OR Node.js + Electron + Express + ws
+  - OR Go + Wails + net/http/httputil.ReverseProxy
+  - OR C# .NET 8 + WPF + YARP (Yet Another Reverse Proxy)
+
+CORE FEATURES:
+  1. Load Balancer Core (reverse proxy)
+     - Frontend listener on configurable port (default 8000)
+     - Backend pool: N mock servers spawned by the app (default 3–5)
+     - Each backend binds to 127.0.0.1:<auto-port>, exposes /health and /
+     - Real HTTP proxying using ReverseProxy semantics
+     - Supports HTTP/1.1 with keep-alive; WebSocket passthrough (optional)
+
+  2. Load Balancing Algorithms (switchable at runtime)
+     - Round Robin
+     - Weighted Round Robin
+     - Least Connections
+     - Least Response Time
+     - IP Hash (sticky sessions)
+     - Random
+     - Power of Two Choices (P2C)
+     - Consistent Hashing (optional ring visualization)
+
+  3. Health Checking Subsystem
+     - Active checks: periodic GET /health with timeout
+     - Passive checks: track 5xx rate, timeouts, connection errors
+     - Configurable: interval, timeout, success/failure thresholds
+     - States: HEALTHY · DEGRADED · UNHEALTHY · DRAINING · DISABLED
+     - Auto-removal from pool on UNHEALTHY, auto-re-add on recovery
+     - Circuit breaker per backend (open / half-open / closed)
+     - Manual controls: force healthy/unhealthy, drain, disable
+
+  4. Traffic Simulator
+     - Built-in load generator (configurable RPS, concurrency, payload size)
+     - Deterministic seed mode for reproducible demos
+     - Traffic patterns: constant, ramp-up, spike, sine wave, burst
+     - Mix of endpoints: /fast, /slow, /error, /flaky
+     - Injects synthetic latency and errors on backends
+
+  5. Real-Time Visualization Dashboard
+     - Topology diagram: Client → LB → Backend nodes (animated edges)
+     - Node health badges (color-coded: green/yellow/red/gray)
+     - Live sparkline per backend: RPS, latency p50/p95/p99, error rate
+     - Global graph: requests/sec, active connections, error %
+     - Heatmap: latency over time per backend
+     - Live request log with routing decision (algorithm-chosen backend)
+     - "Why this backend?" tooltip explaining the routing choice
+
+  6. Scenario Recorder & Replay
+     - Record all events (health changes, requests, config changes)
+     - Replay with timeline scrubber
+     - Export scenario JSON for sharing
+
+  7. Chaos Engineering Panel
+     - One-click: kill backend, add latency, drop packets, return 500s
+     - Random chaos mode (fault injection at intervals)
+     - Auto-recovery timer
+
+  8. Configuration & Persistence
+     - JSON config in %APPDATA%/LBSimulator/
+     - Save/load scenarios (.lbsim files)
+     - Export metrics to CSV / JSON / Prometheus text format
+
+  9. GUI Features
+     - Tabs: Dashboard · Backends · Algorithm · Health · Traffic · Logs · Settings
+     - Dark/light theme toggle
+     - System tray with status summary
+     - Hotkeys: start/stop simulator, reset, snapshot
+     - Multi-window: undock topology view
+
+NON-FUNCTIONAL:
+  - Fully async (asyncio) core; GUI never blocks
+  - Deterministic timing under load (monotonic clock)
+  - No memory leaks — bounded log ring buffer
+  - Bundle as a single .exe (no console window)
+  - Include app icon (.ico)
+  - Build script (build.bat / pyinstaller spec)
+  - Cross-platform core, Windows-first packaging
+
+═══════════════════════════════════════════════════════════════
+REQUIRED PROJECT STRUCTURE
+═══════════════════════════════════════════════════════════════
+
+lbsim/
+├── ARCHITECTURE.md
+├── STATE.md
+├── MEMORY.md
+├── README.md
+├── requirements.txt
+├── build.bat
+├── build.spec
+├── scenarios/
+│   ├── demo_simple.json
+│   ├── demo_failover.json
+│   ├── demo_flaky_backend.json
+│   └── demo_ramp_spike.json
+├── assets/
+│   ├── icon.ico
+│   ├── logo.png
+│   └── themes/
+├── src/
+│   ├── main.py                      # Entry point, launches GUI
+│   ├── config.py                    # Config schema (pydantic) + defaults
+│   ├── lb/
+│   │   ├── __init__.py
+│   │   ├── frontend.py              # Reverse proxy listener (aiohttp)
+│   │   ├── backend.py               # Backend model + metrics
+│   │   ├── pool.py                  # Backend pool registry
+│   │   ├── router.py                # Request routing logic
+│   │   ├── algorithms/
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py              # Algorithm interface
+│   │   │   ├── round_robin.py
+│   │   │   ├── weighted_rr.py
+│   │   │   ├── least_conn.py
+│   │   │   ├── least_rt.py
+│   │   │   ├── ip_hash.py
+│   │   │   ├── random.py
+│   │   │   ├── p2c.py
+│   │   │   └── consistent_hash.py
+│   │   ├── health/
+│   │   │   ├── __init__.py
+│   │   │   ├── active.py            # Periodic /health probes
+│   │   │   ├── passive.py           # Error-rate observer
+│   │   │   ├── circuit_breaker.py
+│   │   │   └── state_machine.py     # HEALTHY/DEGRADED/UNHEALTHY/...
+│   │   └── events.py                # Domain event bus
+│   ├── simulator/
+│   │   ├── __init__.py
+│   │   ├── mock_backend.py          # Spawns fake HTTP servers
+│   │   ├── load_generator.py        # Synthetic client traffic
+│   │   ├── patterns.py              # constant/ramp/spike/sine/burst
+│   │   └── chaos.py                 # Fault injection
+│   ├── analytics/
+│   │   ├── __init__.py
+│   │   ├── metrics.py               # Counters, histograms, percentiles
+│   │   ├── recorder.py              # Event recorder for replay
+│   │   └── exporter.py              # CSV / JSON / Prometheus
+│   ├── gui/
+│   │   ├── __init__.py
+│   │   ├── app.py                   # Main window + tabs
+│   │   ├── dashboard_tab.py         # Topology + global graphs
+│   │   ├── backends_tab.py          # Per-backend cards
+│   │   ├── algorithm_tab.py         # Selector + rationale
+│   │   ├── health_tab.py            # Health check config + timeline
+│   │   ├── traffic_tab.py           # Load generator controls
+│   │   ├── logs_tab.py              # Live request log
+│   │   ├── settings_tab.py          # Config UI
+│   │   ├── chaos_panel.py           # Chaos engineering widget
+│   │   ├── replay_bar.py            # Timeline scrubber
+│   │   ├── tray.py
+│   │   └── widgets/
+│   │       ├── topology_view.py     # Animated LB diagram
+│   │       ├── backend_card.py
+│   │       ├── sparkline.py
+│   │       ├── heatmap.py
+│   │       └── health_badge.py
+│   ├── core/
+│   │   ├── logger.py
+│   │   ├── clock.py                 # Monotonic + wall clock helper
+│   │   ├── ring_buffer.py
+│   │   └── signals.py               # Qt signal bridge from asyncio
+│   └── utils/
+│       ├── net.py
+│       ├── format.py
+│       └── validate.py
+└── tests/
+    ├── test_algorithms.py
+    ├── test_health_state_machine.py
+    ├── test_circuit_breaker.py
+    ├── test_router_failover.py
+    └── test_chaos.py
+
+═══════════════════════════════════════════════════════════════
+FILE CONTENTS TO GENERATE
+═══════════════════════════════════════════════════════════════
+
+▶ ARCHITECTURE.md — must contain:
+  - High-level ASCII diagram: Client Sim → LB Frontend → Router → Pool → Backends
+                                              ▲
+                                     Health Checker ↔ Event Bus ↔ GUI
+  - Component responsibilities table
+  - Threading/async model: asyncio loop on worker thread, Qt on main,
+    signal marshalling strategy
+  - Sequence diagrams (ASCII) for:
+      * Normal request routing
+      * Backend failure → removal → failover
+      * Backend recovery → re-admission
+      * Circuit breaker open → half-open → closed
+  - Algorithm contract (interface) — how to add a new one
+  - Health state machine diagram (states + transitions + timers)
+  - Metrics model (per-backend counters + global histograms)
+  - Performance budget (10k RPS simulated, CPU < 10%, RAM < 300 MB)
+  - Extension points (new algorithm, new chaos type, new visualization)
+  - Build & packaging pipeline
+
+▶ STATE.md — must contain:
+  - Current version + status badge
+  - Implemented features checklist (✅/⬜)
+  - Known issues / limitations (Windows ephemeral port limits, etc.)
+  - Roadmap (v1.1, v1.2, ...)
+  - Test coverage summary
+  - Changelog (Keep a Changelog format)
+  - Environment matrix (Win10/11, Python 3.11/3.12, async loop policy)
+
+▶ MEMORY.md — must contain:
+  - Project conventions (naming, log levels, error codes)
+  - Design decisions log (ADR-style):
+      * Why aiohttp over FastAPI+uvicorn for the LB core
+      * Why in-process mock backends over Docker
+      * Why Qt signals over polling for GUI updates
+      * Why an event bus (domain events) vs direct calls
+  - Key constants (default ports, timeouts, thresholds)
+  - Dependencies + rationale
+  - Glossary (frontend, backend, pool, upstream, health check,
+    circuit breaker, P2C, sticky session, drain, chaos)
+  - Onboarding notes
+  - "Gotchas":
+      * Windows asyncio ProactorEventLoop vs SelectorEventLoop
+      * Qt + asyncio integration: qasync vs manual thread
+      * Fast loopback requests may exhaust ephemeral ports
+      * Percentile calculation needs HDR histogram or t-digest
+      * Deterministic seed required for replay fidelity
+
+▶ README.md — user-facing: install, screenshots, hotkeys, license (MIT)
+
+═══════════════════════════════════════════════════════════════
+HEALTH CHECK STATE MACHINE
+═══════════════════════════════════════════════════════════════
+
+States:
+  HEALTHY     — passing active + passive checks
+  DEGRADED    — passing active, elevated 5xx or latency (warn threshold)
+  UNHEALTHY   — failing active checks or circuit open
+  DRAINING    — removed from new routing, finishing in-flight
+  DISABLED    — manually disabled, not probed, not routed
+
+Transitions:
+  HEALTHY  → DEGRADED   : N consecutive warn responses or passive error rate > X%
+  DEGRADED → HEALTHY    : M consecutive OK responses
+  DEGRADED → UNHEALTHY  : K consecutive failures
+  UNHEALTHY→ HEALTHY    : K consecutive OK responses (half-open probe)
+  Any      → DRAINING   : manual drain
+  DRAINING → DISABLED   : in-flight = 0
+  DISABLED → HEALTHY    : manual enable + first check OK
+
+Circuit Breaker (per backend):
+  CLOSED     → OPEN      : error rate > threshold over rolling window
+  OPEN       → HALF-OPEN : after cooldown
+  HALF-OPEN  → CLOSED    : probe succeeds
+  HALF-OPEN  → OPEN      : probe fails
+
+═══════════════════════════════════════════════════════════════
+ALGORITHM INTERFACE
+═══════════════════════════════════════════════════════════════
+
+class Algorithm(Protocol):
+    name: str
+    def pick(
+        self,
+        request: RequestContext,
+        candidates: list[Backend],
+        metrics: MetricsView,
+    ) -> Backend: ...
+    def on_response(self, backend: Backend, rtt_ms: float,
+                    ok: bool) -> None: ...
+    def snapshot(self) -> dict: ...   # for GUI visualization
+
+═══════════════════════════════════════════════════════════════
+BUILD INSTRUCTIONS
+═══════════════════════════════════════════════════════════════
+
+Provide a build.bat that:
+  1. Creates a venv
+  2. Installs requirements
+  3. Runs PyInstaller with:
+     --onefile --windowed --icon=assets/icon.ico
+     --name LBSimulator
+     --add-data "assets;assets"
+     --add-data "scenarios;scenarios"
+     --hidden-import=aiohttp
+     --hidden-import=aiodns
+     --collect-submodules=pyqtgraph
+  4. Outputs: dist/LBSimulator.exe
+  5. Optional: --noconsole --uac-admin not required (no privileged ports)
+
+═══════════════════════════════════════════════════════════════
+DELIVERABLES
+═══════════════════════════════════════════════════════════════
+
+Generate ALL files listed above with COMPLETE, RUNNABLE code.
+- No placeholder "TODO" stubs in core paths.
+- Include docstrings on every class/function.
+- Include type hints.
+- Include error handling around sockets, DNS, and Qt-asyncio bridges.
+- Include a working example config.json.
+- Include at least 4 ready-to-run scenarios (see scenarios/ above).
+- Include a "How to run in 3 commands" section.
+- Include a screenshots placeholder in README.

@@ -1,0 +1,13 @@
+{
+  "name": "soar-lite",
+  "version": "1.0.0",
+  "description": "SOAR-Lite - Automated Incident Response Playbook Runner (zero-dependency Node web app)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

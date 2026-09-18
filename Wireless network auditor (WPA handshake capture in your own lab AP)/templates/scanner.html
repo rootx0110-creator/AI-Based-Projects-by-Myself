@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% from '_icons.html' import icon %}
+{% block title %}Scanner · Wireless Network Auditor{% endblock %}
+{% block heading %}{{ icon('scanner') }} Network Scanner{% endblock %}
+
+{% block content %}
+<div class="card pad18 mb">
+  <div class="flex wrap between" style="flex-wrap:wrap;gap:12px">
+    <div>
+      <h3 style="margin-bottom:6px">{{ icon('wifi') }} Access points in range</h3>
+      <div class="muted" style="font-size:12px">Detection via
+        {{ 'live monitor adapter' if engine == 'live' else 'simulated lab environment' }}.
+        Select a target and continue to the capture console.</div>
+    </div>
+    <div class="flex">
+      {% if engine == 'live' %}
+      <span class="chip" id="ifaceChip" title="Capture interface"><span class="dot" style="background:var(--acc-2)"></span><span id="ifaceName">detecting…</span></span>
+      <select id="ifaceSel" class="sel" title="Choose the Wi-Fi adapter to capture on" style="display:none"></select>
+      {% endif %}
+      <span class="chip" id="scanInfo"><span class="dot" style="background:var(--muted)"></span>Not scanned</span>
+      <button class="btn pri" id="scanBtn" onclick="runScan()">{{ icon('scan') }} Scan networks</button>
+    </div>
+  </div>
+</div>
+
+<div class="tblwrap mb">
+  <table class="tbl">
+    <thead><tr>
+      <th>SSID</th><th>BSSID</th><th>CH</th><th>Signal</th><th>Encryption</th>
+      <th>Clients</th><th>Captures</th><th></th>
+    </tr></thead>
+    <tbody id="netRows">
+      <tr><td colspan="8">
+        <div class="empty">{{ icon('signal') }}<b>No scan yet</b>Press <b>Scan networks</b> to discover nearby access points.</div>
+      </td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="banner info mb">{{ icon('info') }}
+  <div><b>Lab guidance.</b> Prefer the access point named <b>LAB-AP-2.4G</b> or <b>LAB-AP-SECURE</b> —
+  them targets is the one you own in your lab. Never target third-party SSIDs.</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let scanning = false;
+
+async function loadIface() {
+  try {
+    const d = await get("/api/system/interfaces");
+    const sel = document.getElementById("ifaceSel");
+    const chip = document.getElementById("ifaceName");
+    if (!sel) return;
+    const ifs = (d.interfaces || []).filter(i => i.is_wifi);
+    sel.innerHTML = "";
+    (ifs.length ? ifs : d.interfaces || []).forEach(i => {
+      const o = document.createElement("option");
+      o.value = i.name;
+      o.textContent = i.name + (i.description ? " — " + i.description : "");
+      sel.appendChild(o);
+    });
+    if (d.current) sel.value = d.current;
+    sel.style.display = "";
+    if (chip) chip.textContent = d.current || "none";
+    sel.addEventListener("change", async () => {
+      try {
+        const r = await post("/api/system/iface", { iface: sel.value });
+        if (r.ok) {
+          if (chip) chip.textContent = r.iface;
+          toastOk(`<b>${esc(r.iface)}</b> selected as capture interface.`);
+        }
+      } catch (e) { toastErr("Could not set interface: " + esc(e.message)); }
+    });
+  } catch (e) {}
+}
+
+function netRow(n) {
+  const hidden = n.ssid === "<hidden>" ? '' : '';
+  const captured = n.capture_count || 0;
+  const hsBadge = (n.encryption || "").toUpperCase().includes("WPA") && captured > 0
+    ? `<span class="badge b-g" title="Handshake captured for this target">EAPOL</span>` : "";
+  return `<tr>
+    <td><b>${esc(n.ssid)}</b> ${hsBadge}</td>
+    <td class="mono">${esc(n.bssid)}</td>
+    <td>${esc(n.channel)}</td>
+    <td>${sigBars(n.signal_dbm)}</td>
+    <td>${encBadge(n.encryption)} <span class="sub">${esc(n.encryption)}</span></td>
+    <td>${esc(n.clients ?? 0)}</td>
+    <td>${captured}</td>
+    <td style="white-space:nowrap"><button class="btn go sm" onclick="targetNet('${esc(n.ssid).replace(/'/g,"\\'")}','${esc(n.bssid)}',${esc(n.channel)||0},'${esc(n.encryption)}',${n.signal_dbm||-100})">Capture →</button></td>
+  </tr>`;
+}
+
+function wireUpScanInfo(nets, at) {
+  const chip = document.getElementById("scanInfo");
+  chip.innerHTML = `<span class="dot" style="background:var(--acc-2)"></span>${nets.length} AP · ${fmtTime(at) || "now"}`;
+}
+
+async function runScan() {
+  const btn = document.getElementById("scanBtn");
+  if (scanning) return;
+  scanning = true;
+  btn.disabled = true;
+  btn.innerHTML = `${icon('gear')} Scanning…`;
+  document.getElementById("scanInfo").innerHTML = `<span class="dot" style="background:var(--warn)"></span>Scanning…`;
+  try {
+    const d = await post("/api/scan");
+    if (!d.ok) throw new Error(d.detail || "scan failed");
+    renderNets(d.networks);
+    toastOk(`<b>Scan complete.</b> Found <b>${d.count}</b> access point(s).`);
+  } catch (e) {
+    toastErr("<b>Scan failed.</b> " + esc(e.message));
+    document.getElementById("scanInfo").innerHTML = `<span class="dot" style="background:var(--danger)"></span>Scan error`;
+  } finally {
+    scanning = false;
+    btn.disabled = false;
+    btn.innerHTML = `${icon('scan')} Scan networks`;
+  }
+}
+
+function renderNets(nets) {
+  const rows = document.getElementById("netRows");
+  if (!nets || !nets.length) {
+    rows.innerHTML = `<tr><td colspan="8"><div class="empty">${icon('signal')}<b>No networks</b>Nothing detected. Re-scan or verify your adapter.</div></td></tr>`;
+    return;
+  }
+  rows.innerHTML = nets.map(netRow).join("");
+}
+
+async function targetNet(ssid, bssid, channel, enc, sig) {
+  try {
+    await post("/api/select", { ssid, bssid, channel, encryption: enc, signal_dbm: sig });
+    toastOk(`<b>${esc(ssid)}</b> selected as target.`);
+    location.href = "/capture";
+  } catch (e) { toastErr("Could not select target: " + esc(e.message)); }
+}
+
+(async function boot() {
+  {% if engine == 'live' %} await loadIface(); {% endif %}
+  try {
+    const d = await get("/api/networks");
+    if (d.networks && d.networks.length) {
+      renderNets(d.networks);
+      wireUpScanInfo(d.networks, d.last_scan_at);
+    }
+  } catch (e) {}
+})();
+</script>
+{% endblock %}

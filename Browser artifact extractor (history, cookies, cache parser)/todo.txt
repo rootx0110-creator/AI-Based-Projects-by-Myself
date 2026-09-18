@@ -1,0 +1,47 @@
+Browser Artifact Extractor - TODO List
+======================================
+
+[x] Project setup and directory structure
+[x] Architecture documentation
+[x] Memory management documentation
+[x] State management documentation
+[x] README documentation
+[ ] Core application framework (Flask)
+[ ] Browser detection module
+[ ] History extraction module
+[ ] Cookie extraction module
+[ ] Cache extraction module
+[ ] HTML/CSS/JS user interface
+[ ] Export functionality (HTML report)
+[ ] PyInstaller packaging
+[ ] Testing and validation
+
+FEATURES:
+=========
+[x] Auto-detect installed browsers (Chrome, Firefox, Edge, Brave, Opera)
+[x] Extract browsing history with timestamps
+[x] Extract cookies with domain info
+[x] Parse cache metadata
+[ ] Multi-profile support
+[ ] Search and filter functionality
+[ ] Sort by columns
+[ ] Export to HTML report
+[ ] Export to JSON
+[ ] Export to CSV
+[ ] Real-time extraction progress
+[ ] Beautiful, responsive UI
+
+BROWSERS SUPPORTED:
+===================
+[x] Google Chrome
+[x] Mozilla Firefox
+[x] Microsoft Edge
+[x] Brave Browser
+[ ] Opera
+[ ] Vivaldi
+
+PLATFORMS:
+==========
+[x] Windows 10/11
+[ ] macOS
+[ ] Linux

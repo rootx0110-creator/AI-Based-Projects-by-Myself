@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.coverage
+
+# Local outputs
+_out/
+*.spec.bak
+
+# Environments
+.venv/
+venv/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.idea/
+.vscode/

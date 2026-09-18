@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';"
+  />
+  <title>SOC 3D Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="bg-glow"></div>
+
+  <header id="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <h1>SOC 3D Dashboard</h1>
+        <span id="subtitle">Real-time Network Topology & Threat Monitor</span>
+      </div>
+    </div>
+    <div class="top-right">
+      <div class="header-counts">
+        <span class="hc" id="hc-evtx">EVTX 0</span>
+        <span class="hc" id="hc-login-fail">LOGIN-FAIL 0</span>
+      </div>
+      <div id="status-pill" class="pill live"><span class="dot"></span>LIVE</div>
+      <button id="btn-report" title="Export an HTML report of the current session">&#8595; REPORT</button>
+      <div id="clock" class="pill mono"></div>
+    </div>
+  </header>
+
+  <section id="kpi-strip">
+    <div class="kpi">
+      <div class="kpi-label">Events / sec</div>
+      <div class="kpi-value" id="kpi-events">0</div>
+      <canvas class="kpi-spark" data-kpi="events" width="120" height="34"></canvas>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Active Threats</div>
+      <div class="kpi-value amber" id="kpi-threats">0</div>
+      <div class="kpi-inline" id="kpi-threat-bars"></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Blocked Attempts</div>
+      <div class="kpi-value" id="kpi-blocked">0</div>
+      <canvas class="kpi-spark" data-kpi="blocked" width="120" height="34"></canvas>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Response Time (ms)</div>
+      <div class="kpi-value" id="kpi-latency">0</div>
+      <canvas class="kpi-spark" data-kpi="latency" width="120" height="34"></canvas>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Failed Logins</div>
+      <div class="kpi-value crit" id="kpi-badlogon">0</div>
+      <canvas class="kpi-spark" data-kpi="badlogon" width="120" height="34"></canvas>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Auth Success Rate</div>
+      <div class="kpi-value" id="kpi-auth">0%</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill auth" id="auth-fill"></div></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Detection Load</div>
+      <div class="kpi-value" id="kpi-load">0%</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" id="load-fill"></div></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Packet Rate</div>
+      <div class="kpi-value" id="kpi-packets">0</div>
+      <canvas class="kpi-spark" data-kpi="packets" width="120" height="34"></canvas>
+    </div>
+  </section>
+
+  <section id="sources-strip">
+    <span class="src-pill"><i class="s-dot"></i>SIEM<b id="ps-siem">0</b></span>
+    <span class="src-pill"><i class="s-dot"></i>EVTX<b id="ps-evtx">0</b></span>
+    <span class="src-pill"><i class="s-dot"></i>APPS<b id="ps-apps">0</b></span>
+    <span class="src-pill"><i class="s-dot"></i>AUTH<b id="ps-auth">0</b></span>
+    <span class="src-pill"><i class="s-dot"></i>NETFLOW<b id="ps-flow">0</b></span>
+    <span class="src-pill"><i class="s-dot"></i>DNS<b id="ps-dns">0</b></span>
+    <span class="src-pill"><i class="s-dot"></i>EDR<b id="ps-edr">0</b></span>
+    <span class="src-pill"><i class="s-dot"></i>VULN<b id="ps-vuln">0</b></span>
+    <span class="src-pill"><i class="s-dot"></i>INTEL<b id="ps-intel">0</b></span>
+  </section>
+
+  <main id="stage">
+    <div id="scene-wrap">
+      <div id="scene-3d"></div>
+      <div id="scene-hud">
+        <span id="hud-nodes"></span>
+        <span id="hud-links"></span>
+        <span id="hud-pkts"></span>
+      </div>
+    </div>
+
+    <aside id="rail">
+      <div id="tabs-bar" class="panel">
+        <button class="tab active" data-tab="threats" title="SIEM threat feed">THREATS</button>
+        <button class="tab" data-tab="evtx" title="Windows Event Log">EVTX</button>
+        <button class="tab" data-tab="applogs" title="Application / service logs">APP LOGS</button>
+        <button class="tab" data-tab="logins" title="Authentication attempts">LOGINS</button>
+        <button class="tab" data-tab="traffic" title="Netflow / DNS (Suricata, Zeek)">TRAFFIC</button>
+        <button class="tab" data-tab="edr" title="EDR detections, vulnerability scanner, threat intel">EDR</button>
+      </div>
+
+      <div id="tab-stage" class="panel">
+        <div id="tab-threats" class="tab-panel active">
+          <div class="panel-head">
+            <h2>Threat Feed</h2>
+            <span id="feed-filter" class="chip">ALL</span>
+          </div>
+          <ul id="feed"></ul>
+        </div>
+
+        <div id="tab-evtx" class="tab-panel">
+          <div class="panel-head">
+            <h2>Windows Event Log</h2>
+            <div class="chip-group" id="evtx-filters">
+              <button class="chip active" data-filter="all">ALL</button>
+              <button class="chip" data-filter="security">SECURITY</button>
+              <button class="chip" data-filter="system">SYSTEM</button>
+              <button class="chip" data-filter="powershell">PSH</button>
+            </div>
+          </div>
+          <div id="evtx-summary" class="log-summary"></div>
+          <ul id="evtx-feed"></ul>
+        </div>
+
+        <div id="tab-applogs" class="tab-panel">
+          <div class="panel-head">
+            <h2>Application Logs</h2>
+            <div class="chip-group" id="app-filters">
+              <button class="chip active" data-filter="all">ALL</button>
+              <button class="chip" data-filter="web">WEB</button>
+              <button class="chip" data-filter="db">DB</button>
+              <button class="chip" data-filter="dns">DNS</button>
+              <button class="chip" data-filter="fw">FW</button>
+            </div>
+          </div>
+          <ul id="app-feed"></ul>
+        </div>
+
+        <div id="tab-logins" class="tab-panel">
+          <div class="panel-head">
+            <h2>Login Attempts</h2>
+            <div class="chip-group">
+              <span class="badge ok" id="login-success">0 succ</span>
+              <span class="badge crit" id="login-fail">0 fail</span>
+              <span class="badge warn" id="login-locked">0 lockout</span>
+            </div>
+          </div>
+          <div id="login-chart-wrap">
+            <canvas id="login-chart" width="312" height="56"></canvas>
+            <span class="chart-cap">Failed logins / last 60 ticks</span>
+          </div>
+          <ul id="login-feed"></ul>
+        </div>
+
+        <div id="tab-traffic" class="tab-panel">
+          <div class="panel-head">
+            <h2>Network Traffic</h2>
+            <div class="chip-group">
+              <span class="badge" id="flow-bytes">0 KB/s</span>
+              <span class="badge" id="flow-sessions">0 sess</span>
+            </div>
+          </div>
+          <div class="sub-head">Protocol mix</div>
+          <div id="proto-break"></div>
+          <div class="sub-head">Top talkers <span class="dim">by volume</span></div>
+          <ul id="talkers"></ul>
+          <div class="sub-head">DNS activity <span class="badge warn" id="nx-rate">NXDOMAIN 0%</span></div>
+          <ul id="dns-list"></ul>
+        </div>
+
+        <div id="tab-edr" class="tab-panel">
+          <div class="panel-head">
+            <h2>EDR & Vulnerability</h2>
+            <div class="chip-group">
+              <span class="badge" id="edr-count">0 detections</span>
+              <span class="badge warn" id="vuln-count">0 vulns</span>
+            </div>
+          </div>
+          <div class="sub-head">Threat intel <span class="dim">attacker geo</span></div>
+          <div id="intel-bars"></div>
+          <div class="sub-head">Endpoint detections <span class="dim">MITRE ATT&amp;CK</span></div>
+          <ul id="edr-list"></ul>
+          <div class="sub-head">Vulnerability scanner <span class="dim">CVE / CVSS</span></div>
+          <ul id="vuln-list"></ul>
+        </div>
+      </div>
+
+      <div id="inspector" class="panel">
+        <div class="panel-head"><h2>Inspector</h2></div>
+        <div id="insp-body" class="muted">
+          Click a node or link in the 3D scene to inspect it.
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div id="toast"></div>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="report.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

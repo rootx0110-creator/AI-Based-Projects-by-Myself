@@ -1,0 +1,27 @@
+{
+  "hosts": {
+    "127.0.0.1": {
+      "first_seen": "2026-09-10T18:04:14Z",
+      "ports": {
+        "8080": {
+          "service": "http-proxy",
+          "times_seen": 4,
+          "last_seen": "2026-09-10T18:24:37Z"
+        },
+        "135": {
+          "service": "msrpc",
+          "times_seen": 2,
+          "last_seen": "2026-09-10T18:24:37Z"
+        },
+        "808": {
+          "service": "unknown",
+          "times_seen": 2,
+          "last_seen": "2026-09-10T18:24:37Z"
+        }
+      },
+      "last_seen": "2026-09-10T18:24:37Z"
+    }
+  },
+  "total_scans": 4,
+  "total_hosts": 1
+}

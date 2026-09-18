@@ -1,0 +1,16 @@
+TODO
+====
+
+[x] Filesystem scan (created/modified/accessed, size, long paths)
+[x] Log artifact timestamp parsing (ISO, US/EU, RFC2822, epoch)
+[x] Timeline merge, sort, filter-by (type, date range, query)
+[x] GUI with metrics, table, detail pane, theme toggle, progress
+[x] HTML report export (self-contained, charts, search/sort/paginate)
+[x] CSV export
+[x] CLI headless mode
+[x] Single-file EXE build (dist/TimelineBuilder.exe)
+[ ] Friendly message for folders with no events
+[ ] Optional multi-root selection
+[ ] Optional .evtx / .eml / syslog structured parsing
+[ ] Batch/parallel worker pool for scanning
+[ ] Config-saved last folder + preferences

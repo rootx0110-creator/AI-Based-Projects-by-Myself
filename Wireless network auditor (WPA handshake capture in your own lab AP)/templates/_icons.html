@@ -1,0 +1,52 @@
+{# Shared icons - inline SVG, offline-safe #}
+{% macro icon(name, size=18) -%}
+{% if name == 'dashboard' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+{% elif name == 'scanner' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 8l9 6 9-6z"/><path d="M3 15v1.5a9 9 0 0 0 18 0V15"/><path d="M7 14a5 5 0 0 0 10 0"/></svg>
+{% elif name == 'capture' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-10 10c0 4.4 2.8 8.2 6.8 9.6V9.4h-4V7h10v2.4h-4v12.2a10 10 0 0 0 8-8"/><path d="M2 12h2M20 12h2M12 2v2M12 20v2"/></svg>
+{% elif name == 'reports' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+{% elif name == 'wifi' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><path d="M2 9.5a15 15 0 0 1 20 0"/><circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none"/></svg>
+{% elif name == 'scan' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="2"/><path d="M12 6v1.5M12 16.5v1.5M6 12H4M20 12h-2"/></svg>
+{% elif name == 'hand' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/><path d="M9 15a3 3 0 0 0 6 0"/><path d="M9 16c1 2.5 5 2.5 6 0"/><path d="M9 10h.01M15 10h.01"/></svg>
+{% elif name == 'deauth' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.6 8 11 4.6-1.4 8-6 8-11V5z"/><path d="m9.5 12 5 5M14.5 12l-5 5"/></svg>
+{% elif name == 'shield' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.6 8 11 4.6-1.4 8-6 8-11V5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+{% elif name == 'download' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg>
+{% elif name == 'eye' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+{% elif name == 'trash' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg>
+{% elif name == 'clock' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+{% elif name == 'signal' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h2M9.5 8.5 11 7"/><path d="M7.4 20a9 9 0 1 1 9.2 0"/></svg>
+{% elif name == 'activity' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-7 4 14 2.5-7h5"/></svg>
+{% elif name == 'gear' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>
+{% elif name == 'menu' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+{% elif name == 'close' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+{% elif name == 'stop' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>
+{% elif name == 'play' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="currentColor" stroke-linejoin="round"><path d="M7 4.5v15l13-7.5z"/></svg>
+{% elif name == 'bolt' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>
+{% elif name == 'info' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 12v4"/></svg>
+{% elif name == 'warn' %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 9v5M12 17h.01"/></svg>
+{% else %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="{{size}}" height="{{size}}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>
+{% endif -%}
+{%- endmacro %}

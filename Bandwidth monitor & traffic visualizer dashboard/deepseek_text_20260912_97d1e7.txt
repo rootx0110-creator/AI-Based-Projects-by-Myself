@@ -1,0 +1,248 @@
+Build a complete Windows desktop GUI application (.exe) for a "Bandwidth Monitor & 
+Traffic Visualizer Dashboard". The application must capture live network traffic, 
+display real-time graphs, per-process breakdowns, and historical analytics. It must 
+be production-ready, well-architected, and include full documentation files.
+
+═══════════════════════════════════════════════════════════════
+PROJECT REQUIREMENTS
+═══════════════════════════════════════════════════════════════
+
+TECH STACK (choose ONE and justify):
+  - Python 3.11 + PyQt6/PySide6 + pyqtgraph + psutil   →  recommended
+  - OR Python + CustomTkinter + matplotlib (lighter)
+  - OR Electron + Node.js (systeminformation + Chart.js)
+  - OR C# .NET 8 + WPF + LiveCharts2
+  - OR Rust + Tauri + sysinfo
+
+CORE FEATURES:
+  1. Live Bandwidth Capture
+     - Per-interface up/down throughput (bytes/sec)
+     - Global aggregate (all interfaces combined)
+     - Sample interval: 100ms–1s (user configurable)
+     - Works on Windows (psutil) + fallback to WMI/PDH counters
+  2. Per-Process Traffic Breakdown
+     - Map connections → PID → process name/icon
+     - Top-N processes by bandwidth (bar chart / table)
+     - Drill-down: per-process connection list (remote IP:port, state)
+  3. Real-Time Visualization Dashboard
+     - Line graph: download & upload over rolling 60s window
+     - Area chart: stacked per-interface
+     - Gauge: current speed (Mbps) vs. link capacity
+     - Heatmap: hourly traffic (last 24h)
+     - Pie/donut: protocol or process distribution
+  4. Historical Analytics
+     - SQLite storage of samples (aggregate + per-process)
+     - Daily / weekly / monthly rollups
+     - Top talkers over time range
+     - Data usage quota alerts (e.g. 100 GB/month)
+  5. Alerts & Notifications
+     - Speed threshold alerts (e.g. > 50 Mbps sustained)
+     - Quota warnings (80%, 95%, 100%)
+     - New-connection alerts for watched processes
+     - Toast notification + tray balloon
+  6. GUI Features
+     - Tabs: Dashboard · Processes · Interfaces · History · Settings
+     - Dark/light theme toggle
+     - System tray icon with mini-speed tooltip
+     - Always-on-top mini widget (floating HUD)
+     - Export data to CSV / JSON / PNG (chart snapshots)
+  7. Config persistence (JSON in %APPDATA%/NetPulse/)
+  8. Single-instance lock
+  9. Graceful shutdown (flush DB, close sockets)
+
+NON-FUNCTIONAL:
+  - Non-blocking sampling (background thread / asyncio)
+  - Ring buffer for live graphs (no unbounded memory growth)
+  - DB writes batched every N seconds (avoid disk thrash)
+  - Bundle as a single .exe (no console window)
+  - Include app icon (.ico)
+  - Build script (build.bat / pyinstaller spec)
+  - Optional: admin-elevation manifest for full per-process stats
+
+═══════════════════════════════════════════════════════════════
+REQUIRED PROJECT STRUCTURE
+═══════════════════════════════════════════════════════════════
+
+netpulse/
+├── ARCHITECTURE.md
+├── STATE.md
+├── MEMORY.md
+├── README.md
+├── requirements.txt
+├── build.bat
+├── build.spec
+├── assets/
+│   ├── icon.ico
+│   ├── logo.png
+│   └── process_icons/
+├── src/
+│   ├── main.py                    # Entry point, launches GUI
+│   ├── config.py                  # Config load/save, defaults
+│   ├── capture/
+│   │   ├── __init__.py
+│   │   ├── interface_sampler.py   # psutil net_io_counters polling
+│   │   ├── process_mapper.py      # PID ↔ connection ↔ socket
+│   │   ├── sniffer.py             # Optional: scapy/pcap deep capture
+│   │   └── ring_buffer.py         # Fixed-size time-series buffer
+│   ├── storage/
+│   │   ├── __init__.py
+│   │   ├── database.py            # SQLite schema + queries
+│   │   ├── migrations.py
+│   │   └── exporter.py            # CSV / JSON export
+│   ├── analytics/
+│   │   ├── __init__.py
+│   │   ├── rollups.py             # Hourly/daily aggregation
+│   │   ├── quota.py               # Quota tracking + alerts
+│   │   └── top_talkers.py         # Ranking algorithms
+│   ├── gui/
+│   │   ├── __init__.py
+│   │   ├── app.py                 # Main window + tabs
+│   │   ├── dashboard_tab.py       # Live graphs
+│   │   ├── processes_tab.py       # Per-process table/chart
+│   │   ├── interfaces_tab.py      # Per-interface view
+│   │   ├── history_tab.py         # Historical charts
+│   │   ├── settings_tab.py        # Config UI
+│   │   ├── hud.py                 # Floating mini widget
+│   │   ├── tray.py                # System tray
+│   │   └── widgets/
+│   │       ├── speed_gauge.py
+│   │       ├── live_graph.py      # pyqtgraph wrapper
+│   │       └── sparkline.py
+│   ├── core/
+│   │   ├── stats.py               # In-memory metrics store
+│   │   ├── logger.py              # Rotating file logger
+│   │   ├── events.py              # Qt signals / event bus
+│   │   ├── scheduler.py           # Sampling + DB flush timers
+│   │   └── alerts.py              # Notification engine
+│   └── utils/
+│       ├── net.py                 # Unit conversions (B/s ↔ Mbps)
+│       ├── format.py              # Human-readable bytes
+│       └── platform_win.py        # WMI/PDH fallbacks
+└── tests/
+    ├── test_sampler.py
+    ├── test_process_mapper.py
+    ├── test_rollups.py
+    └── test_quota.py
+
+═══════════════════════════════════════════════════════════════
+FILE CONTENTS TO GENERATE
+═══════════════════════════════════════════════════════════════
+
+▶ ARCHITECTURE.md — must contain:
+  - High-level ASCII diagram: Capture → Buffer → Analytics → GUI/DB
+  - Component responsibilities table
+  - Threading model (Qt main thread, sampler thread, DB writer thread)
+  - Data flow for: interface sample, per-process mapping, quota alert
+  - Storage schema (tables + indexes)
+  - Performance budget (CPU < 2%, RAM < 150 MB)
+  - Extension points (add a new metric source, new chart type)
+  - Build & packaging pipeline
+
+▶ STATE.md — must contain:
+  - Current version + status badge
+  - Implemented features checklist (✅/⬜)
+  - Known issues / limitations (admin rights, VPN interfaces, IPv6 quirks)
+  - Roadmap (v1.1, v1.2, ...)
+  - Test coverage summary
+  - Changelog (Keep a Changelog format)
+  - Environment matrix (Win10/11, Python 3.11/3.12, Admin vs non-Admin)
+
+▶ MEMORY.md — must contain:
+  - Project conventions (naming, log levels, error codes)
+  - Design decisions log (ADR-style)
+    * Why psutil over scapy for default mode
+    * Why SQLite over Parquet for v1
+    * Why pyqtgraph over matplotlib for live plots
+  - Key constants (sample interval, ring buffer size, DB batch size)
+  - Dependencies + rationale
+  - Glossary (interface, sample, rollup, top talker, quota, HUD)
+  - Onboarding notes
+  - "Gotchas" (psutil per-process needs admin on some Windows builds,
+    loopback traffic is counted twice, VPN adapters report zero,
+    pyqtgraph needs OpenGL context config)
+
+▶ README.md — user-facing: install, screenshots, hotkeys, license (MIT)
+
+═══════════════════════════════════════════════════════════════
+DATABASE SCHEMA (SQLite)
+═══════════════════════════════════════════════════════════════
+
+samples(
+  id INTEGER PK,
+  ts INTEGER,                -- unix ms
+  iface TEXT,
+  bytes_sent INTEGER,
+  bytes_recv INTEGER,
+  pkts_sent INTEGER,
+  pkts_recv INTEGER
+)
+CREATE INDEX idx_samples_ts ON samples(ts);
+CREATE INDEX idx_samples_iface_ts ON samples(iface, ts);
+
+process_samples(
+  id INTEGER PK,
+  ts INTEGER,
+  pid INTEGER,
+  process_name TEXT,
+  bytes_sent INTEGER,
+  bytes_recv INTEGER
+)
+
+rollups(
+  bucket_ts INTEGER PK,      -- start of hour/day
+  granularity TEXT,          -- 'hour' | 'day' | 'month'
+  bytes_sent INTEGER,
+  bytes_recv INTEGER,
+  peak_down_bps INTEGER,
+  peak_up_bps INTEGER
+)
+
+quotas(
+  id INTEGER PK,
+  name TEXT,
+  period TEXT,               -- 'daily' | 'monthly'
+  limit_bytes INTEGER,
+  current_bytes INTEGER,
+  last_reset INTEGER
+)
+
+═══════════════════════════════════════════════════════════════
+SAMPLE RATE STRATEGY
+═══════════════════════════════════════════════════════════════
+
+- Interface counters: poll psutil every 500ms (default)
+- Per-process: refresh every 2s (expensive)
+- Live graph: push to ring buffer every sample, redraw at 10 FPS
+- DB writes: batch every 10s (one INSERT per interface)
+- Rollups: computed every 5 min for the current hour
+
+═══════════════════════════════════════════════════════════════
+BUILD INSTRUCTIONS
+═══════════════════════════════════════════════════════════════
+
+Provide a build.bat that:
+  1. Creates a venv
+  2. Installs requirements
+  3. Runs PyInstaller with:
+     --onefile --windowed --icon=assets/icon.ico
+     --name NetPulse
+     --add-data "assets;assets"
+     --hidden-import=psutil
+     --hidden-import=pyqtgraph
+     --collect-submodules=pyqtgraph
+  4. Outputs: dist/NetPulse.exe
+  5. Optional: includes a manifest requesting admin for full process stats
+
+═══════════════════════════════════════════════════════════════
+DELIVERABLES
+═══════════════════════════════════════════════════════════════
+
+Generate ALL files listed above with COMPLETE, RUNNABLE code.
+- No placeholder "TODO" stubs in core paths.
+- Include docstrings on every class/function.
+- Include type hints.
+- Include error handling around psutil calls, DB writes, and
+  GUI updates from background threads (Qt signal marshalling).
+- Include a working example config.json.
+- Include a sample dataset seed script for demo mode.
+- End with a "How to run in 3 commands" section.

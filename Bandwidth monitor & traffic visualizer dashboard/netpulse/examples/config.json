@@ -1,0 +1,28 @@
+{
+    "_comment": "Example NetPulse config. The app writes %APPDATA%/NetPulse/config.json automatically; copy this file there to pre-seed settings. All keys optional.",
+    "version": 1,
+    "sample_interval_ms": 500,
+    "process_interval_ms": 2000,
+    "db_flush_seconds": 10,
+    "history_window_seconds": 60,
+    "theme": "dark",
+    "speed_alert_threshold_mbps": 50.0,
+    "speed_alert_window_seconds": 10,
+    "new_conn_alert_processes": ["chrome.exe"],
+    "quota": {
+        "enabled": false,
+        "name": "Monthly plan",
+        "period": "monthly",
+        "limit_bytes": 107374182400
+    },
+    "warn_levels": [0.8, 0.95, 1.0],
+    "hud": {
+        "enabled": false,
+        "x": 100,
+        "y": 100,
+        "opacity": 0.85,
+        "always_on_top": true
+    },
+    "minimize_to_tray": true,
+    "excluded_interfaces": []
+}

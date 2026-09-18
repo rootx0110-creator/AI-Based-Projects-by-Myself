@@ -1,0 +1,22 @@
+[
+  {
+    "seq": 1,
+    "timestamp": "2026-09-17T05:15:04+00:00",
+    "actor": "A. Reyes",
+    "role": "Forensic Examiner",
+    "action": "TEST_GUI",
+    "detail": "smoke",
+    "hmac": "2e9688a19433960824af7bfced0ebe305753c3e58d1b1b058ed6c183e1f78e39",
+    "prev_hmac": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  {
+    "seq": 2,
+    "timestamp": "2026-09-17T05:15:15+00:00",
+    "actor": "A. Reyes",
+    "role": "Forensic Examiner",
+    "action": "TEST_GUI",
+    "detail": "smoke",
+    "hmac": "c05c6665623772ca4b4b6028636efede234d5b498f77e4c423e5e4b7b17cbfcc",
+    "prev_hmac": "2e9688a19433960824af7bfced0ebe305753c3e58d1b1b058ed6c183e1f78e39"
+  }
+]

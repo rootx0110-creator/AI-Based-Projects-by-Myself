@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hardening-checker"
+version = "1.0.0"
+description = "Read-only CIS-style endpoint hardening audit with GUI dashboard and HTML/PDF reports"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "HardeningCheck Project" }]
+keywords = ["cis", "benchmark", "hardening", "compliance", "security", "audit"]
+classifiers = [
+  "Environment :: Win32 (MS Windows)",
+  "Environment :: X11 Applications",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+]
+dependencies = [
+  "PySide6>=6.6",
+  "Jinja2>=3.1",
+  "reportlab>=4.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-qt>=4.4"]
+
+[project.gui-scripts]
+hardening-checker = "hardening_checker.gui.app:run_gui"
+
+[project.scripts]
+hardening-checker-cli = "hardening_checker.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hardening_checker*"]
+
+[tool.setuptools.package-data]
+"hardening_checker.reporting" = ["templates/*.j2"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

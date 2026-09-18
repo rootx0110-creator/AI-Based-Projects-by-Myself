@@ -1,0 +1,31 @@
+{
+  "name": "demo_flaky_backend",
+  "description": "One backend returns intermittent 500 errors causing circuit breaker to trip",
+  "frontend_port": 8000,
+  "backend_count": 3,
+  "algorithm": "Power of Two Choices (P2C)",
+  "traffic": {
+    "rps": 150,
+    "concurrency": 25,
+    "pattern": "sine wave",
+    "min_rps": 50,
+    "max_rps": 250,
+    "period_s": 20
+  },
+  "health": {
+    "interval_s": 3,
+    "timeout_s": 2,
+    "unhealthy_threshold": 4,
+    "error_threshold_pct": 5.0
+  },
+  "circuit_breaker": {
+    "failure_threshold_pct": 50.0,
+    "success_threshold": 3,
+    "cooldown_ms": 5000
+  },
+  "backends": [
+    {"id": "s1", "port": 12001, "weight": 1.0, "error_rate": 0.0},
+    {"id": "s2", "port": 12002, "weight": 1.0, "error_rate": 0.4},
+    {"id": "s3", "port": 12003, "weight": 1.0, "error_rate": 0.0}
+  ]
+}

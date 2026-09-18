@@ -1,0 +1,47 @@
+{
+  "name": "soc-3d-dashboard",
+  "productName": "SOC 3D Dashboard",
+  "version": "1.2.0",
+  "description": "Real-time SOC dashboard with 3D network topology visualization",
+  "main": "main.js",
+  "author": "SOC Team",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.soc.dashboard",
+    "productName": "SOC 3D Dashboard",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "!**/*.map"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "SOC-3D-Dashboard-${version}.exe"
+    }
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  }
+}

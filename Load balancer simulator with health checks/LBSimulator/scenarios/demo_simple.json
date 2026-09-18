@@ -1,0 +1,22 @@
+{
+  "name": "demo_simple",
+  "description": "Basic round-robin load balancing with 3 healthy backends",
+  "frontend_port": 8000,
+  "backend_count": 3,
+  "algorithm": "Round Robin",
+  "traffic": {
+    "rps": 50,
+    "concurrency": 10,
+    "pattern": "constant"
+  },
+  "health": {
+    "interval_s": 5,
+    "timeout_s": 2,
+    "unhealthy_threshold": 3
+  },
+  "backends": [
+    {"id": "s1", "port": 12001, "weight": 1.0},
+    {"id": "s2", "port": 12002, "weight": 1.0},
+    {"id": "s3", "port": 12003, "weight": 1.0}
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "demo_failover",
+  "description": "Shows automatic failover when a backend is killed mid-traffic",
+  "frontend_port": 8000,
+  "backend_count": 3,
+  "algorithm": "Least Connections",
+  "traffic": {
+    "rps": 200,
+    "concurrency": 30,
+    "pattern": "constant"
+  },
+  "health": {
+    "interval_s": 2,
+    "timeout_s": 1,
+    "unhealthy_threshold": 2
+  },
+  "chaos": {
+    "action": "kill_backend",
+    "target": "s2",
+    "delay_s": 10,
+    "duration_s": 30
+  },
+  "backends": [
+    {"id": "s1", "port": 12001, "weight": 1.0},
+    {"id": "s2", "port": 12002, "weight": 1.0},
+    {"id": "s3", "port": 12003, "weight": 1.0}
+  ]
+}

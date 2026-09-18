@@ -1,0 +1,7 @@
+# VaultGuard — runtime dependencies
+customtkinter>=5.2.2
+darkdetect>=0.8.0
+
+# Build tools (not required to run the source version)
+pyinstaller>=6.10
+pillow>=10.0

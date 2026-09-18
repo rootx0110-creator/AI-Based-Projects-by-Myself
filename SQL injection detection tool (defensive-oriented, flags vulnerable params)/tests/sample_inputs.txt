@@ -1,0 +1,55 @@
+# ============================================================
+#  SQLInspect test kit
+#  Each block is ready to paste into the matching UI tab.
+#  Expected results listed next to each line.
+# ============================================================
+
+# ------------------------------------------------------------
+# [1] URL mode -- paste the lines below (one at a time or the first two)
+# ------------------------------------------------------------
+# 1.1  UNION-based payload -> id should flag HIGH/CRITICAL (union_select, keyword density)
+http://shop.local/products.php?id=1 UNION ALL SELECT NULL,user(),3-- -
+# 1.2  classic auth bypass -> user should flag HIGH (signature: ' OR '1'='1)
+http://shop.local/login.php?user=admin' OR '1'='1&pass=x
+# 1.3  boolean-blind condition -> Medium/High (boolean_eq)
+http://portal.local/account?id=5 AND 1=1
+# 1.4  time-based blind -> High/Critical (sleep)
+http://api.local/v1/search?q=1' AND SLEEP(3)-- -
+# 1.5  DBMS fingerprint + stacked -> High (sys_schema)
+http://old.local/report.aspx?code=1;WAITFOR DELAY '00:00:03'-- &db=@@version
+# 1.6  clean param -> should stay SAFE (no false positive)
+http://shop.local/product/1042?utm_source=newsletter&lang=en
+
+# ------------------------------------------------------------
+# [2] Raw HTTP request mode -- paste this whole block
+# ------------------------------------------------------------
+# 2.1  vulnerable POST body (query + cookie) -> q HIGH, cookie:sess HIGH
+POST /search.php HTTP/1.1
+Host: shop.local
+Content-Type: application/x-www-form-urlencoded
+Cookie: sess=abc' OR 1=1-- -
+
+q=books' UNION SELECT password,2,3 FROM users-- &limit=50
+# 2.2  JSON API body -> u flags if it holds a payload
+POST /api/login HTTP/1.1
+Host: api.local
+Content-Type: application/json
+
+{"u": "admin' OR '1'='1' --", "p": "x"}
+
+# ------------------------------------------------------------
+# [3] Log / list upload mode -- paste this whole block
+# ------------------------------------------------------------
+# 3.1  access-log style -> 2 flagged (id, q), 1 safe
+192.168.1.12 - - [16/Sep/2026:10:21:07 +0000] "GET /products.php?id=5 OR 1=1 HTTP/1.1" 200 5123
+192.168.1.12 - - [16/Sep/2026:10:22:44 +0000] "GET /blog/article.php?slug=news' AND SLEEP(5)-- HTTP/1.1" 200 789
+192.168.1.44 - - [16/Sep/2026:10:30:15 +0000] "GET /static/logo.png HTTP/1.1" 200 9120
+
+# ------------------------------------------------------------
+# [4] LIVE probing -- needs a throwaway target (see tests/test_target.py)
+#     Start it:   python tests/test_target.py   (serves on 127.0.0.1:5099)
+#     Then paste into URL mode, enable LIVE + consent checkbox, scan:
+# ------------------------------------------------------------
+http://127.0.0.1:5099/vuln?id=1
+#     Expected: id flags CRITICAL, evidence shows live-confirmed
+#     time_based ("latency ... SLEEP() probe") and error_signature.

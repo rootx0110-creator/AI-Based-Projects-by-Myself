@@ -1,0 +1,7 @@
+# Runtime
+PySide6>=6.6
+Jinja2>=3.1
+reportlab>=4.0
+
+# Build
+pyinstaller>=6.0
