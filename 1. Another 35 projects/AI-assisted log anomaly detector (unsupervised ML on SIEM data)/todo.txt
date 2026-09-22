@@ -1,0 +1,43 @@
+# TODO — AI-assisted log anomaly detector (unsupervised ML on SIEM data)
+
+### Build (core)
+- [x] Parse SIEM formats: CSV, TSV, JSON, JSONL, Syslog RFC3164, CEF, raw text
+- [x] Behavioural feature engineering (counts, fan-out, ports, severity, rate)
+- [x] Hashed text features (uni + bigram, idf-weighted)
+- [x] Detectors: Isolation Forest, Local Outlier Factor, One-Class SVM, Nano Autoencoder (numpy)
+- [x] Burst component for dense duplicate clusters
+- [x] Max-combination ensemble blend + incident-size bonus
+- [x] Capped per-identity flagging
+- [x] Incident clustering + feature-level explanations
+- [x] Standalone HTML report generator
+- [x] Flask API: /api/analyze, /api/report, /api/sample, /api/health
+- [x] Classy UI (navy/gold/teal, no black or white)
+- [x] Synthetic SIEM sample generator (5 planted behaviours)
+- [x] requirements.txt
+
+### Packaging
+- [x] EXE build script (PyInstaller one-file, windowed) — build_exe.bat
+- [x] Verify bundled exe runs detection + report download offline
+        (dist\SentinelForge.exe, 86.7 MB; health OK, sample analyze
+        1904 ev/95 flagged/15 incidents, standalone report verified)
+
+### Docs
+- [x] architecture.md
+- [x] memory.md
+- [x] state.md
+- [x] readme.txt
+- [x] todo.txt
+
+### Quality
+- [x] Smoke-test full flow: run app -> analyze sample -> download HTML report
+        (live server 127.0.0.1:8600: health, index, analyze sample=
+        1904 ev/95 flagged/15 incidents, uploaded CSV round-trip
+        via curl, report downloaded & content-verified)
+- [x] Uploaded CSV parse path verified (format=CSV, 1904 events)
+- [x] Report renders standalone (self-contained CSS, single escape pass)
+- [x] EXE build + offline verify (dist\SentinelForge.exe 86.7 MB works)
+
+### Ideas / backlog (not approved)
+- [ ] Live SSE streaming mode
+- [ ] JSON explanation export
+- [ ] Multi-file / baseline comparison

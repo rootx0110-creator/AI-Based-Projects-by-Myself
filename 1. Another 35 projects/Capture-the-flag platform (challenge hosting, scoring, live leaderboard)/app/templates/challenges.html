@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Challenges — {{ ctf_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="flex" style="margin-bottom:1.2rem">
+    <h1 style="font-size:1.3rem;letter-spacing:.12em;color:#fff">▸ MISSION BOARDS</h1>
+    <span class="right muted">click a challenge · solve · capture the flag</span>
+  </div>
+
+  {% if not challenges %}
+    <div class="panel"><p class="muted">No challenges yet. Admin can add some in the <a href="{{ url_for('ctf.admin') }}">admin panel</a>.</p></div>
+  {% endif %}
+
+  {% for cat in categories %}
+    <section style="margin-bottom:1.6rem">
+      <h2 style="color:var(--neon2);letter-spacing:.18em;font-size:.85rem;text-transform:uppercase;margin-bottom:.7rem">// {{ cat }}</h2>
+      <div class="grid cols-3" data-cat-grid>
+        {% for ch in challenges if ch.category == cat %}
+          <div class="ch-card {{ 'solved' if ch.solved }}" data-id="{{ ch.id }}"
+               data-title="{{ ch.title }}"
+               data-desc="{{ ch.description }}"
+               data-meta='<span class="tag cat">{{ ch.category }}</span>
+                          <span class="tag pts">{{ ch.points }} pts{% if ch.dynamic %} dynamic{% endif %}</span>
+                          <span class="tag">{{ ch.solves }} solves</span>'>
+            <h3>{{ "🚩 " if ch.solved }}{{ ch.title }}</h3>
+            <div class="ch-meta">
+              <span class="tag cat">{{ ch.category }}</span>
+              <span class="tag pts">{{ ch.points }} pts{% if ch.dynamic %} ⚡{% endif %}</span>
+              <span>{{ ch.solves }} solves</span>
+            </div>
+            <div class="ch-desc">{{ ch.description[:110] }}{% if ch.description|length > 110 %}…{% endif %}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+</div>
+
+<div class="modal-backdrop" id="ch-modal">
+  <div class="modal">
+    <h3 id="m-title">Challenge</h3>
+    <div class="ch-meta" id="m-meta"></div>
+    <p class="desc" id="m-desc"></p>
+    <div class="flag-row">
+      <input type="text" id="m-flag" placeholder="flag{...}" autocomplete="off" spellcheck="false">
+      <button class="btn primary" id="m-submit">Submit</button>
+    </div>
+    <div class="form-error" id="m-msg"></div>
+    <div class="flex mt">
+      <span class="muted">flag format: <span class="kbd">flag{...}</span></span>
+      <button class="btn small ghost right" id="m-close">Close</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

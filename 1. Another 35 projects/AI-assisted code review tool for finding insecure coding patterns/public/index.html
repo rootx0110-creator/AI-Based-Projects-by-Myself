@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecuRevealer — AI-Assisted Insecure Pattern Review</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow g1" aria-hidden="true"></div>
+  <div class="bg-glow g2" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="url(#lg)" stroke-width="1.6">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/>
+        </linearGradient></defs>
+        <path d="M12 2 4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3z"/>
+        <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div><span class="logo-name">Secu<span class="hl">Revealer</span></span><span class="tagline">AI-assisted insecure pattern review</span></div>
+    </div>
+    <div class="top-actions">
+      <span class="pill ok" id="health">● engine ready</span>
+      <button class="btn ghost" id="btn-demo">Load demo files</button>
+      <button class="btn primary" id="btn-report" disabled>⬇ Download HTML report</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- INPUT PANEL -->
+    <section class="card input-card">
+      <div class="tabs">
+        <button class="tab active" data-tab="drop">📎 Files</button>
+        <button class="tab" data-tab="paste">⌨ Paste code</button>
+      </div>
+
+      <div id="tab-drop" class="tabpane">
+        <div class="dropzone" id="dropzone" tabindex="0">
+          <div class="dz-icon">
+            <svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+              <path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>
+            </svg>
+          </div>
+          <p class="dz-title">Drop files here — or click to browse</p>
+          <p class="dz-sub">.js .ts .py .php .java .cs .go .sql .sh .env … · scanned locally, nothing leaves your machine</p>
+          <input type="file" id="file-input" multiple hidden>
+        </div>
+        <div class="filelist" id="filelist"></div>
+      </div>
+
+      <div id="tab-paste" class="tabpane hidden">
+        <div class="paste-head">
+          <input type="text" id="paste-name" class="text-input" placeholder="filename e.g. app.js" value="pasted-snippet.js">
+        </div>
+        <textarea id="paste-code" class="code-area" spellcheck="false" placeholder="Paste code here…"></textarea>
+      </div>
+
+      <div class="scan-row">
+        <button class="btn primary big" id="btn-scan">▶ Run Security Scan</button>
+        <span class="scan-meta" id="scan-meta"></span>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="results hidden" id="results">
+      <div class="stats-row">
+        <div class="stat card">
+          <div class="ring" id="risk-ring"><div class="ring-inner"><b id="risk-score">–</b><span>risk score</span></div></div>
+        </div>
+        <div class="stat card sev-card crit"><b id="s-critical">0</b><span>critical</span></div>
+        <div class="stat card sev-card high"><b id="s-high">0</b><span>high</span></div>
+        <div class="stat card sev-card med"><b id="s-medium">0</b><span>medium</span></div>
+        <div class="stat card sev-card low"><b id="s-low">0</b><span>low</span></div>
+        <div class="stat card"><canvas id="donut" width="150" height="150"></canvas><span class="donut-label">distribution</span></div>
+      </div>
+
+      <div class="card table-card">
+        <div class="table-head">
+          <h2>Findings</h2>
+          <div class="filters">
+            <button class="chip f-chip active" data-f="ALL">All</button>
+            <button class="chip f-chip crit" data-f="CRITICAL">Critical</button>
+            <button class="chip f-chip high" data-f="HIGH">High</button>
+            <button class="chip f-chip med"  data-f="MEDIUM">Medium</button>
+            <button class="chip f-chip low"  data-f="LOW">Low</button>
+          </div>
+        </div>
+        <div class="table-body" id="findings-body"></div>
+      </div>
+    </section>
+
+    <section class="card empty" id="empty">
+      <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5">
+        <path d="M12 2 4 5v6c0 5.25 3.4 9.74 8 11 4.6-1.26 8-5.75 8-11V5l-8-3z"/>
+      </svg>
+      <h2>No scan yet</h2>
+      <p>Add files (or paste code), then hit <em>Run Security Scan</em>.<br>
+         Findings ship with root cause, exploit scenario, and a fix snippet.</p>
+    </section>
+  </main>
+
+  <!-- CODE VIEWER MODAL -->
+  <div class="modal hidden" id="viewer">
+    <div class="viewer-card card">
+      <button class="btn ghost close" id="viewer-close">✕</button>
+      <div id="viewer-content"></div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

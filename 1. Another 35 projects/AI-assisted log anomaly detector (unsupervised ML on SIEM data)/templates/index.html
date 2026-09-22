@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d9a441'/%3E%3Ctext x='16' y='22' font-size='18' text-anchor='middle' font-family='Arial' font-weight='bold' fill='%230e1626'%3ES%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="topbar">
+      <div class="brand">S</div>
+      <div class="brand-title">
+        <h1>SentinelForge</h1>
+        <p>AI-assisted log anomaly detector &middot; unsupervised ML on SIEM data</p>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn teal" id="btnSample" title="Download the bundled synthetic SIEM feed">Get sample data</button>
+    </header>
+
+    <!-- 1 · Data -->
+    <section>
+      <div class="section-title"><span class="num">1</span><h2>Feed the detector</h2>
+        <span class="hint">CSV, JSON, JSONL, Syslog (RFC3164), CEF or raw text lines</span></div>
+      <div class="panel">
+        <div class="drop" id="drop">
+          <div class="ico">&#128230;</div>
+          <p><b>Drop a log file</b> here, or click to browse &mdash; or use the bundled sample</p>
+          <small>Any SIEM / firewall / OS event feed &middot; sized 100&ndash;200k lines works best</small>
+          <input type="file" id="file" accept=".csv,.tsv,.json,.jsonl,.log,.txt,.cef">
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · Detectors -->
+    <section>
+      <div class="section-title"><span class="num">2</span><h2>Choose the ensemble</h2>
+        <span class="hint">all are unsupervised &mdash; no labels, no training set</span></div>
+      <div class="panel">
+        <div class="settings">
+          <div class="set">
+            <h3>Detectors</h3>
+            <div class="chips" id="chips">
+              <label class="chip sel"><input type="checkbox" name="m" value="if" checked>Isolation&nbsp;Forest</label>
+              <label class="chip sel"><input type="checkbox" name="m" value="ae" checked>Nano&nbsp;Autoencoder</label>
+              <label class="chip"><input type="checkbox" name="m" value="lof">Local&nbsp;Outlier&nbsp;Factor</label>
+              <label class="chip"><input type="checkbox" name="m" value="svm">One-Class&nbsp;SVM</label>
+            </div>
+            <div class="slider-row">
+              <label for="contam">Sensitivity (fraction of feed flagged as anomalies)
+                <output id="contamOut">5.0%</output></label>
+              <input type="range" id="contam" min="1" max="20" step="1" value="5">
+            </div>
+          </div>
+          <div class="set">
+            <h3>Running mode</h3>
+            <p style="color:#b9c0d0;font-size:13px;line-height:1.8">
+              Events are vectorised into behavioural features (source counts,
+              unique targets, events per second, severity norms) plus hashed
+              message text. The ensemble votes and outputs
+              <b style="color:#58b7b7">per-event scores</b>,
+              <b style="color:#58b7b7">incident clusters</b> and
+              <b style="color:#58b7b7">feature-level explanations</b>.
+            </p>
+          </div>
+        </div>
+        <div class="runbar">
+          <button class="btn gold" id="btnRun">▶&nbsp; Run anomaly detection</button>
+          <span class="status" id="status"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · Results -->
+    <section id="results" style="display:none">
+      <div class="section-title"><span class="num">3</span><h2>Findings</h2>
+        <span class="hint" id="runMeta"></span>
+        <span class="spacer" style="flex:1"></span>
+        <button class="btn gold" id="btnReport">⬇&nbsp; Download HTML report</button>
+      </div>
+
+      <div class="cards" id="cards"></div>
+
+      <div class="section-title" style="margin-top:34px"><span class="num">3a</span><h2>Incident clusters</h2>
+        <span class="hint">coordinated bursts, grouped by identity</span></div>
+      <div class="incidents" id="incidents"></div>
+
+      <div class="section-title" style="margin-top:34px"><span class="num">3b</span><h2>Flagged events</h2>
+        <span class="hint">click a row to see why it was flagged</span></div>
+      <div class="tblwrap">
+        <table id="tbl">
+          <thead><tr>
+            <th>Anomaly score</th><th>Sev</th><th>Time</th><th>Event</th>
+            <th>Source</th><th>Target</th><th>User</th><th>Message</th><th></th>
+          </tr></thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+
+      <div class="section-title" style="margin-top:34px"><span class="num">3c</span><h2>Detector votes</h2></div>
+      <div class="panel">
+        <div class="votes" id="votes"></div>
+      </div>
+    </section>
+
+    <footer>
+      <div>
+        <b style="color:#58b7b7">SentinelForge</b> &mdash; unsupervised anomaly detection for SIEM event
+        feeds. Isolation Forest, Local Outlier Factor, One-Class SVM and a pure-numpy Nano Autoencoder
+        vote per event; a burst component catches coordinated floods; incident-size confidence and
+        feature-level explanations complete the triage picture.
+      </div>
+      <div>reproducible &middot; deterministic seeds &middot; no data leaves this machine</div>
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

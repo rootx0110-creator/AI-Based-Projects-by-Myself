@@ -1,0 +1,13 @@
+# Example LLM configuration for PhishGuard.
+# Rename/save as "config.ini" in the project folder (the app saves
+# settings here from the in-app LLM settings panel too).
+#
+# Any OpenAI-compatible endpoint works: OpenAI, Azure, Ollama, LM Studio.
+# For a local Ollama server, set api_key=ollama and api_base to your url.
+
+[llm]
+enabled = 0
+api_base = https://api.openai.com/v1
+api_key =
+model = gpt-4o-mini
+timeout = 30

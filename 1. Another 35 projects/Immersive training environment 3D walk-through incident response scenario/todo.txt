@@ -1,0 +1,60 @@
+IMMERSIVE TRAINING ENVIRONMENT - BACKLOG
+========================================
+Priority: [P0] must, [P1] should, [P2] nice-to-have, [P3] future
+Status: [ ] open  [x] done  [~] in progress
+
+CORE SIM
+--------
+[x] 3D scene: building shell, interior, cold aisle, office, corridors
+[x] First-person walkthrough with click-to-look (pointer lock) + WASD
+[x] AABB collision grid derived from floor plan (walls + furniture)
+[x] WORKS: emissive strips, fog for corridor depth, exit signs, chevrons
+[x] Interactive hotspots: beacon columns, floating markers, proximity prompts
+[x] Minimap derived from floor plan (M toggles)
+[x] Flashlight toggle (F), objective hint recall (R)
+
+SCENARIO ENGINE (incident response runbook)
+-------------------------------------------
+[x] 9-step runbook objectives with strict unlock order (see state.md)
+[x] Decision prompts: agent choice, first-action, coworker rescue (2+1 extras)
+[x] Fire growth + smoke spread driven by scenario clock
+[x] Health / PPE rules (damage in fire, flashover on wrong agent)
+[x] Failure conditions (fatal injury → failed outcome)
+[x] Event log (append-only) feeding the report
+
+UI / PRODUCTION POLISH
+----------------------
+[x] Eye-catching HUD: runbook chip, objective card, clock, live score, health
+[x] Alert badges (fire/smoke/PPE/power), styled toasts, vignette + scanlines
+[x] Intro cover screen with glitch title + profile cards
+[x] Briefing screen with runbook and 3-2-1 countdown
+[x] Decision modal with option cards
+[x] Report screen: radar chart, pillar scores, download button
+[x] HTML after-action report (standalone download: checklist, decisions,
+    timeline, radar PNG, badges, sign-off)
+[x] Profile overlay: attempts log, skill radar, seal rank
+[x] Trainee memory persisted to localStorage (memory.md schema)
+[x] Audio: alarm loop, fire crackle, footsteps, pickup blips, flash (WebAudio)
+
+PACKAGING
+---------
+[x] Local static server instructions (python http.server) in readme.txt
+[x] Electron shell so the app ships as a desktop EXE
+[x] Windows EXE built AND launch-tested (release/IRT_Incident_Simulator-...)
+
+INFRA / QA
+----------
+[x] node --check syntax on all modules
+[x] Headless Chrome boot: no JS errors
+[x] Programmatic full-playthrough harness: all 9 objectives, correct decisions,
+    wrong-agent rejection, containment, protected outcome, report HTML valid
+[x] Confirm report downloads (Blob + a.download)
+[x] EXE launch verified alive (no crash) on Windows
+
+NOTES
+-----
+- three.js is vendored into assets/ so builds stay offline.
+- Scoring pillars: safety / speed / accuracy / coverage (see architecture.md).
+- Memory persists to localStorage; reports never leave the machine.
+- Known soft edge case: re-selecting the suppression decision before
+  isolation records an extra decision entry (informative, low impact).

@@ -1,0 +1,6 @@
+# Runtime dependencies (bundled into the exe)
+qrcode>=8.0
+pillow>=10.0
+
+# Build-time
+pyinstaller>=6.0

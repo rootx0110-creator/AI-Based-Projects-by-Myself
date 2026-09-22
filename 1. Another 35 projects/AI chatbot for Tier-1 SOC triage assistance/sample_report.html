@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOC Triage Report — CRITICAL — 2026-09-21T16:52:23Z</title>
+<style>
+  :root {
+    --bg: #0b1220; --panel: #121a2b; --panel2: #0e1626; --line: #22304a;
+    --text: #e6edf7; --muted: #8b9bb4; --accent: #4f8cff;
+    --crit: #ff4757; --high: #ffa502; --med: #ffd32a; --low: #2ed573;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+        font: 14px/1.55 'Segoe UI', Roboto, Arial, sans-serif; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 18px 60px; }
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .logo { width: 42px; height: 42px; border-radius: 10px;
+          background: linear-gradient(135deg, #4f8cff, #7c4dff);
+          display: flex; align-items: center; justify-content: center;
+          font-weight: 700; font-size: 18px; }
+  h1 { font-size: 20px; margin: 0; }
+  .sub { color: var(--muted); font-size: 12px; }
+  .sev-badge { margin-left: auto; padding: 8px 16px; border-radius: 10px;
+               font-weight: 700; letter-spacing: .5px; color: #0b1220;
+               background: #ff4757; }
+  .card { background: var(--panel); border: 1px solid var(--line);
+          border-radius: 12px; padding: 16px 18px; margin-top: 16px; }
+  .card h3 { margin: 0 0 10px; font-size: 15px; color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line);
+           vertical-align: top; }
+  th { color: var(--muted); font-size: 12px; text-transform: uppercase;
+       letter-spacing: .4px; }
+  td.k { color: var(--muted); white-space: nowrap; width: 200px; }
+  .chip { display: inline-block; background: var(--panel2); border: 1px solid var(--line);
+          border-radius: 999px; padding: 2px 10px; margin: 2px 4px 2px 0;
+          font-family: Consolas, monospace; font-size: 12px; word-break: break-all; }
+  .chip.llm { border-color: #7c4dff; color: #cdb6ff; }
+  .tid { font-family: Consolas, monospace; background: var(--panel2);
+         border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; }
+  .alertbox { margin-top: 14px; padding: 12px 14px; border-radius: 10px;
+              background: rgba(255,71,87,.12); border: 1px solid rgba(255,71,87,.5);
+              color: #ffb3bb; font-weight: 600; }
+  .scorebar { height: 10px; background: var(--panel2); border-radius: 999px;
+              overflow: hidden; margin-top: 10px; border: 1px solid var(--line); }
+  .scorebar > div { height: 100%; background: #ff4757; width: 87%; }
+  pre.reply { white-space: pre-wrap; background: var(--panel2); border: 1px solid var(--line);
+              border-radius: 10px; padding: 14px; font: 12.5px/1.6 Consolas, monospace; }
+  .pb-name { font-weight: 700; color: var(--accent); }
+  .pb-steps li { margin: 4px 0; }
+  .muted { color: var(--muted); }
+  .footer { margin-top: 26px; color: var(--muted); font-size: 11.5px;
+            border-top: 1px solid var(--line); padding-top: 12px; }
+  @media print {
+    body { background: #fff; color: #111; }
+    .card, .chip, .tid, pre.reply { background: #fff; border-color: #ccc; color: #111; }
+    .sev-badge { color: #fff; }
+    .sub, .muted, td.k, th { color: #555; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="logo">🛡</div>
+    <div>
+      <h1>SOC Triage Report</h1>
+      <div class="sub">Generated 2026-09-21T16:52:23Z · AI Triage Assistant for Tier-1 SOC</div>
+    </div>
+    <div class="sev-badge">CRITICAL · 87/100</div>
+  </div>
+
+  <div class="card">
+    <h3>Severity Assessment</h3>
+    <div>Overall risk score: <b>87/100</b> — classified <b style="color:#ff4757">CRITICAL</b></div>
+    <div class="scorebar"><div></div></div>
+    <ul style="margin:10px 0 0; padding-left:18px">
+      <li>+10: high signal &#x27;phishing&#x27;</li><li>+4: medium signal &#x27;spam&#x27;</li><li>+4: medium signal &#x27;detonation&#x27;</li><li>+6: 1 URL(s)</li><li>+3: 1 domain(s)</li><li>+10: ATT&amp;CK T1566 Phishing</li><li>+10: ATT&amp;CK T1566.001 Spearphishing Attachment</li><li>+6: business context &#x27;urgent&#x27;</li><li>+6: business context &#x27;immediately&#x27;</li><li>+6: business context &#x27;ceo&#x27;</li><li>+6: business context &#x27;wire transfer&#x27;</li><li>+6: business context &#x27;phi&#x27;</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Original Alert</h3>
+    <pre class="reply">SIEM Alert #44821 - Possible phishing email delivered to 25 users.
+Sender: ceo@micros0ft-secure-login.com
+Subject: URGENT: Wire transfer approval required immediately
+URL: https://micros0ft-secure-login.com/index.php?action=login
+Attachment: Invoice_2026.xlsm
+Gateway verdict: spam suspected, detonation pending.</pre>
+  </div>
+
+  <div class="card">
+    <h3>Extracted Indicators of Compromise</h3>
+    <table><tr><td class='k'>URLs</td><td><span class='chip'>https://micros0ft-secure-login.com/index.php?action=login</span></td></tr><tr><td class='k'>Domains</td><td><span class='chip'>micros0ft-secure-login.com</span></td></tr><tr><td class='k'>Email Addresses</td><td><span class='chip'>ceo@micros0ft-secure-login.com</span></td></tr><tr><td class='k'>File Names</td><td><span class='chip'>Invoice_2026.xlsm</span></td></tr></table>
+  </div>
+
+  <div class="card">
+    <h3>MITRE ATT&amp;CK Mapping</h3>
+    <table><thead><tr><th>Technique</th><th>Name</th><th>Tactic</th><th>Match</th></tr></thead><tbody><tr><td><span class='tid'>T1566</span></td><td>Phishing</td><td>Initial Access</td><td>6</td></tr><tr><td><span class='tid'>T1566.001</span></td><td>Spearphishing Attachment</td><td>Initial Access</td><td>2</td></tr></tbody></table>
+  </div>
+
+  <div class='card'><h3>Recommended Response Playbook</h3><p class='pb-name'>Phishing Email Triage</p><ol class='pb-steps'><li>Extract sender domain, subject & all URLs; detonate URLs in a sandbox (never click from prod mailbox).</li><li>Search mail gateway for all recipients of the same message; determine spread.</li><li>Purge the message from all mailboxes (Zap/purge) if confirmed malicious.</li><li>Block sender domain / URLs / attachment hashes at the gateway & proxy.</li><li>If a user clicked & entered creds: force password reset + revoke sessions immediately.</li><li>Check the recipient's mailbox rules for attacker-created forwarding (BEC indicator).</li></ol></div><div class='card'><h3>Phishing Analysis</h3><table><tr><td class='k'>Sender domain</td><td>micros0ft-secure-login.com</td></tr><tr><td class='k'>Free mail provider</td><td>No</td></tr><tr><td class='k'>Brand look-alike</td><td><span class='bad'>microsoft look-alike</span></td></tr><tr><td class='k'>Urgency markers</td><td>urgent, immediately, wire transfer</td></tr><tr><td class='k'>Suspicious attachments</td><td>Invoice_2026.xlsm</td></tr><tr><td class='k'>URLs found</td><td>1</td></tr><tr><td class='k'>Phishing risk</td><td><b>67/100</b></td></tr></table></div><div class='card'><h3>Malware Analysis</h3><table><tr><td class='k'>—</td><td>No known family signature matched</td></tr></table><p><b>Execution indicators:</b></p><ul><li>None detected</li></ul></div><div class='card'><h3>Credential &amp; Identity Analysis</h3><table><tr><td class='k'>Credential dumping tools</td><td>None detected</td></tr><tr><td class='k'>Impossible travel</td><td>No</td></tr><tr><td class='k'>MFA fatigue</td><td>No</td></tr><tr><td class='k'>Brute force / spray</td><td>No</td></tr><tr><td class='k'>Pass-the-hash</td><td>No</td></tr><tr><td class='k'>Kerberoasting</td><td>No</td></tr><tr><td class='k'>New account created</td><td>No</td></tr><tr><td class='k'>Identity risk</td><td><b>0/100</b></td></tr></table></div><div class='card'><h3>Data Exfiltration &amp; Insider Risk</h3><table><tr><td class='k'>Regulated Data</td><td>Regulated/personal data involved — privacy office & legal notification SLAs apply.</td></tr><tr><td class='k'>Exfiltration risk</td><td><b>30/100</b></td></tr></table></div>
+
+  <div class="card">
+    <h3>Assistant Chat Summary</h3>
+    <pre class="reply">## Triage Result — CRITICAL (risk 87/100)
+**Indicators:** 1 domains, 1 URLs, 1 emails, 1 files
+**MITRE ATT&amp;CK:** `T1566` Phishing, `T1566.001` Spearphishing Attachment
+
+**📋 Recommended Playbook — Phishing Email Triage**
+1. Extract sender domain, subject &amp; all URLs; detonate URLs in a sandbox (never click from prod mailbox).
+2. Search mail gateway for all recipients of the same message; determine spread.
+3. Purge the message from all mailboxes (Zap/purge) if confirmed malicious.
+4. Block sender domain / URLs / attachment hashes at the gateway &amp; proxy.
+5. If a user clicked &amp; entered creds: force password reset + revoke sessions immediately.
+6. Check the recipient&#x27;s mailbox rules for attacker-created forwarding (BEC indicator).
+
+**Phishing &amp; Email Threat Analysis**
+- ⚠️ Sender domain looks like a **microsoft** look-alike (micros0ft-secure-login.com) — strong spoof indicator.
+- Social-engineering urgency markers: `urgent`, `immediately`, `wire transfer`
+- Dangerous attachment types: `Invoice_2026.xlsm`
+- 1 URL(s) in the alert body — check sandbox detonation before clicking.
+- Phishing risk score: **67/100** → HIGH phishing likelihood
+
+**Credential &amp; Identity Threats**
+- Identity risk score: **0/100**
+
+**Data Exfiltration &amp; Insider Risk**
+- 📤 Regulated/personal data involved — privacy office &amp; legal notification SLAs apply.
+- Actions: preserve logs (cas/audit), suspend share links, engage HR/Legal if insider suspected, scope by data classification.
+- Exfiltration risk score: **30/100**
+
+**🧾 Executive Triage Summary**
+- Verdict: **CRITICAL — Active threat likely; treat as a potential major incident.** (risk score 87/100)
+- Key drivers: sender domain impersonates microsoft; dangerous attachment type present; insider/exfiltration risk markers
+
+**Next actions**
+1. Purge phishing message fleet-wide; block sender &amp; detonate URLs.
+2. Preserve audit logs &amp; engage Legal/Privacy for regulated data exposure.
+3. Confirm technique T1566 (Phishing) with endpoint/telemetry evidence.
+4. Confirm technique T1566.001 (Spearphishing Attachment) with endpoint/telemetry evidence.
+
+&lt;details&gt;&lt;summary&gt;Scoring breakdown&lt;/summary&gt;
+- +10: high signal &#x27;phishing&#x27;
+- +4: medium signal &#x27;spam&#x27;
+- +4: medium signal &#x27;detonation&#x27;
+- +6: 1 URL(s)
+- +3: 1 domain(s)
+- +10: ATT&amp;CK T1566 Phishing
+- +10: ATT&amp;CK T1566.001 Spearphishing Attachment
+- +6: business context &#x27;urgent&#x27;
+- +6: business context &#x27;immediately&#x27;
+- +6: business context &#x27;ceo&#x27;
+- +6: business context &#x27;wire transfer&#x27;
+- +6: business context &#x27;phi&#x27;
+&lt;/details&gt;</pre>
+    <div style="margin-top:8px"><span class='chip'>Offline deterministic engine</span></div>
+  </div>
+
+  <div class='alertbox'>⚠️ Escalate to Tier-2 / IR per triage matrix.</div>
+
+  <div class="footer">
+    Generated by SOC Triage Assistant (hybrid AI engine). Deterministic scoring is
+    decision-support only — final disposition requires analyst validation.
+    Handle per your organization's incident-handling procedures.
+  </div>
+</div>
+</body>
+</html>

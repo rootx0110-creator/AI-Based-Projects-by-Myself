@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compliance Automation Suite</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ Sidebar ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">✓</div>
+      <div>
+        <div class="brand-name">Compliance Suite</div>
+        <div class="brand-sub">ISO 27001 · BB ICT · NIST CSF</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard"><span class="ico">▦</span> Dashboard</button>
+      <button class="nav-item" data-view="assess"><span class="ico">☰</span> Control Register</button>
+      <button class="nav-item" data-view="mapper"><span class="ico">⇄</span> Control Mapper</button>
+      <button class="nav-item" data-view="gaps"><span class="ico">⚠</span> Gap Analysis</button>
+      <button class="nav-item" data-view="matrix"><span class="ico">⊞</span> Crosswalk</button>
+      <button class="nav-item" data-view="report"><span class="ico">⇩</span> Reports</button>
+    </nav>
+
+    <div class="side-card">
+      <div class="side-title">Organization</div>
+      <input id="orgName" class="input" placeholder="Your organization…">
+      <button id="saveOrg" class="btn btn-light btn-sm" style="margin-top:8px">Save</button>
+    </div>
+
+    <div class="side-foot">
+      <div>v1.0.0</div>
+      <div id="connState" class="ok">● connected</div>
+    </div>
+  </aside>
+
+  <!-- ============ Main ============ -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="viewTitle">Dashboard</h1>
+        <p id="viewSub" class="topbar-sub">Real-time compliance posture across frameworks</p>
+      </div>
+      <div class="topbar-actions">
+        <span id="lastSaved" class="muted"></span>
+        <a class="btn btn-primary" href="/api/report" download="compliance-report.html">⇩ Download HTML Report</a>
+      </div>
+    </header>
+
+    <!-- ================= Dashboard ================= -->
+    <section id="view-dashboard" class="view">
+      <div class="hero">
+        <div class="hero-left">
+          <div class="hero-kicker">Overall Compliance Score</div>
+          <div class="hero-score" id="overallScore">–</div>
+          <div class="hero-maturity" id="overallMaturity">–</div>
+        </div>
+        <div class="hero-right" id="heroStatus">Loading…</div>
+      </div>
+
+      <div class="cards" id="fwCards"></div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h3>Framework Scores</h3>
+          <div id="dashBars"></div>
+        </div>
+        <div class="panel">
+          <h3>Status Distribution</h3>
+          <div class="legend" id="statusLegend"></div>
+          <div class="stackbar" id="statusBar"></div>
+          <div id="themeHeat" style="margin-top:18px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Assess ================= -->
+    <section id="view-assess" class="view hidden">
+      <div class="toolbar">
+        <div class="tabs" id="fwTabs">
+          <button class="tab active" data-fw="iso27001">ISO 27001:2022</button>
+          <button class="tab" data-fw="bbict">BB ICT Guideline</button>
+          <button class="tab" data-fw="nistcsf">NIST CSF 2.0</button>
+        </div>
+        <input id="assessSearch" class="input" style="max-width:260px" placeholder="Search controls…">
+      </div>
+      <div class="panel">
+        <div class="bulkbar">
+          <span id="selCount" class="muted">0 selected</span>
+          <select id="bulkStatus" class="input" style="max-width:200px">
+            <option value="">Set status…</option>
+          </select>
+          <button id="bulkApply" class="btn btn-primary btn-sm">Apply</button>
+        </div>
+        <div class="table-wrap">
+          <table class="tbl" id="assessTable">
+            <thead>
+              <tr>
+                <th style="width:34px"><input type="checkbox" id="selAll"></th>
+                <th style="width:90px">ID</th>
+                <th>Control</th>
+                <th style="width:170px">Status</th>
+                <th style="width:140px">Owner</th>
+                <th style="width:190px">Notes / Evidence</th>
+                <th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Mapper ================= -->
+    <section id="view-mapper" class="view hidden">
+      <div class="toolbar">
+        <select id="mapFw" class="input" style="max-width:260px">
+          <option value="iso27001">ISO 27001:2022</option>
+          <option value="bbict">BB ICT Guideline</option>
+          <option value="nistcsf">NIST CSF 2.0</option>
+        </select>
+        <select id="mapControl" class="input" style="max-width:340px"></select>
+        <button id="mapBtn" class="btn btn-primary btn-sm">Map ⇄</button>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h3 id="mapSourceTitle">Source control</h3>
+          <div id="mapSource"></div>
+        </div>
+        <div class="panel">
+          <h3>Mapped controls</h3>
+          <div id="mapResults" class="muted">Select a control and click Map.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Gaps ================= -->
+    <section id="view-gaps" class="view hidden">
+      <div class="toolbar">
+        <input id="gapSearch" class="input" style="max-width:260px" placeholder="Filter findings…">
+        <button id="gapSave" class="btn btn-light btn-sm">Save findings snapshot</button>
+        <a class="btn btn-primary btn-sm" href="/api/report" download="compliance-report.html">Export report</a>
+      </div>
+      <div class="panel">
+        <div class="table-wrap">
+          <table class="tbl" id="gapTable">
+            <thead>
+              <tr><th style="width:70px">Risk</th><th style="width:110px">Framework</th><th style="width:90px">ID</th>
+                  <th>Gap</th><th style="width:150px">Status</th><th style="width:120px">Owner</th><th>Recommendation</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= Matrix ================= -->
+    <section id="view-matrix" class="view hidden">
+      <div class="panel">
+        <h3>Crosswalk — BB ICT domain → ISO 27001 / NIST CSF</h3>
+        <p class="muted" style="margin-bottom:12px">How each Bangladesh Bank ICT Guideline domain is covered by ISO 27001 Annex A controls and NIST CSF 2.0 categories.</p>
+        <div id="matrixWrap"></div>
+      </div>
+    </section>
+
+    <!-- ================= Report ================= -->
+    <section id="view-report" class="view hidden">
+      <div class="panel report-panel">
+        <h3>Compliance Report</h3>
+        <p class="muted">A self-contained HTML report (framework scores, gap analysis, crosswalk and the full control register) opens in a new tab — use “Save as…” or press Ctrl+S to keep it.</p>
+        <div class="report-actions">
+          <a class="btn btn-primary" href="/api/report" download="compliance-report.html">⇩ Download HTML Report</a>
+          <button id="previewBtn" class="btn btn-light">Preview here</button>
+        </div>
+        <div id="reportPreview" class="report-preview"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

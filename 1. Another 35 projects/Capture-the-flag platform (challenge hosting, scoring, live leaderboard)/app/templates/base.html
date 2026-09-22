@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ ctf_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='90' font-size='90'>🚩</text></svg>">
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <nav class="nav">
+    <a class="brand" href="{{ url_for('ctf.index') }}">NEON<span>//</span>GRID <small style="color:var(--dim)">CTF</small></a>
+    <a class="link" href="{{ url_for('ctf.index') }}">Home</a>
+    <a class="link" href="{{ url_for('ctf.challenges') }}">Challenges</a>
+    <a class="link" href="{{ url_for('ctf.scoreboard') }}">Scoreboard</a>
+    <a class="link" href="{{ url_for('ctf.report') }}">Report</a>
+    {% if current_user and current_user.is_admin %}
+      <a class="link" href="{{ url_for('ctf.admin') }}">Admin</a>
+    {% endif %}
+    <span class="spacer"></span>
+    {% if current_user %}
+      <span class="pill">👤 {{ current_user.username }}</span>
+      {% if current_user.is_admin %}<span class="pill danger">ADMIN</span>{% endif %}
+      <a class="btn small ghost" href="{{ url_for('ctf.logout') }}">Logout</a>
+    {% else %}
+      <a class="btn small ghost" href="{{ url_for('ctf.login') }}">Login</a>
+      <a class="btn small primary" href="{{ url_for('ctf.register') }}">Join</a>
+    {% endif %}
+  </nav>
+
+  <main>{% block content %}{% endblock %}</main>
+  <footer class="site">NEON//GRID CTF — hack responsibly · <span id="feed-clients"></span></footer>
+  <div id="toasts"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

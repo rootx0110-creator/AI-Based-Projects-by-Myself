@@ -1,0 +1,173 @@
+=====================================================================
+ HOW TO CHECK YOUR OWN MOBILE ARTIFACTS (STEP BY STEP)
+ Mobile Device Forensic Workflow (MFW) - Android devices only
+=====================================================================
+
+SHORT ANSWER
+------------
+YES. Connect your own Android phone by USB and the app can extract
+and show you:
+
+  - Call logs     (incoming / outgoing / missed, duration)
+  - SMS messages  (address, direction, body)
+  - Contacts      (names + numbers)
+  - Installed apps (package inventory, 3rd-party + system)
+  - Screenshots   (whatever is on the phone screen right now)
+  - Device info   (model, Android version, security patch level)
+
+Everything is saved under  data\cases\<YOUR_CASE>\  and you can
+download a full HTML report of the findings with one click.
+
+NOTE: this is a LOGICAL extraction tool. It reads user-level data
+through Android's own backup/inventory mechanisms. It does NOT root
+the phone, does NOT bypass locks, and cannot read encrypted app
+databases (WhatsApp, Telegram, etc.). iPhone is not supported.
+
+
+=====================================================================
+PART 1 - PREPARE YOUR PHONE (one-time setup)
+=====================================================================
+
+STEP 1. Enable Developer Options
+        - Open  Settings > About phone
+        - Find  Build number  (sometimes under  Software information)
+        - Tap it 7 times quickly
+        - You will see "You are now a developer!"
+
+STEP 2. Enable USB Debugging
+        - Settings > System > Developer options
+          (on some phones: Settings > Additional settings)
+        - Turn ON  "USB debugging"
+
+STEP 3. Install ADB on the PC (the app needs adb.exe)
+        Easiest: download "SDK Platform Tools" from Google:
+          https://developer.android.com/tools/releases/platform-tools
+        - Unzip it to  C:\platform-tools\
+          (the app automatically finds  C:\platform-tools\adb.exe)
+        - Or unzip anywhere and add that folder to your PATH
+        Check: the app header should show "ADB ready" on next launch.
+
+STEP 4. (Recommended) Turn the screen ON and UNLOCK the phone.
+        A locked screen can block the backup confirmation dialog.
+
+
+=====================================================================
+PART 2 - RUN THE WORKFLOW IN THE APP
+=====================================================================
+
+STEP 5. Start the app
+        - Double-click  MobileForensicWorkflow.exe
+        - First run creates a sample case DEMO-001 automatically.
+
+STEP 6. Create YOUR case
+        - Left menu > "Case Manager"
+        - Fill: Case number (e.g. 2026-MY-001), Title, Examiner
+          (your name), Agency (optional)
+        - Click  "+ Create case"
+        - It becomes the ACTIVE case (see the chip in the header).
+
+STEP 7. Connect the phone
+        - Plug the USB cable into the PC
+        - On the phone, set USB mode to "File transfer / MTP"
+          (pure "charging only" often blocks ADB)
+        - Go to "Extraction" in the left menu
+        - Click  "Refresh devices"
+        - FIRST TIME ONLY: the phone shows
+          "Allow USB debugging? (RSA fingerprint)"
+          -> tick "Always allow from this computer" -> tap ALLOW
+
+STEP 8. Read device info (sanity check)
+        - Select your device row in the device table
+        - Click  "Read device info"
+        - The log shows model, Android version, security patch etc.
+        If this works, ADB is fully functional.
+
+STEP 9. Choose an extraction method and start
+        A) "ADB Backup (logical acquisition)"  <-- the main one
+           - Click  "Start extraction"
+           - WATCH YOUR PHONE: Android shows
+             "Back up my data - Do you want to back up...?"
+             -> tap  "BACK UP MY DATA"  (do NOT tap Cancel)
+           - The tool waits up to ~4 minutes
+           - When done, the log shows the unpack + parsing results
+             and the evidence file gets SHA-256 hashed
+        B) "Package inventory" - quick list of installed apps
+        C) "Screenshot capture" - PNG of the current phone screen
+        D) "Demo dataset" - no phone needed (offline demo data)
+
+STEP 10. Review the artifacts
+        - Left menu > "Artifacts"
+        - Pick type: calls / sms / contacts / apps
+        - Use the search box to filter (number, name, text...)
+        - Optional: "Export CSV" to save the current table
+
+STEP 11. Download the HTML report
+        - Left menu > "Reports"
+        - Fill report title / classification / summary
+        - Click  "DOWNLOAD HTML REPORT"
+        - Choose where to save (defaults to the case reports folder)
+        - Open the .html file in any browser - it contains case info,
+          device info, methodology, findings tables, SHA-256 hashes
+          of every evidence file, and the chain of custody.
+        - "Open last report" re-opens the most recent one.
+
+
+=====================================================================
+WHERE MY DATA IS STORED (all local, next to the exe)
+=====================================================================
+  data\cases_index.json                  list of your cases
+  data\audit.log                         global action trail
+  data\cases\<CASE_NUMBER>\
+      audit.txt                          per-case action trail
+      chain_of_custody.csv               timestamps + SHA-256 hashes
+      evidence\                          raw acquisition files
+                                         (backup_<case>.ab, PNGs, ...)
+      extracted\                         unpacked data + artifacts.json
+      reports\                           your downloaded HTML reports
+      exports\                           CSV exports
+
+You can copy the whole case folder to a USB drive as evidence.
+
+
+=====================================================================
+TROUBLESHOOTING (self-examination specifics)
+=====================================================================
+
+Q: "Refresh devices" shows nothing / list is empty
+   A: - Check the USB cable (some cables are charge-only - try another)
+      - Phone: pull down the USB notification -> switch to
+        "File transfer / MTP"
+      - Revoke + re-authorize: Developer options > Revoke USB
+        debugging authorizations, then re-plug and accept the RSA prompt
+      - Check "adb ready" chip in the app header (see Part 1 Step 3)
+
+Q: Device listed as "unauthorized"
+   A: Unlock the phone and accept the "Allow USB debugging?" dialog.
+
+Q: Backup finished but artifacts are empty
+   A: - The phone's backup transport may be restricted or disabled
+        by the manufacturer (some newer Android builds restrict
+        'adb backup'). Check the extraction log for warnings.
+      - Screen was locked so the confirmation never got tapped ->
+        unlock the screen, run again, and tap "BACK UP MY DATA".
+      - Your phone may have no data in those providers
+        (check with the "Demo dataset" method to confirm the app
+        pipeline itself works).
+
+Q: "adb backup" seems to hang
+   A: It is waiting for the on-device confirmation dialog. Look at
+      the phone, tap "BACK UP MY DATA". Timeout is ~4 minutes.
+
+Q: The phone screen looks odd after screenshot capture
+   A: It is just a screenshot - nothing on the phone was modified.
+
+Q: Samsung / Xiaomi / etc. show "backup cancelled"
+   A: Some vendor ROMs disable the backup transport. The package
+      inventory and screenshot methods still work on those devices.
+
+PRIVACY & LEGAL
+---------------
+Extracting a device you do not own or lack authorization to examine
+may be illegal. Use this tool only on your own devices or within an
+authorized investigation. All processing stays on your PC; nothing
+is uploaded anywhere.

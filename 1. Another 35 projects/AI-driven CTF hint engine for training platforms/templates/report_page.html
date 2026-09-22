@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block title %}Report · AI-Driven CTF Hint Engine{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h2>Progress Report</h2>
+  <a class="btn primary" href="/download/report">&#8681; Download HTML</a>
+</div>
+<p class="mini muted">Self-contained report with stats, per-challenge status, hint usage and the full hint timeline.</p>
+
+<iframe id="reportFrame" src="about:blank" title="Report preview"></iframe>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById("reportFrame").srcdoc = {{ rendered | tojson }};
+</script>
+{% endblock %}

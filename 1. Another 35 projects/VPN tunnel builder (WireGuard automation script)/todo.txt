@@ -1,0 +1,26 @@
+Backlog - VPN Tunnel Builder
+============================
+
+[x] Scaffold repo: architecture/state/memory/readme/todo, requirements
+[x] Core engine: X25519 keygen (RFC 7748), key format helpers
+[x] Core engine: server + client config builders, subnet math
+[x] Core engine: JSON store + event log
+[x] Core engine: QR generation + self-contained HTML report (download)
+[x] UI: dark high-level theme + reusable widgets (cards, sidebar)
+[x] UI views: Dashboard, Tunnel Builder, Peers, Deploy, Reports, Settings
+[x] selfcheck runner (crypto vector + config round-trip + report smoke test)
+[x] Packaging: build.ps1 PyInstaller -> dist\VPN Tunnel Builder.exe
+[x] Verify exe launches cleanly and state persists
+
+Next up / ideas:
+[ ] Optional: systemd/wg-quick launch recipes inside Deploy tab examples
+[ ] Optional: import existing .conf files and adopt current server key
+[ ] Optional: config TTL/rotation reminders in reports
+[ ] Optional: multi-profile (multiple servers side by side)
+[ ] Optional: export to .zip bundle directly from Deploy tab
+[ ] Optional: signing/timestamps note in report footer for audits
+
+Done recently:
+- Pure-python X25519 chosen to keep zero runtime crypto deps (memory.md)
+- Base64 image embedding chosen for portable HTML reports
+- NAT-like settings folded into server config; client AllowedIPs per device

@@ -1,0 +1,25 @@
+NEON//GRID CTF PLATFORM — TODO
+==============================
+
+HIGH PRIORITY (v1.1)
+[x] Challenge hosting (CRUD via admin console)
+[x] Scoring engine (static + dynamic decay)
+[x] Live leaderboard (5s poll + websocket feed)
+[x] HTML report download (/report/download)
+[x] Auth (register/login, PBKDF2 hashing)
+[x] Admin settings (CTF name, open/close registration & competition)
+[x] Demo data seeder
+
+MEDIUM (v1.2)
+[ ] Hint unlock system (spend points to reveal flag_hint)
+[ ] CSV export alongside HTML report
+[ ] Rate limiting on flag submissions (anti-bruteforce)
+[ ] Team model (multiple users per team)
+
+LOW / IDEAS (v2)
+[ ] File-attachment challenges
+[ ] Docker deployment mode
+[ ] SQLite backend option behind the db interface
+[ ] Player vs player head-to-head stats
+
+DONE — see state.md for verification notes.

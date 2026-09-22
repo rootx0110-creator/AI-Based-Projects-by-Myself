@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rule Detail 100001 - RulePackStudio</title>
+<style>
+  :root {
+    --bg:#0f1420; --panel:#171d2c; --panel2:#1d2438; --line:#2a3350;
+    --fg:#e6ebf5; --muted:#8a94ad; --accent:#4f8cff;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.55 'Segoe UI', system-ui, sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
+  header { border-bottom:2px solid var(--line); padding-bottom:18px; margin-bottom:8px; }
+  .kicker { color:var(--accent); text-transform:uppercase; letter-spacing:2.5px;
+            font-size:11px; font-weight:700; }
+  h1 { margin:6px 0 4px; font-size:26px; }
+  .sub { color:var(--muted); }
+  h2 { margin:34px 0 12px; color:var(--fg); font-size:19px;
+       border-left:4px solid var(--accent); padding-left:10px; }
+  .cards { display:flex; flex-wrap:wrap; gap:14px; margin:20px 0; }
+  .card { flex:1 1 160px; background:var(--panel); border:1px solid var(--line);
+          border-radius:12px; padding:16px 18px; }
+  .card .n { font-size:30px; font-weight:800; }
+  .card .l { color:var(--muted); font-size:12px; text-transform:uppercase;
+             letter-spacing:1px; }
+  table { width:100%; border-collapse:collapse; background:var(--panel);
+          border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th { text-align:left; color:var(--muted); text-transform:uppercase;
+       font-size:11px; letter-spacing:1px; padding:10px 12px;
+       background:var(--panel2); }
+  td { padding:10px 12px; border-top:1px solid var(--line); vertical-align:top; }
+  tr:hover td { background:#20273c; }
+  .chip { display:inline-block; padding:2px 9px; border-radius:20px;
+          font-size:11px; font-weight:700; color:#fff; }
+  .Llow { background:#7f8c8d; } .Lmed { background:#f39c12; }
+  .Lhigh { background:#e67e22; } .Lcrit { background:#e74c3c; }
+  .pill { display:inline-block; background:var(--panel2); border:1px solid var(--line);
+          border-radius:8px; padding:4px 10px; margin-right:6px; font-size:12px; }
+  pre { background:#0a0e18; border:1px solid var(--line); border-radius:8px;
+        padding:14px; overflow-x:auto; font:12.5px/1.5 Consolas, monospace;
+        color:#c8f0d0; }
+  .bar { height:14px; border-radius:7px; background:var(--panel2); overflow:hidden;
+         position:relative; }
+  .bar > span { display:block; height:100%; }
+  .barrow { display:flex; align-items:center; gap:12px; margin:8px 0; }
+  .barrow .lbl { width:120px; color:var(--muted); font-size:12px; }
+  .barrow .val { width:70px; text-align:right; font-size:12px; color:var(--muted); }
+  .stage { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+           padding:12px 16px; margin:8px 0; display:flex; align-items:center;
+           gap:14px; }
+  .stage .dot { width:10px; height:10px; border-radius:50%; flex:0 0 10px; }
+  .stage .sname { font-weight:700; width:230px; }
+  .stage .tactic { color:var(--accent); font-size:12px; width:70px; }
+  .stage .meta { color:var(--muted); font-size:12px; flex:1; }
+  .ruleblk { background:var(--panel); border:1px solid var(--line);
+             border-radius:12px; padding:16px; margin:14px 0; }
+  .ruleblk h3 { margin:0 0 6px; font-size:15px; display:flex; gap:10px;
+                align-items:center; }
+  .muted { color:var(--muted); } .small { font-size:12px; }
+  footer { margin-top:40px; color:var(--muted); font-size:11px;
+           border-top:1px solid var(--line); padding-top:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="kicker">Detection Engineering Report</div><h1>Rule Detail &mdash; 100001</h1><div class="sub">Web-Kill-Chain Detection Pack v1.0.0</div></header><div class="ruleblk"><h3><span class="chip Lmed">L5</span><span>100001</span></h3><p style="margin:4px 0 6px">Web scanner probing known application paths.</p><p class="small"><span class="pill">Reconnaissance</span> <span class="pill">MITRE T1595</span> <span class="pill">src: apache_access</span> <span class="pill">web_access,recon,</span></p><pre>&lt;rule id=&quot;100001&quot; level=&quot;5&quot;&gt;
+  &lt;decoded_as&gt;apache&lt;/decoded_as&gt;
+  &lt;regex&gt;GET /(view|include|modules|admin|\.\./)&lt;/regex&gt;
+  &lt;description&gt;Web scanner probing known application paths.&lt;/description&gt;
+  &lt;group&gt;web_access,recon,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><h2>Context</h2><p>Web scanner probing known application paths.</p><p class="small">MITRE technique <b>T1595</b> &middot; stage <b>Reconnaissance</b> &middot; log source <b>apache_access</b></p><pre>&lt;rule id=&quot;100001&quot; level=&quot;5&quot;&gt;
+  &lt;decoded_as&gt;apache&lt;/decoded_as&gt;
+  &lt;regex&gt;GET /(view|include|modules|admin|\.\./)&lt;/regex&gt;
+  &lt;description&gt;Web scanner probing known application paths.&lt;/description&gt;
+  &lt;group&gt;web_access,recon,&lt;/group&gt;
+&lt;/rule&gt;</pre><footer>
+  Generated by RulePackStudio &middot; 2026-09-19 14:02:42 &middot; offline HTML report
+  &mdash; no external resources loaded.
+</footer>
+</div>
+</body>
+</html>

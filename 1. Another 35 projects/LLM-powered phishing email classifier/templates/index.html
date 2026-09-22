@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070b18">
+<title>PhishGuard — LLM-Powered Phishing Email Classifier</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="bg">
+  <div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div>
+  <div class="grid-overlay"></div>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">🛡️</div>
+    <div>
+      <h1>PhishGuard</h1>
+      <span>LLM-Powered Phishing Email Classifier</span>
+    </div>
+  </div>
+  <div class="top-actions">
+    <div id="llmStatus" class="status-pill off" title="LLM analysis status">
+      <span class="dot"></span><span id="llmStatusText">LLM off</span>
+    </div>
+    <button class="ghost-btn" id="btnSettings">⚙️ LLM Settings</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="intro">
+    <h2>Decode the <span class="grad">threat</span> in every inbox</h2>
+    <p>Drop an email below. PhishGuard runs a 25+ signal heuristic engine and, when enabled, an LLM
+       deep-dive to hand you a verdict — with downloadable HTML reports.</p>
+    <div class="chips">
+      <span class="chip chip-safe">✔ SAFE</span>
+      <span class="chip chip-warn">⚠ SUSPICIOUS</span>
+      <span class="chip chip-phish">⚠ PHISHING</span>
+    </div>
+  </section>
+
+  <section class="card scanner">
+    <div class="card-head">
+      <h3>Email Scanner</h3>
+      <div class="scan-strip"><div class="scan-lines"></div></div>
+    </div>
+    <form id="scanForm" autocomplete="off">
+      <div class="row grid2">
+        <label>From
+          <input type="text" id="from" placeholder="alerts@bank-securify.com" spellcheck="false">
+        </label>
+        <label>To
+          <input type="text" id="to" placeholder="you@yourdomain.com" spellcheck="false">
+        </label>
+      </div>
+      <label>Subject
+        <input type="text" id="subject" placeholder="URGENT: your account has been suspended" spellcheck="false">
+      </label>
+      <label>Email content
+        <textarea id="content" rows="10" spellcheck="false"
+          placeholder="Paste the raw email body here... or paste a full EML style message with From:/Subject: headers."></textarea>
+      </label>
+      <div class="row between">
+        <label class="toggle">
+          <input type="checkbox" id="useLlm" checked>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-text">Enable LLM deep-dive <small>(uses saved settings)</small></span>
+        </label>
+        <button type="submit" class="scan-btn" id="btnScan">
+          <span class="scan-btn-label">Analyze Email</span>
+          <span class="scan-btn-rays"></span>
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card result" id="resultCard" hidden>
+    <div class="result-top">
+      <div class="verdict-wrap">
+        <div class="verdict-icon" id="verdictIcon">✔</div>
+        <div>
+          <div class="kicker" id="resultKicker">ANALYSIS COMPLETE</div>
+          <h2 class="verdict" id="verdictText">&nbsp;</h2>
+          <p class="verdict-sub" id="verdictSub"></p>
+        </div>
+      </div>
+      <div class="risk-box">
+        <div class="risk-num"><span id="riskNum">0</span><small>/100</small></div>
+        <div class="meter"><div class="meter-fill" id="riskFill"></div></div>
+        <div class="conf">confidence <b id="confNum">0%</b></div>
+      </div>
+    </div>
+
+    <div class="meta-row" id="metaRow"></div>
+
+    <div class="result-body">
+      <div class="result-col">
+        <h4>Evidence</h4>
+        <ul class="evidence" id="evidenceList"></ul>
+      </div>
+      <div class="result-col">
+        <h4>Tactics</h4>
+        <div class="tactics" id="tacticsList"></div>
+        <h4 class="mt">Explanation</h4>
+        <ul class="reasons" id="reasonsList"></ul>
+      </div>
+    </div>
+
+    <div class="llm-panel" id="llmPanel" hidden>
+      <h4>🤖 LLM Deep-Dive</h4>
+      <div id="llmBody" class="llm-body"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="download-btn" id="btnReport">⬇ Download HTML Report</button>
+      <button class="ghost-btn" id="btnNew">New Scan</button>
+      <span class="report-hint">portable &amp; printable standalone file</span>
+    </div>
+  </section>
+
+  <footer class="foot">PhishGuard v1.0 &middot; For authorized security analysis &middot;
+    <a href="/api/health" target="_blank">health</a></footer>
+</main>
+
+<div class="modal-backdrop" id="settingsModal" hidden>
+  <div class="modal">
+    <div class="modal-head"><h3>⚙️ LLM Settings</h3><button class="x" id="btnCloseSettings">✕</button></div>
+    <div class="modal-body">
+      <label class="toggle row-inline">
+        <input type="checkbox" id="setEnabled">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">Enable LLM analysis</span>
+      </label>
+      <label>API Base
+        <input type="text" id="setBase" placeholder="https://api.openai.com/v1">
+      </label>
+      <label>API Key
+        <input type="password" id="setKey" placeholder="sk-... or 'ollama' for local">
+      </label>
+      <label>Model
+        <input type="text" id="setModel" placeholder="gpt-4o-mini / llama3.1">
+      </label>
+      <label>Timeout (seconds)
+        <input type="number" id="setTimeout" value="30" min="5" max="120">
+      </label>
+      <p class="tip">Supports any OpenAI-compatible endpoint: OpenAI, Ollama, LM Studio, Azure OpenAI.</p>
+      <p class="tip warn">Your API key is stored locally in config.ini — never share your config.ini file.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost-btn" id="btnCancelSettings">Cancel</button>
+      <button class="scan-btn" id="btnSaveSettings">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

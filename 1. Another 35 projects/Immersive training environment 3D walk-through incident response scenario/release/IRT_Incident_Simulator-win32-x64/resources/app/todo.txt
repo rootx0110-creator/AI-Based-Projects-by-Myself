@@ -1,0 +1,49 @@
+IMMERSIVE TRAINING ENVIRONMENT - BACKLOG
+========================================
+Priority: [P0] must, [P1] should, [P2] nice-to-have, [P3] future
+Status: [ ] open  [x] done  [~] in progress
+
+CORE SIM
+--------
+[x] 3D scene: building shell, interior, server room, corridors, offices
+[x] First-person walkthrough with click-to-look (pointer lock) + WASD
+[x] AABB collision grid derived from floor plan
+[x] WORKS: gamma-lit, shadows, fog for corridor depth
+[x] Interactive hotspots with proximity prompts and click/interact
+[x] Day/night ambience toggle
+
+SCENARIO ENGINE (incident response runbook)
+-------------------------------------------
+[x] 9-step runbook objectives with strict unlock order
+[ ] Decision prompts (agent choice, valve order, e-stop, evacuation call)
+[ ] Fire growth + smoke spread driven by scenario clock
+[ ] Health / PPE rules (damage in hazards, injury on wrong suppression)
+[ ] Failure conditions (fatal injury, runbook time-out)
+[ ] Event log (append-only) feeding the report
+
+UI / PRODUCTION POLISH
+----------------------
+[x] Eye-catching HUD: mission chip, objective tracker, clock, health pip
+[x] Minimap derived from floor plan
+[x] Intro briefing + concept art quality (pure CSS/WebGL)
+[ ] Report download as branded HTML (metrics, timeline, badges, radar)
+[ ] Profile/memory screen with personal bests (radar chart)
+[ ] Audio: alarm loop, fire crackle, footsteps, pickup blips (WebAudio)
+
+PACKAGING
+---------
+[ ] Local static server script (python / node) for offline test
+[ ] Electron shell so the app can ship as a desktop EXE
+[ ] Windows .exe build via electron-builder
+
+INFRA / QA
+----------
+[ ] grep smoke: no console syntax errors
+[ ] Run in browser (Edge) and confirm: spawn, move, hint text, report DL
+[ ] Verify report renders fully offline and downloads with today's date
+
+NOTES
+-----
+- three.js is vendored into assets/ so builds stay offline.
+- Scoring pillars: safety / speed / accuracy / coverage (see architecture.md).
+- Memory persists to localStorage; reports never leave the machine.

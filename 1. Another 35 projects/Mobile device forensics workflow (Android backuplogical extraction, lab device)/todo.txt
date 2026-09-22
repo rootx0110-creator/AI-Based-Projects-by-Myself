@@ -1,0 +1,38 @@
+MOBILE DEVICE FORENSIC WORKFLOW - TASK LIST
+============================================
+
+[x] Define architecture & docs (architecture.md, memory.md, state.md, readme.txt)
+[x] Choose stack: Python + PySide6 + PyInstaller onefile
+[x] Theme module: indigo/violet gradient background, teal accent, glass cards
+[x] App shell: sidebar navigation + header chips + stacked pages
+[x] Dashboard: KPI stat cards, recent cases, system status (ADB path/version)
+[x] Case Manager: intake form, case table, set active case
+[x] ADB wrapper: locate adb, list devices, getprop device info
+[x] Extraction engine (device-independent, testable core)
+    [x] adb backup logical acquisition (.ab -> zlib -> tar unpack)
+    [x] Package inventory (pm list packages)
+    [x] Screenshot capture (screencap)
+    [x] Offline demo dataset (no device required)
+[x] Threaded extraction worker with live log + progress bar
+[x] Evidence integrity: SHA-256 + chain_of_custody.csv + per-case audit
+[x] Artifact parsers: calls, SMS, contacts (SQLite), apps
+[x] Artifacts browser: filters, search, CSV export
+[x] HTML report generator (self-contained, inline CSS)
+[x] Report view: preview + DOWNLOAD HTML REPORT (save dialog) + open last
+[x] Global audit log viewer
+[x] First-run sample case (DEMO-001) so the app opens with data
+[x] Headless smoke test (offscreen)
+[x] PyInstaller build -> dist/MobileForensicWorkflow.exe
+[x] Verify exe launches
+
+NEXT / BACKLOG
+--------------
+[ ] App icon (.ico) and custom splash for the exe
+[ ] Wi-Fi / browser-history / calllog XML parsers (additional artifacts)
+[ ] ADB pull mode for rooted lab devices (physical-lite acquisition)
+[ ] PDF export alongside HTML (Qt WebEngine print or wkhtmltopdf)
+[ ] Timeline view merging calls + SMS into a single chronology
+[ ] Report templates (agency logo upload)
+[ ] Multi-device case support (several extractions per case, device switcher)
+[ ] Automated tests: pytest for parsers, store, report generator
+[ ] Code signing for the exe (lab deployment policy)

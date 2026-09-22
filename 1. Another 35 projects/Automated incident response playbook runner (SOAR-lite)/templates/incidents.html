@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Incidents · SOAR-Lite{% endblock %}
+{% block page %}Incident Triage Queue{% endblock %}
+{% block crumb %}create, triage, run playbooks, and track lifecycle{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="flex wrap grow">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="q" placeholder="Search ref, title, IOC, analyst…" oninput="render()">
+    </div>
+    <div class="filters" id="tfilters">
+      <span class="filter-key muted">Severity</span>
+      <button class="chip active" data-s="" onclick="setSev(this,'')">All</button>
+      {% for s in severities %}<button class="chip" data-s="{{ s }}" onclick="setSev(this,'{{ s }}')">{{ s }}</button>{% endfor %}
+    </div>
+    <div class="filters" id="pfilter">
+      <span class="filter-key muted">Phase</span>
+      <button class="chip active" data-p="" onclick="setPhase(this,'')">All</button>
+      <button class="chip" data-p="open" onclick="setPhase(this,'open')">Open</button>
+      <button class="chip" data-p="contained" onclick="setPhase(this,'contained')">Contained</button>
+      <button class="chip" data-p="recovered" onclick="setPhase(this,'recovered')">Recovered</button>
+      <button class="chip" data-p="closed" onclick="setPhase(this,'closed')">Closed</button>
+    </div>
+  </div>
+  <button class="btn ghost" onclick="location.reload()">↻ Refresh</button>
+</div>
+
+<div class="card tight" style="padding:0">
+  <div class="tbl-wrap" id="queue" style="border:0"></div>
+</div>
+
+<!-- New Incident modal -->
+<div class="modal-backdrop" id="m-new">
+  <div class="modal">
+    <div class="m-head"><h2>Log New Incident</h2>
+      <span class="x" data-close>×</span></div>
+    <div class="m-body">
+      <label class="fld">Title *</label>
+      <input id="ni-title" placeholder="e.g. Suspicious logon after hours on DB-PROD-CORE">
+      <label class="fld">Type</label>
+      <select id="ni-type">
+        {% for t in inc_types %}<option value="{{ t }}">{{ t.replace('_',' ') }}</option>{% endfor %}
+      </select>
+      <label class="fld">Severity</label>
+      <select id="ni-sev">
+        {% for s in severities %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+      </select>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label class="fld">Analyst</label>
+          <select id="ni-analyst">
+            {% for a in analysts %}<option value="{{ a }}">{{ a }}</option>{% endfor %}
+            <option value="Unassigned">Unassigned</option>
+          </select>
+        </div>
+        <div>
+          <label class="fld">Impacted Asset <span class="hint">optional</span></label>
+          <input id="ni-asset" placeholder="DB-PROD-CORE">
+        </div>
+      </div>
+      <label class="fld">IOCs <span class="hint">one per line — ip/domain/hash/url/email auto-detected</span></label>
+      <textarea id="ni-iocs" rows="4" placeholder="ip 185.220.101.44&#10;domain evil-c2.example &#10;7f3c9d21e8a54b0f6c1d8a2e4b0c91d2e…"></textarea>
+      <label class="fld">Description</label>
+      <textarea id="ni-desc" rows="3" placeholder="Context for the analyst…"></textarea>
+    </div>
+    <div class="m-foot">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn primary" onclick="createIncident()">Create &amp; Score</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let DATA = [];
+window._openNewIncident = () => window.SOAR.openModal("m-new");
+
+function setSev(btn, val) {
+  document.querySelectorAll("#tfilters .chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  state.sev = val; render();
+}
+function setPhase(btn, val) {
+  document.querySelectorAll("#pfilter .chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  state.phase = val; render();
+}
+const state = { sev: "", phase: "", q: "" };
+
+const sevOrder = ["critical","high","medium","low","informational"];
+const phaseOrder = ["open","triage","contained","eradicated","recovered","closed","monitoring","cancelled"];
+
+function sortInc(a, b) {
+  const s = sevOrder.indexOf(a.severity) - sevOrder.indexOf(b.severity);
+  if (s !== 0) return s;
+  return (b.risk_score || 0) - (a.risk_score || 0);
+}
+
+function render() {
+  const { esc, rowClick } = window.SOAR;
+  const q = (document.getElementById("q").value || "").toLowerCase();
+  let rows = DATA.filter(i => {
+    if (state.sev && i.severity !== state.sev) return false;
+    if (state.phase && i.status !== state.phase) return false;
+    if (q) {
+      const hay = [i.ref_no, i.title, i.analyst, i.type, (i.impacted_asset||""), (i.iocs||[]).map(x=>x.value).join(" ")].join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  }).sort(sortInc);
+
+  const iocBadges = (i) => {
+    const hostile = (i.iocs||[]).filter(x => ["malicious","ransomware","suspicious"].includes(x.threat_verdict)).length;
+    return (i.iocs||[]).length ? `<span class="mono-sm">${(i.iocs||[]).length} IOC${i.hostile||""}</span>
+      ${hostile ? `<span class="tag" style="color:#f87171;border-color:rgba(239,68,68,.4)">${hostile} hostile</span>` : ""}` : "—";
+  };
+
+  const el = document.getElementById("queue");
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty-state"><div class="em">📡</div>Nothing matches these filters. Try clearing the search.</div>`;
+    return;
+  }
+  el.innerHTML = `<table class="tbl">
+    <thead><tr><th>Ref</th><th>Incident</th><th>Severity</th><th>Risk</th><th>Phase</th><th>IOCs</th><th>Analyst</th><th>Updated</th></tr></thead>
+    <tbody>${rows.map(i => `
+      <tr data-ref="${esc(i.id)}">
+        <td class="num nowrap">${esc(i.ref_no)}</td>
+        <td><b>${esc(i.title)}</b>
+            <div class="dim" style="font-size:12px">${esc(i.type.replace(/_/g," "))} · ${(i.tags||[]).slice(0,3).map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div></td>
+        <td><span class="badge sev-${esc(i.severity)}">${esc(i.severity)}</span></td>
+        <td class="num">${i.risk_score}<div class="progress mt0" style="width:70px;height:5px"><span style="width:${i.risk_score}%"></span></div></td>
+        <td>${i.status === "open" ? `<a href="/incidents/${esc(i.id)}">Start triage →</a>` : `<span class="badge st-${esc(i.status)}">${esc(i.status)}</span>`}</td>
+        <td>${iocBadges(i)}</td>
+        <td>${esc(i.analyst)}</td>
+        <td class="mono-sm nowrap">${(i.updated_at||"").replace("T"," ").replace("Z","")}</td>
+      </tr>`).join("")}</tbody></table>`;
+  document.querySelectorAll("#queue tr[data-ref]").forEach(r => rowClick(r, "/incidents/" + r.dataset.ref));
+}
+
+async function createIncident() {
+  const { api, toast, closeModal, esc } = window.SOAR;
+  const body = {
+    title: document.getElementById("ni-title").value.trim(),
+    type: document.getElementById("ni-type").value,
+    severity: document.getElementById("ni-sev").value,
+    analyst: document.getElementById("ni-analyst").value,
+    impacted_asset: document.getElementById("ni-asset").value.trim(),
+    description: document.getElementById("ni-desc").value.trim(),
+    ioc_text: document.getElementById("ni-iocs").value,
+  };
+  if (!body.title) return toast("Title is required", "err");
+  try {
+    const inc = await api("/api/incidents", { method: "POST", body });
+    closeModal("m-new");
+    toast(`Incident ${inc.ref_no} logged · risk ${inc.risk_score}/100`, "ok");
+    window.location.href = "/incidents/" + inc.id;
+  } catch (e) { toast(e.message, "err"); }
+}
+
+(async () => {
+  try {
+    const d = await window.SOAR.api("/api/incidents");
+    DATA = d.incidents;
+    document.getElementById("nav-open-count").style.display = DATA.filter(i => !["closed","recovered"].includes(i.status)).length ? "inline-block" : "none";
+    render();
+    setInterval(async () => {
+      try { DATA = (await window.SOAR.api("/api/incidents")).incidents; render(); } catch (e) {}
+    }, 4000);
+  } catch (e) { window.SOAR.toast(e.message, "err"); }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,1019 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ORBIT — 3D Product Configurator</title>
+<style>
+  :root{
+    --bg0:#05060c; --bg1:#0b0f1e; --bg2:#111730;
+    --panel:rgba(16,21,40,.72); --panel-border:rgba(120,140,255,.14);
+    --ink:#e8ecff; --dim:#8b93b8; --faint:#5b6285;
+    --acc:#6d8bff; --acc2:#9f6dff; --good:#3ddc97; --warn:#ffb86b;
+    --rad:14px;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 700px at 78% -10%, rgba(109,139,255,.16), transparent 60%),
+      radial-gradient(900px 600px at -10% 110%, rgba(159,109,255,.13), transparent 55%),
+      linear-gradient(160deg, var(--bg1), var(--bg0) 55%, #03040a);
+    user-select:none;
+  }
+  #stage{position:fixed;inset:0;display:block;cursor:grab;outline:none}
+  #stage.dragging{cursor:grabbing}
+  #stage.pick{cursor:pointer}
+
+  /* ---------- top bar ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;height:58px;z-index:20;
+    display:flex;align-items:center;gap:14px;padding:0 18px;
+    background:linear-gradient(180deg, rgba(5,6,12,.85), rgba(5,6,12,.35) 80%, transparent);
+    backdrop-filter:blur(8px);
+  }
+  .logo{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:.12em}
+  .logo .mark{
+    width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:15px;
+    background:linear-gradient(135deg,var(--acc),var(--acc2));
+    box-shadow:0 4px 18px rgba(109,139,255,.45);
+  }
+  .logo small{color:var(--faint);font-weight:500;letter-spacing:.05em}
+  .hspace{flex:1}
+  .stat{
+    display:flex;gap:7px;align-items:center;color:var(--dim);font-size:.8rem;
+    background:var(--panel);border:1px solid var(--panel-border);
+    padding:6px 12px;border-radius:99px;white-space:nowrap;
+  }
+  .stat b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good)}
+
+  /* ---------- side panel ---------- */
+  aside{
+    position:fixed;top:70px;right:14px;bottom:14px;width:322px;z-index:20;
+    display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding:2px;
+    scrollbar-width:thin;scrollbar-color:#2a3358 transparent;
+  }
+  aside::-webkit-scrollbar{width:8px}
+  aside::-webkit-scrollbar-thumb{background:#2a3358;border-radius:8px}
+  .card{
+    background:var(--panel);border:1px solid var(--panel-border);
+    border-radius:var(--rad);padding:14px;backdrop-filter:blur(14px);
+    box-shadow:0 12px 34px rgba(0,0,0,.35);
+  }
+  .card h3{
+    font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--faint);margin-bottom:10px;display:flex;align-items:center;gap:8px;
+  }
+  .card h3::after{content:"";flex:1;height:1px;background:var(--panel-border)}
+
+  .partrow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .partrow:last-child{margin-bottom:0}
+  .partchip{
+    padding:7px 11px;border-radius:9px;border:1px solid var(--panel-border);
+    background:rgba(255,255,255,.03);color:var(--dim);font-size:.8rem;cursor:pointer;
+    transition:.18s;display:flex;align-items:center;gap:7px;
+  }
+  .partchip:hover{color:var(--ink);border-color:rgba(120,140,255,.4)}
+  .partchip.sel{color:#fff;border-color:var(--acc);background:rgba(109,139,255,.16);box-shadow:0 0 0 1px var(--acc) inset}
+  .partchip .sw{width:11px;height:11px;border-radius:3px;border:1px solid rgba(255,255,255,.35)}
+
+  .prodrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .prodchip{
+    padding:9px 11px;border-radius:11px;border:1px solid var(--panel-border);
+    background:rgba(255,255,255,.03);color:var(--dim);font-size:.84rem;cursor:pointer;
+    transition:.18s;display:flex;flex-direction:column;gap:3px;text-align:left;
+  }
+  .prodchip .nm{display:flex;align-items:center;gap:7px;font-weight:600;color:inherit}
+  .prodchip .pr{font-size:.72rem;color:var(--faint);font-variant-numeric:tabular-nums}
+  .prodchip:hover{color:var(--ink);border-color:rgba(120,140,255,.4)}
+  .prodchip.sel{color:#fff;border-color:var(--acc);background:rgba(109,139,255,.16);box-shadow:0 0 0 1px var(--acc) inset}
+  .prodchip.sel .pr{color:var(--acc)}
+
+  .swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  .swatch{
+    aspect-ratio:1;border-radius:9px;cursor:pointer;position:relative;
+    border:2px solid rgba(255,255,255,.12);transition:.15s;
+    box-shadow:inset 0 -8px 14px rgba(0,0,0,.35);
+  }
+  .swatch:hover{transform:scale(1.1)}
+  .swatch.sel{border-color:#fff;box-shadow:0 0 0 2px var(--acc), inset 0 -8px 14px rgba(0,0,0,.35)}
+
+  select{
+    width:100%;padding:9px 10px;border-radius:9px;border:1px solid var(--panel-border);
+    background:#0d1226;color:var(--ink);font:inherit;font-size:.85rem;cursor:pointer;margin-top:10px;
+  }
+
+  .opt{display:flex;align-items:center;justify-content:space-between;padding:8px 2px;font-size:.86rem;color:var(--dim)}
+  .opt+.opt{border-top:1px dashed rgba(255,255,255,.06)}
+  .switch{position:relative;width:40px;height:22px;flex:none}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{
+    position:absolute;inset:0;border-radius:99px;background:#232a4a;cursor:pointer;transition:.2s;
+    border:1px solid var(--panel-border);
+  }
+  .slider::before{
+    content:"";position:absolute;width:16px;height:16px;left:2px;top:2px;border-radius:50%;
+    background:#8891bb;transition:.2s;
+  }
+  .switch input:checked + .slider{background:linear-gradient(90deg,var(--acc),var(--acc2))}
+  .switch input:checked + .slider::before{transform:translateX(18px);background:#fff}
+
+  .pricebox{display:flex;align-items:flex-end;justify-content:space-between;margin-top:2px}
+  .pricebox .lbl{color:var(--faint);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
+  .price{font-size:2rem;font-weight:800;background:linear-gradient(90deg,#aebcff,#d3b6ff);-webkit-background-clip:text;background-clip:text;color:transparent;font-variant-numeric:tabular-nums}
+  .pricebase{color:var(--faint);font-size:.78rem;text-decoration:line-through}
+
+  button.btn{
+    width:100%;padding:11px;border-radius:10px;border:none;font:inherit;font-weight:700;
+    cursor:pointer;transition:.18s;letter-spacing:.03em;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;
+    box-shadow:0 8px 24px rgba(109,139,255,.4);
+  }
+  .btn-primary:hover{filter:brightness(1.12);transform:translateY(-1px)}
+  .btn-ghost{
+    background:rgba(255,255,255,.05);color:var(--dim);border:1px solid var(--panel-border);font-weight:600;
+  }
+  .btn-ghost:hover{color:var(--ink);border-color:rgba(120,140,255,.45)}
+  .btnrow{display:flex;gap:8px}
+  .btnrow .btn{font-size:.8rem;padding:9px}
+
+  /* ---------- left controls ---------- */
+  .dock{
+    position:fixed;left:14px;bottom:14px;z-index:20;display:flex;gap:8px;flex-wrap:wrap;max-width:46vw;
+  }
+  .dock .btn{
+    width:auto;padding:9px 14px;font-size:.8rem;border-radius:10px;
+    background:var(--panel);border:1px solid var(--panel-border);color:var(--dim);
+    backdrop-filter:blur(10px);
+  }
+  .dock .btn:hover{color:var(--ink);border-color:rgba(120,140,255,.45)}
+  .dock .btn.on{color:#fff;border-color:var(--acc);background:rgba(109,139,255,.18)}
+
+  /* ---------- misc ---------- */
+  #hint{
+    position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:15;
+    color:var(--faint);font-size:.85rem;letter-spacing:.06em;display:flex;gap:20px;
+    background:var(--panel);border:1px solid var(--panel-border);padding:9px 18px;border-radius:99px;
+    backdrop-filter:blur(8px);transition:opacity .6s;white-space:nowrap;
+  }
+  #hint.gone{opacity:0;pointer-events:none}
+  #hint b{color:var(--dim)}
+
+  #badge{
+    position:fixed;left:14px;top:70px;z-index:15;padding:9px 14px;border-radius:11px;
+    background:var(--panel);border:1px solid var(--panel-border);backdrop-filter:blur(10px);
+    font-size:.8rem;color:var(--dim);
+  }
+  #badge b{color:var(--ink)}
+
+  #toast{
+    position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);z-index:50;
+    background:#101736;border:1px solid rgba(109,139,255,.4);color:var(--ink);
+    padding:11px 20px;border-radius:12px;font-size:.85rem;opacity:0;transition:.3s;
+    box-shadow:0 14px 40px rgba(0,0,0,.5);
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+
+  #boot{
+    position:fixed;inset:0;z-index:99;display:grid;place-items:center;
+    background:linear-gradient(160deg,var(--bg1),var(--bg0));transition:opacity .5s;
+  }
+  #boot.gone{opacity:0;pointer-events:none}
+  #boot .core{text-align:center}
+  #boot .ring{
+    width:58px;height:58px;margin:0 auto 18px;border-radius:50%;
+    border:3px solid rgba(109,139,255,.2);border-top-color:var(--acc);
+    animation:spin 1s linear infinite;
+  }
+  #boot p{color:var(--dim);letter-spacing:.2em;font-size:.75rem;text-transform:uppercase}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<canvas id="stage" tabindex="0"></canvas>
+
+<header>
+  <div class="logo">
+    <div class="mark">&#9678;</div>
+    <div>ORBIT <small>&mdash; 3D Product Configurator</small></div>
+  </div>
+  <div class="hspace"></div>
+  <div class="stat"><span class="dot"></span> <b id="fps">60</b> fps</div>
+  <div class="stat">faces <b id="faces">&ndash;</b></div>
+  <div class="stat">drags <b id="drags">0</b></div>
+  <div class="stat">turns <b id="turns">0</b></div>
+</header>
+
+<div id="badge">Selected: <b id="badgePart">none</b> &middot; <span id="badgeColor">&mdash;</span></div>
+
+<div id="hint"><span><b>Drag</b> rotate</span><span><b>Scroll</b> zoom</span><span><b>Right-drag</b> pan</span><span><b>Click part</b> select</span></div>
+
+<aside>
+  <div class="card">
+    <h3>Product</h3>
+    <div class="prodrow" id="productRow"></div>
+  </div>
+
+  <div class="card">
+    <h3>Part</h3>
+    <div class="partrow" id="partRow"></div>
+    <select id="partSelect"></select>
+  </div>
+
+  <div class="card">
+    <h3>Finish</h3>
+    <div class="swatches" id="swatches"></div>
+    <div class="opt" style="margin-top:12px"><span>Finishes lock to part</span><span style="color:var(--faint);font-size:.75rem">per-part</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Options</h3>
+    <div id="optBox"></div>
+  </div>
+
+  <div class="card">
+    <div class="pricebox">
+      <div><div class="lbl">Live price</div><div class="pricebase" id="priceBase"></div></div>
+      <div class="price" id="price">$0</div>
+    </div>
+    <div style="height:10px"></div>
+    <button class="btn btn-primary" id="btnReport">&#8595;&nbsp; Download report (.html)</button>
+    <div style="height:8px"></div>
+    <div class="btnrow">
+      <button class="btn btn-ghost" id="btnPng">&#128247; PNG</button>
+      <button class="btn btn-ghost" id="btnCopy">&#128203; Copy</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Presets</h3>
+    <div class="btnrow" style="flex-wrap:wrap" id="presetBox"></div>
+  </div>
+</aside>
+
+<div class="dock">
+  <button class="btn" id="btnReset">&#8634; Reset view</button>
+  <button class="btn" id="btnSpin">&#128260; Auto-rotate</button>
+  <button class="btn" id="btnFull">&#9974; Fullscreen</button>
+</div>
+
+<div id="toast"></div>
+
+<div id="boot"><div class="core"><div class="ring"></div><p>Initializing 3D engine</p></div></div>
+
+<script src="assets/three.min.js"></script>
+<script>
+'use strict';
+/* ============================================================
+   ORBIT — 3D Product Configurator
+   Multi-product catalog · drag/rotate/zoom · per-part finishes
+   · options · live pricing · HTML report export
+   ============================================================ */
+
+// ---------- tiny helpers ----------
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+const fmt = n => '$'+Math.round(n);
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200); }
+
+// --- launcher lifecycle beacon (harmless no-op when served normally) ---
+setInterval(()=>{ try{ fetch('/beacon',{method:'POST',cache:'no-store'}).catch(()=>{}); }catch(e){} }, 1000);
+
+// ---------- palette ----------
+const FINISHES = [
+  {id:'walnut',  name:'Walnut',  hex:'#5d3a24', wood:true },
+  {id:'oak',     name:'Oak',     hex:'#b98d5a', wood:true },
+  {id:'ebony',   name:'Ebony',   hex:'#241d1a', wood:true },
+  {id:'midnight',name:'Midnight',hex:'#1d2742', wood:false},
+  {id:'ember',   name:'Ember',   hex:'#b23a2e', wood:false},
+  {id:'sage',    name:'Sage',    hex:'#7f9c7a', wood:false},
+  {id:'cloud',   name:'Cloud',   hex:'#d9dce6', wood:false},
+  {id:'blush',   name:'Blush',   hex:'#c98a8a', wood:false},
+  {id:'gold',    name:'Gold',    hex:'#c9a24a', wood:false},
+  {id:'graphite',name:'Graphite',hex:'#3a3f4a', wood:false},
+  {id:'mint',    name:'Mint',    hex:'#8fd0c0', wood:false},
+  {id:'royal',   name:'Royal',   hex:'#4a52c9', wood:false},
+];
+const FIN = Object.fromEntries(FINISHES.map(f=>[f.id,f]));
+const PART_LABEL = {
+  frame:'Frame', legs:'Legs', seat:'Seat', backrest:'Backrest', arms:'Armrests',
+  base:'Base', stem:'Stem', shade:'Shade',
+  top:'Tabletop', shelf:'Undershelf',
+  boards:'Shelves', back:'Back panel',
+};
+
+// ---------- product catalog ----------
+// Each product: name, glyph, base price, selectable parts (order matters),
+// options (toggle/text), presets (finish maps), camera framing.
+const CATALOG = {
+  chair: {
+    id:'chair', name:'Lounge Chair', glyph:'&#129681;', base:149,
+    parts:['frame','legs','seat','backrest','arms'],
+    options:[
+      {id:'cushion', type:'toggle', label:'Cushion pad', price:25, def:true},
+      {id:'arms',    type:'toggle', label:'Armrests',    price:20, def:true},
+      {id:'metal',   type:'toggle', label:'Metal legs',  price:35, def:false},
+      {id:'engrave', type:'text',   label:'Engrave',     price:5,  def:''},
+    ],
+    presets:[
+      {name:'Midnight', finish:{frame:'ebony',legs:'graphite',seat:'midnight',backrest:'ebony',arms:'graphite'}},
+      {name:'Ember',    finish:{frame:'walnut',legs:'gold',seat:'ember',backrest:'walnut',arms:'ember'}},
+      {name:'Sage',     finish:{frame:'oak',legs:'walnut',seat:'sage',backrest:'oak',arms:'sage'}},
+    ],
+    cam:{theta:.7, phi:1.12, radius:3.6, target:[0,.85,0]},
+  },
+  lamp: {
+    id:'lamp', name:'Floor Lamp', glyph:'&#128161;', base:89,
+    parts:['base','stem','shade'],
+    options:[
+      {id:'dimmer',  type:'toggle', label:'Dimmer switch',  price:15, def:false},
+      {id:'bulb',    type:'toggle', label:'Warm LED bulb',  price:12, def:true},
+      {id:'engrave', type:'text',   label:'Engrave',        price:5,  def:''},
+    ],
+    presets:[
+      {name:'Nocturne', finish:{base:'graphite',stem:'gold',shade:'midnight'}},
+      {name:'Dawn',     finish:{base:'oak',stem:'gold',shade:'blush'}},
+      {name:'Frost',    finish:{base:'cloud',stem:'graphite',shade:'mint'}},
+    ],
+    cam:{theta:.7, phi:1.15, radius:4.1, target:[0,.9,0]},
+  },
+  table: {
+    id:'table', name:'Coffee Table', glyph:'&#9749;', base:199,
+    parts:['top','legs','shelf'],
+    options:[
+      {id:'drawer',  type:'toggle', label:'Storage drawer', price:45, def:false},
+      {id:'glass',   type:'toggle', label:'Glass top',      price:60, def:false},
+      {id:'engrave', type:'text',   label:'Engrave',        price:5,  def:''},
+    ],
+    presets:[
+      {name:'Walnut classic', finish:{top:'walnut',legs:'ebony',shelf:'oak'}},
+      {name:'Monolith',       finish:{top:'graphite',legs:'graphite',shelf:'midnight'}},
+      {name:'Terrace',        finish:{top:'oak',legs:'royal',shelf:'cloud'}},
+    ],
+    cam:{theta:.7, phi:1.15, radius:3.1, target:[0,.42,0]},
+  },
+  shelf: {
+    id:'shelf', name:'Bookshelf', glyph:'&#128218;', base:129,
+    parts:['frame','boards','back'],
+    options:[
+      {id:'extra',  type:'toggle', label:'Extra shelf', price:18, def:false},
+      {id:'doors',  type:'toggle', label:'Glass doors', price:55, def:false},
+      {id:'engrave',type:'text',   label:'Engrave',     price:5,  def:''},
+    ],
+    presets:[
+      {name:'Studio',  finish:{frame:'oak',boards:'walnut',back:'midnight'}},
+      {name:'Nord',    finish:{frame:'cloud',boards:'oak',back:'graphite'}},
+      {name:'Archive', finish:{frame:'ebony',boards:'ebony',back:'royal'}},
+    ],
+    cam:{theta:.7, phi:1.18, radius:4.4, target:[0,.78,0]},
+  },
+};
+const PRODUCT_IDS = Object.keys(CATALOG);
+const def = () => CATALOG[cfg.product];
+
+// ---------- config state ----------
+// cfg = { product, products: { id: { finish:{part:fin}, ...options } } }
+const cfg = { product:'chair', products:{} };
+for(const id of PRODUCT_IDS){
+  const d=CATALOG[id], c={finish:{}};
+  for(const p of d.parts) c.finish[p]=defaultFinish(id,p);
+  for(const o of d.options) c[o.id]=o.def;
+  cfg.products[id]=c;
+}
+function defaultFinish(pid, part){
+  if(pid==='chair') return {frame:'midnight',legs:'walnut',seat:'sage',backrest:'midnight',arms:'sage'}[part];
+  if(pid==='lamp')  return {base:'graphite',stem:'gold',shade:'cloud'}[part];
+  if(pid==='table') return {top:'walnut',legs:'ebony',shelf:'oak'}[part];
+  return {frame:'oak',boards:'walnut',back:'midnight'}[part];
+}
+const cc = () => cfg.products[cfg.product];   // current product config
+
+// migrate v1.0 flat config (single chair) if present
+try{
+  const s=JSON.parse(localStorage.getItem('orbit.cfg'));
+  if(s && s.products && CATALOG[s.product]){
+    cfg.product=s.product;
+    for(const id of PRODUCT_IDS){
+      if(!s.products[id]) continue;
+      const c=cfg.products[id], sv=s.products[id];
+      Object.assign(c.finish, sv.finish||{});
+      for(const o of CATALOG[id].options) if(o.id in sv) c[o.id]=sv[o.id];
+    }
+  } else if(s && s.finish){                       // v1.0.0 shape
+    const c=cfg.products.chair;
+    Object.assign(c.finish, s.finish||{});
+    for(const k of ['cushion','arms','metal','engrave']) if(k in s) c[k]=s[k];
+  }
+}catch(e){}
+function save(){ try{ localStorage.setItem('orbit.cfg', JSON.stringify(cfg)); }catch(e){} }
+
+function price(c){
+  const d=CATALOG[cfg.product];
+  let p = d.base;
+  for(const o of d.options){
+    if(o.type==='toggle' && c[o.id]) p += o.price;
+    if(o.type==='text'   && c[o.id]) p += o.price;
+  }
+  for(const k of d.parts){ const f=FIN[c.finish[k]]; if(f && !f.wood && (f.id==='gold'||f.id==='royal')) p += 6; }
+  return p;
+}
+
+// ---------- renderer / scene ----------
+const canvas = $('stage');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#070912');
+scene.fog = new THREE.Fog('#070912', 9, 22);
+
+const camera = new THREE.PerspectiveCamera(42, 1, .1, 100);
+
+// lights
+scene.add(new THREE.HemisphereLight('#93a5ff', '#0a0c18', .55));
+const key = new THREE.DirectionalLight('#ffffff', 1.15);
+key.position.set(3.5,6,4); key.castShadow = true;
+key.shadow.mapSize.set(2048,2048);
+key.shadow.camera.left=key.shadow.camera.bottom=-4;
+key.shadow.camera.right=key.shadow.camera.top=4;
+scene.add(key);
+const rim = new THREE.PointLight('#6d8bff', 1.1, 20); rim.position.set(-4,3,-4); scene.add(rim);
+const fill = new THREE.PointLight('#9f6dff', .5, 20); fill.position.set(4,1.5,-3); scene.add(fill);
+// studio floor: dark disc + glow ring + grid + LED accent ring
+const floor = new THREE.Mesh(new THREE.CircleGeometry(7,64), new THREE.MeshStandardMaterial({color:'#0b0e1c',roughness:.9,metalness:.1}));
+floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+
+function radialTex(inner, outer){
+  const c=document.createElement('canvas'); c.width=c.height=256;
+  const g=c.getContext('2d').createRadialGradient(128,128,10,128,128,128);
+  g.addColorStop(0,inner); g.addColorStop(1,outer);
+  const x=c.getContext('2d'); x.fillStyle=g; x.fillRect(0,0,256,256);
+  return new THREE.CanvasTexture(c);
+}
+const glow = new THREE.Mesh(new THREE.PlaneGeometry(6,6),
+  new THREE.MeshBasicMaterial({map:radialTex('rgba(109,139,255,.28)','rgba(0,0,0,0)'),transparent:true,depthWrite:false}));
+glow.rotation.x=-Math.PI/2; glow.position.y=.002; scene.add(glow);
+
+const grid = new THREE.GridHelper(14, 28, 0x2a3358, 0x141a33);
+grid.position.y=.001; grid.material.transparent=true; grid.material.opacity=.5; scene.add(grid);
+
+const led = new THREE.Mesh(new THREE.RingGeometry(2.05, 2.12, 96),
+  new THREE.MeshBasicMaterial({color:0x5f7cff, transparent:true, opacity:.35, side:THREE.DoubleSide}));
+led.rotation.x = -Math.PI/2; led.position.y = .003; scene.add(led);
+
+const podium = new THREE.Mesh(new THREE.CylinderGeometry(1.35,1.45,.07,64),
+  new THREE.MeshStandardMaterial({color:'#131a33',roughness:.4,metalness:.6}));
+podium.position.y=.035; podium.receiveShadow=true; podium.castShadow=true; scene.add(podium);
+
+// ---------- product construction ----------
+const product = new THREE.Group(); scene.add(product);
+const parts = {};          // name -> THREE.Group
+const partMats = {};       // name -> material
+function partGroup(name){ const g=new THREE.Group(); g.name=name; parts[name]=g; product.add(g); return g; }
+const LEG_H = .48;
+
+function mesh(geo, mat, group, partName, x,y,z){
+  const m=new THREE.Mesh(geo, mat);
+  m.position.set(x,y,z); m.castShadow=true; m.userData.part=partName;
+  group.add(m); return m;
+}
+
+// ----- 1. lounge chair -----
+function buildChair(){
+  const c=cc();
+  // legs
+  const gLegs = partGroup('legs');
+  const legMat = partMats.legs = new THREE.MeshStandardMaterial({color:FIN[c.finish.legs].hex, roughness:.55, metalness:.1});
+  const legPos = [[-.24,-.24],[.24,-.24],[-.24,.24],[.24,.24]];
+  for(const [x,z] of legPos){
+    mesh(new THREE.CylinderGeometry(.032,.026,LEG_H,20), legMat, gLegs, 'legs', x, LEG_H/2, z);
+    const foot = mesh(new THREE.CylinderGeometry(.045,.045,.02,20), legMat, gLegs, 'legs', x, .01, z);
+    foot.castShadow=true;
+  }
+  // frame (side rails + back posts)
+  const gFrame = partGroup('frame');
+  const frameMat = partMats.frame = new THREE.MeshStandardMaterial({color:FIN[c.finish.frame].hex, roughness:.5, metalness:.15});
+  function rail(w,h,d,x,y,z){ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),frameMat);
+    m.position.set(x,y,z); m.castShadow=true; m.userData.part='frame'; gFrame.add(m); return m; }
+  rail(.06,.05,.56, -.285, LEG_H+.025, 0);  rail(.06,.05,.56, .285, LEG_H+.025, 0);
+  rail(.63,.05,.06, 0, LEG_H+.025, -.28);   // rear rail
+  rail(.63,.05,.06, 0, LEG_H+.025, .28);    // front rail
+  const postL = new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.62,16), frameMat);
+  postL.position.set(-.26, LEG_H+.30, -.27); postL.rotation.x=-.08; postL.castShadow=true; postL.userData.part='frame'; gFrame.add(postL);
+  const postR = postL.clone(); postR.position.x=.26; gFrame.add(postR);
+  // seat
+  const gSeat = partGroup('seat');
+  const seatMat = partMats.seat = new THREE.MeshStandardMaterial({color:FIN[c.finish.seat].hex, roughness:.65, metalness:.05});
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(.60,.09,.58), seatMat);
+  seat.position.set(0, LEG_H+.10, .02); seat.castShadow=true; seat.receiveShadow=true; seat.userData.part='seat'; gSeat.add(seat);
+  // cushion (optional)
+  const cush = new THREE.Mesh(new THREE.BoxGeometry(.56,.07,.52),
+    new THREE.MeshStandardMaterial({color:FIN[c.finish.seat].hex, roughness:.85, metalness:0}));
+  cush.position.set(0, LEG_H+.18, .03); cush.castShadow=true; cush.userData.part='seat'; cush.name='cushion'; gSeat.add(cush);
+  // backrest
+  const gBack = partGroup('backrest');
+  const backMat = partMats.backrest = new THREE.MeshStandardMaterial({color:FIN[c.finish.backrest].hex, roughness:.6, metalness:.05});
+  const back = new THREE.Mesh(new THREE.BoxGeometry(.58,.62,.075), backMat);
+  back.position.set(0, LEG_H+.44, -.315); back.rotation.x=-.10; back.castShadow=true; back.userData.part='backrest'; gBack.add(back);
+  const backPad = new THREE.Mesh(new THREE.BoxGeometry(.50,.50,.04),
+    new THREE.MeshStandardMaterial({color:FIN[c.finish.backrest].hex, roughness:.85}));
+  backPad.position.set(0, LEG_H+.44, -.275); backPad.rotation.x=-.10; backPad.userData.part='backrest'; backPad.name='cushion'; gBack.add(backPad);
+  // arms (optional)
+  const gArms = partGroup('arms');
+  const armMat = partMats.arms = new THREE.MeshStandardMaterial({color:FIN[c.finish.arms].hex, roughness:.55, metalness:.1});
+  for(const s of [-1,1]){
+    const top = new THREE.Mesh(new THREE.BoxGeometry(.06,.05,.5), armMat);
+    top.position.set(s*.325, LEG_H+.27, .01); top.castShadow=true; top.userData.part='arms'; gArms.add(top);
+    const sup = new THREE.Mesh(new THREE.BoxGeometry(.05,.16,.05), armMat);
+    sup.position.set(s*.325, LEG_H+.17, .22); sup.castShadow=true; sup.userData.part='arms'; gArms.add(sup);
+    const sup2 = sup.clone(); sup2.position.z=-.20; gArms.add(sup2);
+  }
+  applyOptions();
+}
+
+// ----- 2. floor lamp -----
+function buildLamp(){
+  const c=cc();
+  // base: weighted disc + collar
+  const gBase = partGroup('base');
+  const mBase = partMats.base = new THREE.MeshStandardMaterial({color:FIN[c.finish.base].hex, roughness:.35, metalness:.65});
+  const disc = mesh(new THREE.CylinderGeometry(.30,.34,.07,48), mBase, gBase, 'base', 0,.035,0);
+  disc.receiveShadow=true;
+  mesh(new THREE.CylinderGeometry(.07,.09,.06,24), mBase, gBase, 'base', 0,.10,0);
+  // stem
+  const gStem = partGroup('stem');
+  const mStem = partMats.stem = new THREE.MeshStandardMaterial({color:FIN[c.finish.stem].hex, roughness:.25, metalness:.85});
+  mesh(new THREE.CylinderGeometry(.022,.022,1.30,20), mStem, gStem, 'stem', 0,.78,0);
+  // dimmer knob (optional)
+  const knob = mesh(new THREE.CylinderGeometry(.032,.032,.028,20), mStem, gStem, 'stem', 0,.45,.035);
+  knob.rotation.x=Math.PI/2; knob.name='dimmerknob';
+  // shade: open cone + bulb glow + warm light
+  const gShade = partGroup('shade');
+  const mShade = partMats.shade = new THREE.MeshStandardMaterial({color:FIN[c.finish.shade].hex, roughness:.8, metalness:.05, side:THREE.DoubleSide});
+  const shade = mesh(new THREE.CylinderGeometry(.19,.30,.34,48,1,true), mShade, gShade, 'shade', 0,1.55,0);
+  shade.receiveShadow=true;
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(.055,20,16), new THREE.MeshBasicMaterial({color:'#ffdca8'}));
+  bulb.position.y=1.46; bulb.name='bulbglow'; gShade.add(bulb);
+  const halo = new THREE.PointLight('#ffd9a0', .9, 4); halo.position.y=1.46; halo.name='bulbhalo'; gShade.add(halo);
+  applyOptions();
+}
+
+// ----- 3. coffee table -----
+function buildTable(){
+  const c=cc();
+  // top + apron (glass option makes only the top pane translucent)
+  const gTop = partGroup('top');
+  const mTop = partMats.top = new THREE.MeshStandardMaterial({color:FIN[c.finish.top].hex, roughness:.45, metalness:.08});
+  partMats.topSolid = mTop.clone();          // drawer/apron stay opaque
+  const top = mesh(new THREE.BoxGeometry(.94,.06,.52), mTop, gTop, 'top', 0,.46,0);
+  top.receiveShadow=true;
+  const apron = mesh(new THREE.BoxGeometry(.84,.06,.42), partMats.topSolid, gTop, 'top', 0,.41,0);
+  apron.receiveShadow=true;
+  // legs + feet
+  const gLegs = partGroup('legs');
+  const mLegs = partMats.legs = new THREE.MeshStandardMaterial({color:FIN[c.finish.legs].hex, roughness:.5, metalness:.12});
+  for(const [x,z] of [[-.40,-.20],[.40,-.20],[-.40,.20],[.40,.20]]){
+    mesh(new THREE.CylinderGeometry(.028,.024,.40,20), mLegs, gLegs, 'legs', x,.20,z);
+    mesh(new THREE.CylinderGeometry(.042,.042,.02,20), mLegs, gLegs, 'legs', x,.01,z);
+  }
+  // undershelf
+  const gShelf = partGroup('shelf');
+  const mShelf = partMats.shelf = new THREE.MeshStandardMaterial({color:FIN[c.finish.shelf].hex, roughness:.6, metalness:.05});
+  const shelf = mesh(new THREE.BoxGeometry(.78,.035,.40), mShelf, gShelf, 'shelf', 0,.15,0);
+  shelf.receiveShadow=true;
+  // drawer (optional) + knob
+  const drawer = mesh(new THREE.BoxGeometry(.30,.10,.42), partMats.topSolid, gTop, 'top', 0,.335,0);
+  drawer.name='drawer';
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(.02,16,12), mLegs);
+  knob.position.set(0,.335,.22); knob.castShadow=true; knob.name='drawerknob'; gTop.add(knob);
+  applyOptions();
+}
+
+// ----- 4. bookshelf -----
+function buildShelf(){
+  const c=cc();
+  const H=1.5, W=.96, D=.32;
+  // frame: side panels + top/bottom
+  const gFrame = partGroup('frame');
+  const mFrame = partMats.frame = new THREE.MeshStandardMaterial({color:FIN[c.finish.frame].hex, roughness:.5, metalness:.1});
+  for(const s of [-1,1]){
+    const side = mesh(new THREE.BoxGeometry(.05,H,D), mFrame, gFrame, 'frame', s*(W/2-.025), H/2, 0);
+    side.receiveShadow=true;
+  }
+  const topPanel = mesh(new THREE.BoxGeometry(W,.05,D), mFrame, gFrame, 'frame', 0, H-.025, 0);
+  topPanel.receiveShadow=true;
+  mesh(new THREE.BoxGeometry(W,.05,D), mFrame, gFrame, 'frame', 0, .025, 0);
+  // boards (shelves) + optional extra
+  const gBoards = partGroup('boards');
+  const mBoards = partMats.boards = new THREE.MeshStandardMaterial({color:FIN[c.finish.boards].hex, roughness:.65, metalness:.05});
+  for(const y of [.42,.78,1.14]){
+    const b = mesh(new THREE.BoxGeometry(W-.10,.035,D-.04), mBoards, gBoards, 'boards', 0,y,0);
+    b.receiveShadow=true;
+  }
+  const extra = mesh(new THREE.BoxGeometry(W-.10,.035,D-.04), mBoards, gBoards, 'boards', 0,.60,0);
+  extra.name='extrashelf'; extra.receiveShadow=true;
+  // back panel + optional glass doors
+  const gBack = partGroup('back');
+  const mBack = partMats.back = new THREE.MeshStandardMaterial({color:FIN[c.finish.back].hex, roughness:.8, metalness:0});
+  const back = mesh(new THREE.BoxGeometry(W-.06,H-.06,.02), mBack, gBack, 'back', 0, H/2, -D/2+.03);
+  back.castShadow=false; back.receiveShadow=true;
+  const mDoor = new THREE.MeshStandardMaterial({color:0xcfd8e8, transparent:true, opacity:.32, roughness:.1, metalness:.2, side:THREE.DoubleSide});
+  for(const s of [-1,1]){
+    const door = new THREE.Mesh(new THREE.BoxGeometry(W/2-.08, H-.14, .02), mDoor);
+    door.position.set(s*W/4, H/2-.02, D/2-.02); door.name='door'; door.userData.part='back'; gBack.add(door);
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,.09,12), mFrame);
+    handle.rotation.x=Math.PI/2;
+    handle.position.set(s>0 ? -W/4+.05 : W/4-.05, H/2-.02, D/2+.005);
+    handle.name='door'; handle.userData.part='back'; gBack.add(handle);
+  }
+  applyOptions();
+}
+
+const BUILDERS = {chair:buildChair, lamp:buildLamp, table:buildTable, shelf:buildShelf};
+
+function disposeProduct(){
+  product.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose()); } });
+  while(product.children.length) product.remove(product.children[0]);
+  Object.keys(parts).forEach(k=>delete parts[k]);
+  Object.keys(partMats).forEach(k=>delete partMats[k]);
+}
+function buildProduct(){ disposeProduct(); BUILDERS[cfg.product](); }
+function rebuild(){
+  buildProduct();
+  faceCount=countFaces(); $('faces').textContent=faceCount;
+  const cam=def().cam;
+  orbit.theta=cam.theta; orbit.phi=cam.phi; orbit.radius=cam.radius;
+  orbit.target.set(cam.target[0],cam.target[1],cam.target[2]);
+  orbit.vTheta=orbit.vPhi=0;
+  selectPart(null);
+}
+function setProduct(id){
+  if(cfg.product===id) return;
+  cfg.product=id; save();
+  rebuild(); renderProductUI(); renderPartUI(); renderOptionsUI(); renderPresetsUI(); renderSwatches(); refreshPrice();
+  toast('Product: '+def().name);
+}
+
+// ---------- engraving helper (per-product placement) ----------
+function setEngravePlate(text, w, h, pos, rotX){
+  const old = product.getObjectByName('engrave');
+  if(old && old.parent) old.parent.remove(old);
+  if(!text) return;
+  const c=document.createElement('canvas'); c.width=256; c.height=64;
+  const x=c.getContext('2d'); x.clearRect(0,0,256,64);
+  x.fillStyle='#e8ecff'; x.font='700 40px Segoe UI'; x.textAlign='center'; x.textBaseline='middle';
+  x.fillText(text.toUpperCase(), 128, 34);
+  const plate=new THREE.Mesh(new THREE.PlaneGeometry(w,h),
+    new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true}));
+  plate.position.set(pos[0],pos[1],pos[2]);
+  plate.rotation.x=rotX;
+  plate.name='engrave'; product.add(plate);
+}
+
+// ---------- per-product options application ----------
+function applyOptions(){
+  const id=cfg.product, c=cc();
+  if(id==='chair'){
+    product.traverse(o=>{ if(o.name==='cushion') o.visible=!!c.cushion; });
+    if(parts.arms) parts.arms.visible=!!c.arms;
+    const f=FIN[c.finish.legs], lm=partMats.legs;
+    if(c.metal){ lm.metalness=.9; lm.roughness=.28; lm.color.set('#c8ccd8'); }
+    else { lm.metalness=f.wood?.08:.12; lm.roughness=f.wood?.58:.5; lm.color.set(f.hex); }
+    setEngravePlate(c.engrave, .34,.085, [0, LEG_H+.62, -.335], -.10);   // match backrest tilt
+  }
+  else if(id==='lamp'){
+    product.traverse(o=>{ if(o.name==='bulbglow'||o.name==='bulbhalo') o.visible=!!c.bulb;
+                          if(o.name==='dimmerknob') o.visible=!!c.dimmer; });
+    setEngravePlate(c.engrave, .12,.03, [0,1.28,.028], 0);
+  }
+  else if(id==='table'){
+    product.traverse(o=>{ if(o.name==='drawer'||o.name==='drawerknob') o.visible=!!c.drawer; });
+    const m=partMats.top;
+    if(m){ const g=!!c.glass;
+      m.transparent=g; m.opacity=g?.45:1; m.roughness=g?.1:.45; m.metalness=g?.15:.08; m.needsUpdate=true; }
+    setEngravePlate(c.engrave, .30,.05, [0,.41,.216], 0);
+  }
+  else if(id==='shelf'){
+    product.traverse(o=>{ if(o.name==='extrashelf') o.visible=!!c.extra;
+                          if(o.name==='door') o.visible=!!c.doors; });
+    setEngravePlate(c.engrave, .30,.05, [0,1.475,.161], 0);
+  }
+}
+
+// ---------- finish application ----------
+function applyFinish(part){
+  const fin = FIN[cc().finish[part]];
+  if(cfg.product==='chair' && part==='legs' && cc().metal){ applyOptions(); return; }   // metal overrides color
+  const m = partMats[part]; if(!m) return;
+  m.color.set(fin.hex);
+  m.roughness = fin.wood ? .58 : (fin.id==='gold' ? .3 : .5);
+  m.metalness = fin.wood ? .08 : (fin.id==='gold' ? .85 : .12);
+  if(cfg.product==='table' && part==='top' && partMats.topSolid){
+    partMats.topSolid.color.set(fin.hex);          // apron/drawer stay opaque
+    partMats.topSolid.roughness = fin.wood ? .58 : .5;
+  }
+  if(cfg.product==='table' && part==='top') applyOptions();   // re-apply glass look
+}
+
+// ---------- camera orbit (drag / zoom / pan) ----------
+const orbit = {
+  theta:.7, phi:1.12, radius:3.6,
+  target:new THREE.Vector3(0,.85,0),
+  vTheta:0, vPhi:0,
+  min:.6, max:9, auto:false
+};
+function applyCamera(){
+  const sinPhi=Math.sin(orbit.phi), y=orbit.radius*Math.cos(orbit.phi);
+  camera.position.set(
+    orbit.target.x + orbit.radius*sinPhi*Math.sin(orbit.theta),
+    orbit.target.y + y,
+    orbit.target.z + orbit.radius*sinPhi*Math.cos(orbit.theta));
+  camera.lookAt(orbit.target);
+}
+let dragging=false, dragged=0, lastX=0, lastY=0, button=0, dragCount=0, turnCount=0, lastTheta=.7;
+
+canvas.addEventListener('pointerdown', e=>{
+  dragging=true; dragged=0; lastX=e.clientX; lastY=e.clientY; button=e.button;
+  canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging');
+});
+canvas.addEventListener('pointermove', e=>{
+  if(!dragging){ hover(e); return; }
+  const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY;
+  dragged += Math.abs(dx)+Math.abs(dy);
+  if(button===2 || e.shiftKey){           // pan
+    const pan=new THREE.Vector3();
+    camera.getWorldDirection(pan); pan.y=0; pan.normalize();
+    const right=new THREE.Vector3().crossVectors(pan, camera.up).normalize();
+    const k=orbit.radius*.0016;
+    orbit.target.addScaledVector(right,-dx*k);
+    orbit.target.y = clamp(orbit.target.y + dy*k, .2, 3);
+  } else {                                 // rotate
+    orbit.vTheta = -dx*.0052; orbit.vPhi = -dy*.0042;
+    orbit.theta += orbit.vTheta; orbit.phi = clamp(orbit.phi+orbit.vPhi, .15, Math.PI/2-.04);
+  }
+});
+addEventListener('pointerup', e=>{
+  if(!dragging) return;
+  dragging=false; canvas.classList.remove('dragging');
+  if(dragged>6){ dragCount++; $('drags').textContent=dragCount; }
+  else if(e.target===canvas){ pick(e); }  // click = select part
+});
+canvas.addEventListener('contextmenu', e=>e.preventDefault());
+canvas.addEventListener('wheel', e=>{
+  e.preventDefault();
+  orbit.radius = clamp(orbit.radius * (1 + Math.sign(e.deltaY)*.09), orbit.min, orbit.max);
+},{passive:false});
+
+// ---------- picking / hover ----------
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let selected=null, hovered=null;
+function castAt(e){
+  const r=canvas.getBoundingClientRect();
+  ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  ray.setFromCamera(ndc,camera);
+  const hits = ray.intersectObjects(product.children, true).filter(h=>h.object.visible && h.object.userData.part);
+  return hits[0] || null;
+}
+function hover(e){
+  const h = castAt(e);
+  hovered = h ? h.object.userData.part : null;
+  canvas.classList.toggle('pick', !!hovered);
+  setEmissive();
+}
+function setEmissive(){
+  for(const p of def().parts){ const m=partMats[p]; if(!m) continue;
+    m.emissive = m.emissive || new THREE.Color(0); m.emissive.set(0x000000);
+  }
+  if(hovered && hovered!==selected && partMats[hovered]) partMats[hovered].emissive.set(0x10182f);
+  if(selected && partMats[selected]) partMats[selected].emissive.set(0x1c2a55);
+}
+function pick(e){
+  if(e){ const h=castAt(e); if(h){ selectPart(h.object.userData.part); return; } }
+  selectPart(null);
+}
+function selectPart(p){
+  selected=p;
+  document.querySelectorAll('.partchip').forEach(c=>c.classList.toggle('sel', c.dataset.part===p));
+  $('partSelect').value = p || '';
+  $('badgePart').textContent = p ? PART_LABEL[p] : 'none';
+  $('badgeColor').textContent = p ? FIN[cc().finish[p]].name : '—';
+  renderSwatches(); setEmissive();
+}
+
+// ---------- UI wiring ----------
+function renderProductUI(){
+  const row=$('productRow'); row.innerHTML='';
+  for(const id of PRODUCT_IDS){
+    const d=CATALOG[id];
+    const chip=document.createElement('button');
+    chip.className='prodchip'+(cfg.product===id?' sel':'');
+    chip.innerHTML=`<span class="nm"><span>${d.glyph}</span>${d.name}</span><span class="pr">from ${fmt(d.base)}</span>`;
+    chip.onclick=()=>setProduct(id);
+    row.appendChild(chip);
+  }
+}
+function renderPartUI(){
+  const row=$('partRow'), sel=$('partSelect'), d=def();
+  row.innerHTML=''; sel.innerHTML='<option value="">— select —</option>';
+  for(const p of d.parts){
+    const chip=document.createElement('button'); chip.className='partchip'; chip.dataset.part=p;
+    chip.innerHTML=`<span class="sw" style="background:${FIN[cc().finish[p]].hex}"></span>${PART_LABEL[p]}`;
+    chip.onclick=()=>selectPart(p); row.appendChild(chip);
+    const opt=document.createElement('option'); opt.value=p; opt.textContent=PART_LABEL[p]; sel.appendChild(opt);
+  }
+  sel.onchange=()=>selectPart(sel.value||null);
+}
+function renderSwatches(){
+  const box=$('swatches'); box.innerHTML='';
+  if(!selected){ box.innerHTML='<div style="grid-column:1/-1;color:var(--faint);font-size:.8rem;padding:6px 2px">Click a part on the model (or above) to customize its finish.</div>'; return; }
+  for(const f of FINISHES){
+    const d=document.createElement('button'); d.className='swatch'+(cc().finish[selected]===f.id?' sel':'');
+    d.style.background=f.hex; d.title=f.name;
+    d.onclick=()=>{ cc().finish[selected]=f.id; save(); applyFinish(selected); renderPartUI(); renderSwatches();
+      $('badgeColor').textContent=f.name; refreshPrice(); };
+    box.appendChild(d);
+  }
+}
+function renderOptionsUI(){
+  const box=$('optBox'); box.innerHTML='';
+  for(const o of def().options){
+    const label=document.createElement('label'); label.className='opt';
+    const txt=document.createElement('span');
+    txt.innerHTML=o.type==='toggle'
+      ? `${o.label} <small style="color:var(--faint)">+$${o.price}</small>`
+      : `${o.label} <small style="color:var(--faint)">+$${o.price}, max 12</small>`;
+    label.appendChild(txt);
+    if(o.type==='toggle'){
+      const sw=document.createElement('span'); sw.className='switch';
+      const input=document.createElement('input'); input.type='checkbox'; input.checked=!!cc()[o.id];
+      input.onchange=e=>onToggle(o, e.target.checked);
+      const slider=document.createElement('span'); slider.className='slider';
+      sw.appendChild(input); sw.appendChild(slider); label.appendChild(sw);
+    } else {
+      const input=document.createElement('input'); input.type='text'; input.maxLength=12;
+      input.placeholder='monogram'; input.value=cc()[o.id]||'';
+      input.style.cssText='width:110px;background:#0d1226;border:1px solid var(--panel-border);color:var(--ink);border-radius:7px;padding:4px 8px;font:inherit;font-size:.8rem';
+      input.oninput=e=>{ cc()[o.id]=e.target.value.trim(); save(); applyOptions(); refreshPrice(); };
+      label.appendChild(input);
+    }
+    box.appendChild(label);
+  }
+}
+function onToggle(o, checked){
+  cc()[o.id]=checked; save();
+  def().parts.forEach(applyFinish);
+  applyOptions(); renderPartUI(); renderSwatches(); refreshPrice();
+}
+function renderPresetsUI(){
+  const box=$('presetBox'); box.innerHTML='';
+  for(const pr of def().presets){
+    const b=document.createElement('button'); b.className='btn btn-ghost'; b.textContent=pr.name;
+    b.onclick=()=>{
+      Object.assign(cc().finish, pr.finish); save();
+      def().parts.forEach(applyFinish); applyOptions();
+      renderPartUI(); renderSwatches(); selectPart(selected); refreshPrice();
+      toast('Preset applied: '+pr.name);
+    };
+    box.appendChild(b);
+  }
+  const rnd=document.createElement('button'); rnd.className='btn btn-ghost'; rnd.innerHTML='&#127922; Random';
+  rnd.onclick=()=>{
+    for(const p of def().parts) cc().finish[p]=FINISHES[Math.floor(Math.random()*FINISHES.length)].id;
+    for(const o of def().options) if(o.type==='toggle') cc()[o.id]=Math.random()<.5;
+    save(); renderOptionsUI();
+    def().parts.forEach(applyFinish); applyOptions(); renderPartUI(); renderSwatches(); refreshPrice();
+    toast('Randomized!');
+  };
+  box.appendChild(rnd);
+}
+function refreshPrice(){
+  const p=price(cc()), base=def().base;
+  $('price').textContent=fmt(p);
+  $('priceBase').textContent = p>base ? fmt(base) : '';
+}
+$('btnReset').onclick=()=>{
+  const cam=def().cam;
+  orbit.theta=cam.theta; orbit.phi=cam.phi; orbit.radius=cam.radius;
+  orbit.target.set(cam.target[0],cam.target[1],cam.target[2]);
+  toast('View reset');
+};
+$('btnSpin').onclick=e=>{ orbit.auto=!orbit.auto; e.currentTarget.classList.toggle('on',orbit.auto); };
+$('btnFull').onclick=()=>{ document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen(); };
+
+// ---------- stats ----------
+function countFaces(){ let n=0; product.traverse(o=>{ if(o.isMesh&&o.geometry){ const g=o.geometry;
+  n += g.index ? g.index.count/3 : (g.attributes.position?g.attributes.position.count/3:0); } }); return Math.round(n); }
+
+// ---------- report ----------
+function reportHTML(){
+  const d=def(), c=cc(), p=price(c), now=new Date();
+  const rows = d.parts.map(k=>{
+    const f=FIN[c.finish[k]];
+    return `<tr><td>${PART_LABEL[k]}</td><td><span class="chip" style="background:${f.hex}"></span>${f.name}</td><td class="mono">${f.hex}</td></tr>`;
+  }).join('');
+  const opts = d.options.map(o=>{
+    let v='—';
+    if(o.type==='toggle' && c[o.id]) v='+$'+o.price;
+    if(o.type==='text' && c[o.id]) v=`"${c[o.id].toUpperCase()}" (+$${o.price})`;
+    return `<tr><td>${o.label}</td><td>${v}</td></tr>`;
+  }).join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Product Configuration Report</title>
+<style>
+ body{font-family:'Segoe UI',system-ui,sans-serif;margin:0;background:#f2f4fa;color:#1c2340}
+ .hero{background:linear-gradient(135deg,#1d2742,#4a52c9 60%,#7a5cff);color:#fff;padding:38px 46px}
+ .hero h1{margin:0 0 6px;font-size:26px;letter-spacing:.04em}
+ .hero p{margin:0;opacity:.85;font-size:13px}
+ .wrap{max-width:820px;margin:26px auto 60px;padding:0 20px}
+ section{background:#fff;border:1px solid #e3e7f4;border-radius:14px;padding:22px 26px;margin-bottom:18px;box-shadow:0 6px 24px rgba(28,35,64,.07)}
+ h2{font-size:13px;text-transform:uppercase;letter-spacing:.18em;color:#7a83ad;margin:0 0 14px}
+ table{width:100%;border-collapse:collapse;font-size:14px}
+ td{padding:9px 6px;border-bottom:1px solid #eef1f8}
+ tr:last-child td{border-bottom:none}
+ .chip{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:8px;border:1px solid rgba(0,0,0,.15)}
+ .mono{font-family:Consolas,monospace;color:#7a83ad}
+ .total{display:flex;justify-content:space-between;align-items:center;background:#f6f7ff;border:1px dashed #b9c2f2;border-radius:10px;padding:14px 18px;margin-top:10px}
+ .total b{font-size:24px;color:#3b46c4}
+ footer{text-align:center;color:#9aa2c5;font-size:12px;margin-top:26px}
+</style></head><body>
+<div class="hero"><h1>&#9678; ORBIT — Product Configuration Report</h1>
+<p>${d.name} &mdash; generated ${now.toLocaleString()} &middot; ORBIT 3D Configurator</p></div>
+<div class="wrap">
+<section><h2>Selected finishes</h2><table>${rows}</table></section>
+<section><h2>Options</h2><table>${opts}</table></section>
+<section><h2>Summary</h2>
+<table><tr><td>Base price</td><td class="mono">${fmt(d.base)}</td></tr>
+<tr><td>Interaction stats</td><td class="mono">${dragCount} drag interactions &middot; ${turnCount} full turns &middot; ${faceCount} faces rendered</td></tr></table>
+<div class="total"><span>Configuration total</span><b>${fmt(p)}</b></div></section>
+<footer>Report ID: ORBIT-${now.getTime().toString(36).toUpperCase()} &middot; Auto-generated document &mdash; valid for quotation purposes.</footer>
+</div></body></html>`;
+}
+function download(name, blob){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},400);
+}
+$('btnReport').onclick=()=>{
+  download('ORBIT-'+def().id+'-Report.html', new Blob([reportHTML()],{type:'text/html'}));
+  toast('Report downloaded');
+};
+$('btnCopy').onclick=async()=>{
+  try{ await navigator.clipboard.writeText(JSON.stringify(cfg,null,2)); toast('Configuration JSON copied'); }
+  catch(e){ toast('Clipboard blocked by browser'); }
+};
+$('btnPng').onclick=()=>{
+  renderer.render(scene,camera);
+  canvas.toBlob(b=>{ download('ORBIT-Snapshot.png', b); toast('Snapshot saved'); },'image/png');
+};
+
+// ---------- main loop ----------
+function resize(){
+  const w=innerWidth, h=innerHeight;
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+let last=performance.now();
+let faceCount = 0, fpsFrames = 0, fpsT = 0;
+function loop(t){
+  requestAnimationFrame(loop);
+  const dt=Math.min(.05,(t-last)/1000); last=t;
+  if(orbit.auto) orbit.theta += dt*.5;
+  // inertia
+  if(!dragging){ orbit.theta+=orbit.vTheta; orbit.phi=clamp(orbit.phi+orbit.vPhi,.15,Math.PI/2-.04);
+    orbit.vTheta*=.92; orbit.vPhi*=.92; }
+  // turn counting
+  if(orbit.theta-lastTheta>Math.PI*2){ turnCount++; $('turns').textContent=turnCount; lastTheta=orbit.theta; }
+  else if(lastTheta-orbit.theta>Math.PI*2){ turnCount++; $('turns').textContent=turnCount; lastTheta=orbit.theta; }
+  applyCamera();
+  renderer.render(scene,camera);
+  fpsFrames++;
+  if(t-fpsT>500){ $('fps').textContent=Math.round(fpsFrames*1000/(t-fpsT)); fpsFrames=0; fpsT=t; }
+}
+
+// ---------- boot ----------
+buildProduct();
+faceCount=countFaces(); $('faces').textContent=faceCount;
+renderProductUI(); renderPartUI(); renderOptionsUI(); renderPresetsUI(); renderSwatches();
+selectPart(null); refreshPrice();
+applyCamera();
+requestAnimationFrame(loop);
+setTimeout(()=>{ $('boot').classList.add('gone');
+  setTimeout(()=>{ $('hint').classList.add('gone'); }, 6000);
+}, 350);
+</script>
+</body>
+</html>

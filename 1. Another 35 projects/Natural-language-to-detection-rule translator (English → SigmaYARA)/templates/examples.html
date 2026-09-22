@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Examples — NL2Rule Translator</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="bg-grid"></div>
+<header class="topbar">
+  <div class="brand" onclick="location.href='/'">
+    <div class="brand-mark">NL<span>2</span>R</div>
+    <div class="brand-text">
+      <div class="brand-title">NL&#8594;RULE <span class="accent">TRANSLATOR</span></div>
+      <div class="brand-sub">English &middot; Sigma &middot; YARA &middot; MITRE</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/" class="nav-link {{ 'active' if active=='home' }}">Translator</a>
+    <a href="/examples" class="nav-link {{ 'active' if active=='examples' }}">Examples</a>
+    <a href="/about" class="nav-link {{ 'active' if active=='about' }}">About</a>
+    <span class="nav-status"><i class="dot"></i>ENGINE ONLINE</span>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero hero-sm">
+    <div class="hero-eyebrow">TRY IT INSTANTLY</div>
+    <h1>Starter <span class="grad">scenarios</span></h1>
+    <p class="hero-sub">Pick a scenario to load it into the translator, then adjust the wording and hit TRANSLATE.</p>
+  </section>
+
+  <section class="ex-grid">
+    {% for ex in examples %}
+    <div class="ex-card" onclick="loadExample({{ loop.index0 }})">
+      <div class="ex-head">
+        <span class="ex-num">{{ "%02d"|format(loop.index) }}</span>
+        <span class="ex-title">{{ ex.title }}</span>
+      </div>
+      <p class="ex-text">{{ ex.text }}</p>
+      <div class="ex-tags">
+        {% for t in ex.tags %}<span class="ex-tag">{{ t }}</span>{% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+</main>
+
+<div class="toast" id="toast">Example loaded</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

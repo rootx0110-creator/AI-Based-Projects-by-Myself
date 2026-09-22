@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Report — {{ ctf_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="flex" style="margin-bottom:1.2rem">
+    <h1 style="font-size:1.3rem;letter-spacing:.12em;color:#fff">▸ COMPETITION REPORT</h1>
+    <span class="pill right">live snapshot</span>
+    <a class="btn pink" href="{{ url_for('ctf.report_download') }}">⬇ Download HTML</a>
+    <a class="btn ghost" href="{{ url_for('ctf.report_standalone') }}" target="_blank">Open standalone ↗</a>
+  </div>
+
+  <div class="panel glow" style="padding:.4rem">
+    <iframe src="{{ url_for('ctf.report_standalone') }}"
+            style="width:100%;height:76vh;border:0;border-radius:10px;background:#fff"
+            title="Report preview"></iframe>
+  </div>
+  <p class="muted mt">The download is a standalone, print-ready HTML file — it opens in any browser with no server needed.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ cfg.ctf_name }} — Competition Report</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a2330; margin: 0; background: #f4f6f9; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 32px; background: #fff; }
+  header.rpt { border-bottom: 3px solid #0d9488; padding-bottom: 14px; margin-bottom: 26px; display: flex; align-items: baseline; gap: 12px; }
+  header.rpt h1 { font-size: 26px; margin: 0; color: #0f172a; }
+  header.rpt .tag { color: #0d9488; font-weight: 600; }
+  header.rpt .when { margin-left: auto; color: #64748b; font-size: 13px; }
+  h2 { font-size: 17px; color: #0f172a; border-left: 4px solid #0d9488; padding-left: 10px; margin: 28px 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  th { background: #0f172a; color: #fff; text-align: left; padding: 8px 10px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+  td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .kpi { display: flex; gap: 14px; flex-wrap: wrap; margin: 14px 0; }
+  .kpi div { flex: 1; min-width: 130px; background: #eef7f6; border: 1px solid #cbe7e3; border-radius: 10px; padding: 14px; text-align: center; }
+  .kpi .n { font-size: 24px; font-weight: 700; color: #0d9488; }
+  .kpi .l { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #64748b; margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .b-first { background: #fef3c7; color: #b45309; }
+  .b-cat { background: #e0f2fe; color: #0369a1; }
+  .b-hidden { background: #fee2e2; color: #b91c1c; }
+  footer.rpt { margin-top: 36px; padding-top: 12px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+  @media print { .page { padding: 0 16px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="rpt">
+    <h1>🚩 {{ cfg.ctf_name }}</h1>
+    <span class="tag">Competition Report</span>
+    <span class="when">generated {{ generated.strftime('%Y-%m-%d %H:%M UTC') }}</span>
+  </header>
+
+  <section class="kpi">
+    <div><div class="n">{{ stats.teams }}</div><div class="l">Teams</div></div>
+    <div><div class="n">{{ stats.challenges }}</div><div class="l">Challenges</div></div>
+    <div><div class="n">{{ stats.submissions }}</div><div class="l">Submissions</div></div>
+    <div><div class="n">{{ stats.solves }}</div><div class="l">Correct solves</div></div>
+    <div><div class="n">{{ stats.accuracy }}%</div><div class="l">Accuracy</div></div>
+  </section>
+
+  <h2>Final Standings</h2>
+  <table>
+    <thead><tr><th>Rank</th><th>Player</th><th>Score</th><th>Solves</th><th>Last solve (UTC)</th></tr></thead>
+    <tbody>
+    {% for r in board %}
+      <tr>
+        <td><b>{{ r.rank }}</b></td>
+        <td>{{ r.name }}</td>
+        <td><b>{{ r.score }}</b></td>
+        <td>{{ r.solves }}</td>
+        <td>{{ r.last_solve_at[:19].replace('T',' ') if r.last_solve_at else '—' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5">No players yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Challenge Analysis</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Challenge</th><th>Category</th><th>Points</th><th>Solves</th><th>First blood</th></tr></thead>
+    <tbody>
+    {% for c in challenges %}
+      <tr>
+        <td>{{ c.ch.id }}</td>
+        <td>{{ c.ch.title }} {% if c.ch.hidden %}<span class="badge b-hidden">hidden</span>{% endif %}</td>
+        <td><span class="badge b-cat">{{ c.ch.category }}</span></td>
+        <td>{{ c.points }}{% if c.ch.dynamic %} ⚡{% endif %}</td>
+        <td>{{ c.solve_count }}</td>
+        <td>{% if c.solvers %}<span class="badge b-first">🩸 {{ c.solvers[0].name }}</span>{% else %}—{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6">No challenges yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Solvers per challenge</h2>
+  {% for c in challenges %}
+    <p style="margin:14px 0 4px"><b>{{ c.ch.title }}</b>
+      <span class="badge b-cat">{{ c.ch.category }}</span>
+      <span class="muted" style="color:#64748b">· {{ c.solve_count }} solve(s)</span></p>
+    {% if c.solvers %}
+    <table>
+      <thead><tr><th>#</th><th>Player</th><th>Time (UTC)</th></tr></thead>
+      <tbody>
+      {% for s in c.solvers %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ s.name }} {% if s.first_blood %}<span class="badge b-first">first blood</span>{% endif %}</td>
+          <td>{{ s.at[:19].replace('T',' ') }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="muted" style="color:#94a3b8;font-size:13px">Unsolved so far.</p>{% endif %}
+  {% endfor %}
+
+  <h2>Recent solve timeline</h2>
+  <table>
+    <thead><tr><th>Time (UTC)</th><th>Player</th><th>Challenge</th><th>Points</th></tr></thead>
+    <tbody>
+    {% for e in timeline %}
+      <tr><td>{{ e.at[:19].replace('T',' ') }}</td><td>{{ e.user }}</td><td>{{ e.challenge }}</td><td>+{{ e.points }}</td></tr>
+    {% else %}
+      <tr><td colspan="4">No solves recorded yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <footer class="rpt">
+    <span>Generated by NEON//GRID CTF platform</span>
+    <span>{{ generated.strftime('%Y-%m-%d %H:%M:%S') }} UTC · offline HTML report</span>
+  </footer>
+</div>
+</body>
+</html>

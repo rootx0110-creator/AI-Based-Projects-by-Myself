@@ -1,0 +1,34 @@
+# ORBIT 3D Product Configurator — TODO
+# Legend: [ ] open · [~] in progress · [x] done
+
+== DONE (v1.0.0) ==
+[x] 3D scene (three.js r128, vendored offline) with studio backdrop
+[x] Parametric lounge chair: frame / legs / seat / backrest / armrests
+[x] Drag-rotate with inertia, wheel zoom, right/shift-drag pan
+[x] Click-to-select parts, hover + selection highlight
+[x] 12 finishes per part (wood / painted / metallic presets)
+[x] Options: cushion, armrests, metal legs, engraving
+[x] Live pricing + presets (Midnight / Ember / Sage / Random)
+[x] Download HTML report (styled quotation doc) + PNG snapshot + JSON copy
+[x] Config persistence (localStorage)
+[x] Multiple products: Lounge Chair / Floor Lamp / Coffee Table /
+    Bookshelf with per-product parts, options, presets and camera
+[x] Native .exe: C# launcher, self-extracting payload, checksum, lifecycle
+[x] Heartbeat + beacon watchdogs (no orphan processes)
+[x] Headless selftest + 6-check E2E — all PASS
+[x] Docs: architecture.md, memory.md, state.md, readme.txt, todo.txt
+
+== OPEN (v1.1 ideas) ==
+[ ] Load real GLB product models (drag-and-drop a .glb onto the window)
+[ ] Environment presets (studio / showroom / outdoor) with HDRI-ish lighting
+[ ] AR/export: glTF export of the configured product
+[ ] More products (rug / desk / sideboard) in the catalog
+[ ] Shareable config: encode cfg into URL hash for support tickets
+[ ] Wire tools/fetch-node.js into build.js as a fallback step
+[ ] Optional code signing to silence SmartScreen on other machines
+[ ] Keep /c/orbit_test/e2e.js as tools/e2e.js in-repo; drop SED debris
+
+== MAINTENANCE ==
+[ ] Re-run `npm run build` after any src/ change (exe embeds the payload)
+[ ] After editing app.html, clear %TEMP%\orbit-app-profile to see fresh
+    localStorage defaults during testing

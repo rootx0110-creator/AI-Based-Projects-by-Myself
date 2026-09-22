@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CTF Arena — 3D Scoreboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+
+<div id="bg-canvas"></div>
+
+<div id="ui">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header id="topbar">
+    <div class="brand">
+      <div class="brand-badge">🏆</div>
+      <div class="brand-text">
+        <h1>CTF&nbsp;ARENA</h1>
+        <span class="brand-sub">live 3D scoreboard</span>
+      </div>
+    </div>
+
+    <div id="stat-chips" class="stat-chips"></div>
+
+    <div class="actions">
+      <button id="btn-preview" class="btn btn-ghost" title="Preview and download the HTML report">
+        <span class="btn-ico">📄</span> Report
+      </button>
+      <button id="btn-download" class="btn btn-primary" title="Download scoreboard report as HTML">
+        <span class="btn-ico">⬇️</span> Download Report
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════ 3D LABELS ══════════ -->
+  <div id="labels" aria-hidden="true"></div>
+
+  <!-- ══════════ LEGEND ══════════ -->
+  <div id="legend" class="panel"></div>
+
+  <!-- ══════════ LEADERBOARD ══════════ -->
+  <aside id="leaderboard" class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Leaderboard</h2>
+        <span class="panel-sub" id="lb-sub"></span>
+      </div>
+      <span id="live-dot" class="live-dot">LIVE</span>
+    </div>
+    <div class="lb-search">
+      <input id="search" type="text" placeholder="Search teams, tags, flags…" autocomplete="off" />
+      <span id="search-clear" class="search-clear" title="Clear">✕</span>
+    </div>
+    <div id="lb-body" class="lb-body"></div>
+  </aside>
+
+  <!-- ══════════ CHALLENGES ══════════ -->
+  <section id="challenges" class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Challenge Matrix</h2>
+        <span class="panel-sub">click a team on the board to see solved challenges</span>
+      </div>
+      <span class="count-badge" id="chal-count"></span>
+    </div>
+    <div id="chal-body" class="chal-body"></div>
+  </section>
+
+  <!-- ══════════ HINT / FOOTER ══════════ -->
+  <div id="hint" class="hint">🖱️ drag to orbit · scroll to zoom · click a tower for details</div>
+
+</div>
+
+<!-- ══════════ TEAM MODAL ══════════ -->
+<div id="modal-backdrop" class="backdrop hidden">
+  <div id="modal" class="modal panel">
+    <button id="modal-close" class="modal-close" title="Close">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ══════════ REPORT MODAL ══════════ -->
+<div id="report-backdrop" class="backdrop hidden">
+  <div class="report-modal panel">
+    <div class="report-head">
+      <h2>Scoreboard Report</h2>
+      <div class="report-actions">
+        <button id="report-download" class="btn btn-primary">⬇️ Download .html</button>
+        <button id="report-preview" class="btn btn-ghost">↗ Open in new tab</button>
+        <button id="report-close" class="btn btn-ghost">Close</button>
+      </div>
+    </div>
+    <iframe id="report-frame" title="Report preview"></iframe>
+  </div>
+</div>
+
+<!-- ══════════ TOAST ══════════ -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/charts.js"></script>
+<script src="assets/js/scene.js"></script>
+<script src="assets/js/report.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

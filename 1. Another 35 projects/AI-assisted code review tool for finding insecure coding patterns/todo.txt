@@ -1,0 +1,27 @@
+TODO LIST — SecuRevealer
+========================
+
+[x] 1. Design zero-dep architecture (docs + module boundaries)
+[x] 2. Detector catalogue: 40+ insecure patterns, 8 languages, CWE-tagged
+[x] 3. AST validation pass for JS/TS (comments/strings FP removal)
+[x] 4. AI advice engine: root cause, exploit scenario, fix snippet per finding
+[x] 5. Report generator: standalone styled HTML with severity badges
+[x] 6. API server: /api/scan (multipart + raw), /api/report, static hosting
+[x] 7. Web UI: drag & drop, file picker, paste code, findings dashboard
+[x] 8. UI polish: severity rings, filters, code viewer with highlighted lines
+[x] 9. HTML report download button (server-side) + client-side fallback
+[x] 10. Demo vulnerable files + end-to-end smoke test
+[x] 11. Docs: architecture.md, memory.md, state.md, todo.txt, readme.txt
+[x] 12. Standalone Windows exe (dist/SecuRevealer.exe via @yao-pkg/pkg,
+        node24-win-x64): auto-opens browser, embedded UI assets, verified
+        end-to-end with curl (health / scan / report / static)
+
+NEXT (optional / future)
+------------------------
+[ ] 13. Real LLM provider hook (Ollama/OpenAI) behind env flag
+[ ] 14. SARIF 2.1 + JSON export buttons
+[ ] 15. CI mode with exit codes (--fail-on critical|high)
+[ ] 16. .gitignore-style secret scanning presets (AWS/GCP/Azure keys)
+[ ] 17. Incremental git-diff scanning mode
+[ ] 18. Cross-platform builds (node24-linux-x64, node24-macos-arm64)
+[ ] 19. Code-sign the exe (signtool / self-signed cert) + installer (NSIS)

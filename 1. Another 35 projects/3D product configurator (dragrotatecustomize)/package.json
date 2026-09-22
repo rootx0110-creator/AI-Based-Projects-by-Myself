@@ -1,0 +1,15 @@
+{
+  "name": "orbit-3d-product-configurator",
+  "version": "1.0.0",
+  "description": "ORBIT — 3D Product Configurator desktop app (drag/rotate/zoom, part customization, HTML report export). Packaged as a self-extracting Windows .exe (C# launcher + embedded payload).",
+  "main": "src/launch.js",
+  "bin": { "orbit": "src/launch.js" },
+  "scripts": {
+    "start": "node src/launch.js",
+    "build": "node build.js",
+    "config": "node tools/configurator.js"
+  },
+  "keywords": ["3d", "configurator", "threejs", "product-configurator", "desktop", "windows"],
+  "author": "ORBIT Labs",
+  "license": "MIT"
+}

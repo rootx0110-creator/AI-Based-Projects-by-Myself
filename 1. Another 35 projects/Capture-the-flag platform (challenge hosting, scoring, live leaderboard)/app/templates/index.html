@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ ctf_name }} — Home{% endblock %}
+{% block content %}
+<div class="wrap">
+  <section class="hero">
+    <h1><span class="n">NEON</span>//<span class="p">GRID</span> CTF</h1>
+    <p class="sub">challenge hosting · live scoring · real-time leaderboard</p>
+    <div class="cta">
+      {% if not current_user %}
+        <a class="btn primary" href="{{ url_for('ctf.register') }}">▸ Join the Grid</a>
+        <a class="btn" href="{{ url_for('ctf.login') }}">Login</a>
+      {% else %}
+        <a class="btn primary" href="{{ url_for('ctf.challenges') }}">▸ Enter Challenges</a>
+        <a class="btn pink" href="{{ url_for('ctf.report_download') }}">⬇ Download HTML Report</a>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="grid cols-4">
+    <div class="stat"><div class="num" id="stat-teams">0</div><div class="lbl">Teams</div></div>
+    <div class="stat"><div class="num" id="stat-chals">0</div><div class="lbl">Challenges</div></div>
+    <div class="stat"><div class="num" id="stat-subs">0</div><div class="lbl">Submissions</div></div>
+    <div class="stat"><div class="num" id="stat-acc">0%</div><div class="lbl">Accuracy</div></div>
+  </section>
+
+  <section class="grid cols-2 mt">
+    <div class="panel glow">
+      <h2>Top Operatives</h2>
+      <table id="board">
+        <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Solves</th><th>Progress</th><th>Last Solve</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="mt"><a class="btn small" href="{{ url_for('ctf.scoreboard') }}">Full scoreboard →</a></div>
+      <script>window.__meId = {{ current_user.id if current_user else 'null' }};</script>
+    </div>
+    <div class="panel">
+      <h2>Live Feed</h2>
+      <div id="feed"><div class="feed-item info">· listening on the wire…</div></div>
+    </div>
+  </section>
+</div>
+{% endblock %}

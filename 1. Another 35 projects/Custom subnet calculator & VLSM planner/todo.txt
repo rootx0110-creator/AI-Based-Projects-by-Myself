@@ -1,0 +1,34 @@
+SubnetPlanner — task list
+=========================
+Legend: [x] done  [ ] pending
+
+[x] Create project docs (architecture/state/memory/readme/todo)
+[x] core.py — IP parsing, mask math, subnet calculator
+[x] core.py — reverse modes (prefix from subnets/hosts)
+[x] core.py — fixed-length derived-subnet table
+[x] core.py — VLSM engine + overflow detection
+[x] report.py — single-subnet HTML report
+[x] report.py — VLSM HTML report
+[x] report.py — combined report + escaping + print CSS
+[x] theme.py — light, professional non-black palette
+[x] widgets.py — cards, metrics, result tables
+[x] pages.py — Subnet Calculator tab
+[x] pages.py — VLSM Planner tab
+[x] pages.py — Reports tab (export/open/saved list)
+[x] gui.py — shell, notebook, status bar, settings persistence
+[x] Icon asset (Pillow-generated app.ico)
+[x] Unit tests (tests/test_core.py) — all green
+[x] GUI smoke test passes headless
+[x] Build dist/SubnetPlanner.exe with PyInstaller
+[x] Final verification: exe launches, no console window
+
+Backlog / ideas
+---------------
+[ ] CSV export of VLSM plan
+[ ] PDF export (print dialog via browser)
+[ ] Dark mode theme switch
+[ ] IPv6 subnet calculator (planning — different math for /64)
+[ ] Copy-to-clipboard for every address field
+[ ] Session save/load (JSON) of full workbook incl. derived tables
+[ ] Topology ring / network diagram preview
+[ ] Command-line interface mode (--calc 10.0.0.0/24, --vlsm file.json)

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Scoreboard — {{ ctf_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="flex" style="margin-bottom:1.2rem">
+    <h1 style="font-size:1.3rem;letter-spacing:.12em;color:#fff">▸ LIVE SCOREBOARD</h1>
+    <span class="pill right">auto-refresh · 5s</span>
+    <a class="btn small pink" href="{{ url_for('ctf.report_download') }}">⬇ HTML Report</a>
+  </div>
+
+  <section class="grid cols-4">
+    <div class="stat"><div class="num" id="stat-teams">0</div><div class="lbl">Teams</div></div>
+    <div class="stat"><div class="num" id="stat-chals">0</div><div class="lbl">Challenges</div></div>
+    <div class="stat"><div class="num" id="stat-subs">0</div><div class="lbl">Submissions</div></div>
+    <div class="stat"><div class="num" id="stat-acc">0%</div><div class="lbl">Accuracy</div></div>
+  </section>
+
+  <section class="panel glow mt">
+    <h2>Score over time</h2>
+    <canvas id="score-chart" class="chart" height="260"></canvas>
+    <p class="muted" id="chart-note">progression of the top operatives</p>
+  </section>
+
+  <section class="grid cols-2 mt">
+    <div class="panel">
+      <h2>Rankings</h2>
+      <table id="board">
+        <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Solves</th><th>Progress</th><th>Last Solve</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <script>window.__meId = {{ current_user.id if current_user else 'null' }};</script>
+    </div>
+    <div>
+      <div class="panel">
+        <h2>Category breakdown</h2>
+        <div class="grid cols-2" id="cat-chips"></div>
+      </div>
+      <div class="panel mt">
+        <h2>Live Feed</h2>
+        <div id="feed"><div class="feed-item info">· listening on the wire…</div></div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

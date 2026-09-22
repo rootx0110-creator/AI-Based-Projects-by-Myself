@@ -1,0 +1,24 @@
+BUG BOUNTY METHODOLOGY TOOLKIT — TODO
+=====================================
+[x] Scaffold project + required docs (architecture.md, memory.md, state.md, todo.txt, readme.txt)
+[x] Backend: threaded HTTP server + JSON API (port 8765)
+[x] Scope engine: domain / wildcard / IP / CIDR / URL, out-of-scope priority
+[x] Authorization attestation gate (403 until confirmed)
+[x] Recon pipeline: dns-enum, http-probe, headers-audit, exposed-files, tls-inspect, fingerprint
+[x] Findings engine with severity ranking + remediation text
+[x] Standalone HTML report generator + browser download
+[x] SPA UI: scope, pipeline (live terminal log), findings, report, toolkit tabs
+[x] Command cookbook for external scanners (copy-only, scope flags baked in)
+[x] Rate limiting, timeouts, body caps, explicit User-Agent
+[x] Smoke test end-to-end on localhost
+[x] Exe packaging script (build_exe.bat / PyInstaller)
+
+NICE-TO-HAVE (future)
+[ ] Optional integration: run subfinder/httpx automatically IF binary present AND user opts in
+[ ] Passive wordlist-based path discovery from sitemap/robots (still GET-only)
+[ ] Findings export: JSON + Markdown alongside HTML
+[ ] Multi-run history browser (compare two runs, diff new hosts/headers)
+[ ] Dark/light theme toggle (currently dark-only)
+[ ] CSV export of scope + findings
+[ ] Package as single-file with embedded assets via PyInstaller --onefile verification on clean VM
+[ ] Add unit tests for scope engine + DNS parser (pytest, optional dep for dev only)

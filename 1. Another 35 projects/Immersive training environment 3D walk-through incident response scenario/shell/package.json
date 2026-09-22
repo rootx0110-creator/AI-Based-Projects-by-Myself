@@ -1,0 +1,17 @@
+{
+  "name": "irt-shell",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Electron shell wrapper for the IRT simulator",
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-packager": "^17.1.2"
+  },
+  "scripts": {
+    "start": "electron ../",
+    "pack": "electron-packager .. IRT_Incident_Simulator --platform=win32 --arch=x64 --out=../release --overwrite --ignore=\"^/shell/(node_modules|release)\" --ignore=\"^/shell/package\" --electron-version=31.7.3"
+  },
+  "allowScripts": {
+    "electron@31.7.7": true
+  }
+}

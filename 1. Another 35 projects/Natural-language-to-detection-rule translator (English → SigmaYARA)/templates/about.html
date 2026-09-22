@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — NL2Rule Translator</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="bg-grid"></div>
+<header class="topbar">
+  <div class="brand" onclick="location.href='/'">
+    <div class="brand-mark">NL<span>2</span>R</div>
+    <div class="brand-text">
+      <div class="brand-title">NL&#8594;RULE <span class="accent">TRANSLATOR</span></div>
+      <div class="brand-sub">English &middot; Sigma &middot; YARA &middot; MITRE</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/" class="nav-link {{ 'active' if active=='home' }}">Translator</a>
+    <a href="/examples" class="nav-link {{ 'active' if active=='examples' }}">Examples</a>
+    <a href="/about" class="nav-link {{ 'active' if active=='about' }}">About</a>
+    <span class="nav-status"><i class="dot"></i>ENGINE ONLINE</span>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero hero-sm">
+    <div class="hero-eyebrow">ABOUT THE ENGINE</div>
+    <h1>How the <span class="grad">pipeline</span> works</h1>
+  </section>
+
+  <section class="pipe-grid">
+    <div class="pipe-card">
+      <div class="pipe-step">01</div><div class="pipe-title">Lex &amp; Tokenize</div>
+      <p class="pipe-sub">Your sentence is normalized, split into clauses and scanned for known security vocabulary.</p>
+    </div>
+    <div class="pipe-card">
+      <div class="pipe-step">02</div><div class="pipe-title">Artifact Extraction</div>
+      <p class="pipe-sub">IOCs and indicators are pulled out: IPs, domains, URLs, hashes, processes, file paths, registry keys, ports, usernames and more.</p>
+    </div>
+    <div class="pipe-card">
+      <div class="pipe-step">03</div><div class="pipe-title">Concept Detection</div>
+      <p class="pipe-sub">Intent is classified into detection concepts — download-and-execute, credential dumping, persistence, C2 beaconing — using a curated lexicon.</p>
+    </div>
+    <div class="pipe-card">
+      <div class="pipe-step">04</div><div class="pipe-title">Sigma Generation</div>
+      <p class="pipe-sub">A standard Sigma YAML rule is assembled: logsource, selection, condition, false positives and MITRE tags.</p>
+    </div>
+    <div class="pipe-card">
+      <div class="pipe-step">05</div><div class="pipe-title">YARA Generation</div>
+      <p class="pipe-sub">A YARA rule is built from the same understanding with meta, strings and a match condition.</p>
+    </div>
+    <div class="pipe-card">
+      <div class="pipe-step">06</div><div class="pipe-title">Report &amp; Download</div>
+      <p class="pipe-sub">A self-contained, styled HTML report packages everything for paste-into-your-SIEM or sharing with the team.</p>
+    </div>
+  </section>
+
+  <section class="about-note">
+    <div class="ov-h">DISCLAIMER</div>
+    <p>This tool is designed for legal, defensive, and lab/authorized use only. Generated rules are heuristic drafts —
+    always validate them against your environment's log pipelines before production use.</p>
+  </section>
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

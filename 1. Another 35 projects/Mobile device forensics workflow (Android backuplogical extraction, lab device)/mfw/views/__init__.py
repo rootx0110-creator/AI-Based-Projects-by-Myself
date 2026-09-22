@@ -1,0 +1,1 @@
+"""MFW view pages."""

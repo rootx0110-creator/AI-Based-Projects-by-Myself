@@ -1,0 +1,6 @@
+build/
+dist/
+data/
+__pycache__/
+*.pyc
+*.spec.bak

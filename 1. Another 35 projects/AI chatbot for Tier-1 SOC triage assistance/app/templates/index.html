@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOC Triage Assistant</title>
+<style>
+  :root {
+    --bg: #0b1220; --bg2: #0d1526; --panel: #121a2b; --panel2: #0e1626;
+    --line: #22304a; --text: #e6edf7; --muted: #8b9bb4; --accent: #4f8cff;
+    --accent2: #7c4dff; --crit: #ff4757; --high: #ffa502; --med: #ffd32a;
+    --low: #2ed573; --ok: #2ed573;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background:
+      radial-gradient(1200px 500px at 80% -10%, rgba(124,77,255,.16), transparent 60%),
+      radial-gradient(900px 420px at -10% 110%, rgba(79,140,255,.14), transparent 60%),
+      var(--bg);
+    color: var(--text); font: 15px/1.55 'Segoe UI', Roboto, Arial, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  a { color: var(--accent); }
+
+  header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 22px; border-bottom: 1px solid var(--line);
+    background: rgba(13, 21, 38, .75); backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 5;
+  }
+  .logo {
+    width: 38px; height: 38px; border-radius: 10px; font-size: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+  }
+  header h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
+  header .sub { font-size: 12px; color: var(--muted); }
+  .head-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .llm-badge {
+    font-size: 11px; padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted);
+  }
+  .llm-badge.on { color: #cdb6ff; border-color: #7c4dff; }
+
+  main {
+    flex: 1; display: flex; gap: 20px; padding: 18px 26px;
+    max-width: 1500px; width: 100%; margin: 0 auto; min-height: 0;
+  }
+
+  /* Chat column */
+  .chat-col { flex: 1 1 640px; display: flex; flex-direction: column; min-height: 0; }
+  #chat {
+    flex: 1; overflow-y: auto; overflow-x: hidden; padding: 6px 4px 12px; min-height: 0;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .msg { max-width: 92%; }
+  .msg.user { align-self: flex-end; }
+  .msg .bubble {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 16px; white-space: pre-wrap;
+    overflow-wrap: anywhere; word-break: break-word; min-width: 0;
+    max-height: 480px; overflow-y: auto;
+  }
+  .bubble::-webkit-scrollbar { width: 8px; }
+  .bubble::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+  .bubble p { margin: 4px 0; }
+  .bubble .md-h { margin: 8px 0 6px; font-size: 15.5px; color: var(--accent); }
+  .bubble ul, .bubble ol { margin: 4px 0 8px; padding-left: 20px; }
+  .bubble li { margin: 3px 0; }
+  .bubble code {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 5px;
+    padding: 0 5px; font-family: Consolas, monospace; font-size: 12.5px;
+  }
+  .bubble details {
+    margin: 8px 0; padding: 6px 10px; background: var(--panel2);
+    border: 1px solid var(--line); border-radius: 8px;
+  }
+  .bubble summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+  .msg.user .bubble {
+    background: linear-gradient(135deg, rgba(79,140,255,.25), rgba(124,77,255,.25));
+    border-color: rgba(79,140,255,.5);
+    max-height: 340px;
+  }
+  .msg.bot .bubble { border-left: 3px solid var(--accent); white-space: normal; }
+  .msg .who { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .typing { color: var(--muted); font-style: italic; }
+
+  .composer { display: flex; gap: 10px; padding-top: 10px; }
+  textarea {
+    flex: 1; resize: vertical; min-height: 84px; max-height: 220px;
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px; font: inherit; outline: none;
+  }
+  textarea:focus { border-color: var(--accent); }
+  button.primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: #fff; font-weight: 600; border-radius: 12px;
+    padding: 0 22px; cursor: pointer; font-size: 14px;
+  }
+  button.primary:disabled { opacity: .55; cursor: wait; }
+  button.ghost {
+    background: transparent; border: 1px solid var(--line); color: var(--text);
+    border-radius: 12px; padding: 0 16px; cursor: pointer; font-size: 13px;
+  }
+  button.ghost:hover { border-color: var(--accent); color: var(--accent); }
+  button:active { transform: translateY(1px); }
+
+  /* Side column */
+  .side-col { flex: 0 0 340px; display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 14px 16px;
+  }
+  .card h3 {
+    margin: 0 0 10px; font-size: 12px; text-transform: uppercase;
+    letter-spacing: .8px; color: var(--muted);
+  }
+  .sev-line { display: flex; align-items: center; gap: 10px; }
+  .sev-pill {
+    padding: 4px 14px; border-radius: 999px; font-weight: 700; color: #0b1220;
+  }
+  .score-num { margin-left: auto; font-size: 22px; font-weight: 700; }
+  .bar { height: 8px; background: var(--panel2); border: 1px solid var(--line);
+        border-radius: 999px; overflow: hidden; margin-top: 10px; }
+  .bar > div { height: 100%; width: 0%; transition: width .6s ease; }
+
+  .kpi-row { display: flex; gap: 8px; margin-top: 10px; }
+  .kpi {
+    flex: 1; background: var(--panel2); border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px; text-align: center;
+  }
+  .kpi .num { font-size: 20px; font-weight: 700; }
+  .kpi .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+  .chip {
+    display: inline-block; background: var(--panel2); border: 1px solid var(--line);
+    border-radius: 999px; padding: 2px 9px; margin: 2px 4px 2px 0;
+    font-family: Consolas, monospace; font-size: 12px; word-break: break-all;
+  }
+  .tid {
+    font-family: Consolas, monospace; background: var(--panel2);
+    border: 1px solid var(--line); border-radius: 6px; padding: 1px 7px; font-size: 12px;
+  }
+  .tac { color: var(--muted); font-size: 11px; }
+  .empty { color: var(--muted); font-size: 12.5px; }
+  .demo-row { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 8px; }
+  .demo-chip {
+    background: var(--panel2); border: 1px solid var(--line); color: var(--muted);
+    border-radius: 999px; padding: 5px 14px; font-size: 12.5px; cursor: pointer;
+    transition: all .15s ease; font-family: inherit;
+  }
+  .demo-chip:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+  .report-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .report-actions button { flex: 1; min-width: 120px; padding: 10px 0; }
+
+  .skills-list { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+  .skills-list li { padding: 4px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 8px; }
+  .skills-list li:last-child { border-bottom: none; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-top: 5px; }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 8px 0 14px; }
+
+  @media (max-width: 900px) {
+    main { flex-direction: column; }
+    .side-col { flex: none; order: -1; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🛡</div>
+  <div>
+    <h1>SOC Triage Assistant</h1>
+    <div class="sub">AI copilot for Tier-1 alert triage · offline engine + optional LLM</div>
+  </div>
+  <div class="head-right">
+    <span class="llm-badge {{ 'on' if llm_available else '' }}" id="llmBadge">
+      {{ 'LLM connected' if llm_available else 'Offline engine' }}
+    </span>
+  </div>
+</header>
+
+<main>
+  <!-- Chat column -->
+  <div class="chat-col">
+    <div id="chat">
+      <div class="msg bot">
+        <div class="who">Triage Assistant</div>
+        <div class="bubble">
+          <p>👋 Paste a SOC alert (SIEM/EDR/email gateway output) and I will:</p>
+          <ul>
+            <li>Extract IOCs (hashes, domains, URLs, IPs, CVEs, filenames)</li>
+            <li>Map MITRE ATT&amp;CK techniques</li>
+            <li>Score severity with reasons</li>
+            <li>Recommend a response playbook</li>
+            <li>Generate a downloadable HTML report</li>
+          </ul>
+          <p style="margin-top:8px">Try: <b>"EDR detected Mimikatz on FIN-WS-42, user jdoe, LSASS access, hash 44d88612fea8a8f36de82e1278abb02f"</b></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-row" id="demoRow" data-count="{{ demos|length }}">
+      {% for d in demos %}
+      <button class="demo-chip" type="button" data-text="{{ d.text|e }}">{{ d.label }}</button>
+      {% endfor %}
+    </div>
+
+    <div class="composer">
+      <textarea id="input" placeholder="Paste the alert text here…  (Ctrl+Enter to send)"></textarea>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button class="primary" id="sendBtn" title="Analyze">Analyze ▶</button>
+        <button class="ghost" id="clearBtn" title="Clear conversation">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Side column -->
+  <div class="side-col">
+    <div class="card">
+      <h3>Live Triage</h3>
+      <div class="sev-line">
+        <span class="sev-pill" id="sevPill" style="background:#22304a; color:#8b9bb4">—</span>
+        <span class="score-num" id="scoreNum">–</span>
+      </div>
+      <div class="bar"><div id="scoreBar"></div></div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="num" id="kpiIoc">0</div><div class="lbl">IOCs</div></div>
+        <div class="kpi"><div class="num" id="kpiTech">0</div><div class="lbl">Techniques</div></div>
+        <div class="kpi"><div class="num" id="kpiLlm">{{ 'ON' if llm_available else 'OFF' }}</div><div class="lbl">LLM</div></div>
+      </div>
+      <div class="report-actions">
+        <button class="ghost" id="reportBtn">⬇ Download HTML Report</button>
+        <button class="ghost" id="printBtn">🖨 Print / PDF</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>MITRE ATT&amp;CK</h3>
+      <div id="attackList" class="empty">Awaiting first analysis…</div>
+    </div>
+
+    <div class="card">
+      <h3>Indicators</h3>
+      <div id="iocList" class="empty">Awaiting first analysis…</div>
+    </div>
+
+    <div class="card">
+      <h3>Loaded Skills</h3>
+      <ul class="skills-list">
+        <li><span class="dot"></span> Phishing &amp; Email Threat Analysis</li>
+        <li><span class="dot"></span> Malware &amp; Payload Analysis</li>
+        <li><span class="dot"></span> Credential &amp; Identity Threats</li>
+        <li><span class="dot"></span> Network &amp; C2 Analysis</li>
+        <li><span class="dot"></span> Vulnerability &amp; Exposure</li>
+        <li><span class="dot"></span> Data Exfiltration &amp; Insider Risk</li>
+        <li><span class="dot"></span> Triage Playbook Advisor</li>
+        <li><span class="dot"></span> Executive Summary Generator</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer>Decision-support tool — analyst validation required. Offline deterministic engine always active{{ ' · LLM enhancement available' if llm_available }}.</footer>
+
+<script>
+const chatEl = document.getElementById('chat');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const clearBtn = document.getElementById('clearBtn');
+const reportBtn = document.getElementById('reportBtn');
+const printBtn = document.getElementById('printBtn');
+
+let lastMessage = '';
+
+/* ---- Safe mini-markdown renderer (escapes everything first) ---- */
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function inlineMd(s) {
+  return s
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+}
+
+function mdToHtml(md) {
+  const lines = String(md).split('\n');
+  const out = [];
+  let inUl = false, inOl = false, inDetails = false;
+  const closeLists = () => {
+    if (inUl) { out.push('</ul>'); inUl = false; }
+    if (inOl) { out.push('</ol>'); inOl = false; }
+  };
+  const closeDetails = () => { if (inDetails) { out.push('</details>'); inDetails = false; } };
+
+  for (const raw of lines) {
+    const line = escapeHtml(raw);
+
+    const dOpen = line.match(/^<details><summary>(.*?)<\/summary>$/);
+    if (dOpen) { closeLists(); out.push(`<details><summary>${inlineMd(dOpen[1])}</summary>`); inDetails = true; continue; }
+    if (inDetails) {
+      if (/^<\/details>$/.test(line.trim())) { closeDetails(); }
+      else if (/^- /.test(line)) { out.push(inlineMd(line.replace(/^- /, '• '))); }
+      else { out.push(inlineMd(line)); }
+      continue;
+    }
+
+    const h2 = line.match(/^## (.*)$/);
+    if (h2) { closeLists(); out.push(`<div class="md-h">${inlineMd(h2[1])}</div>`); continue; }
+    if (/^\*\*.+\*\*$/.test(line.trim())) {
+      closeLists();
+      out.push(`<p class="md-h">${inlineMd(line.trim().replace(/^\*\*/, '').replace(/\*\*$/, ''))}</p>`);
+      continue;
+    }
+
+    const ol = line.match(/^(\d+)\. (.*)$/);
+    if (ol) {
+      if (!inOl) { closeLists(); out.push('<ol>'); inOl = true; }
+      out.push(`<li>${inlineMd(ol[2])}</li>`);
+      continue;
+    }
+    const ul = line.match(/^- (.*)$/);
+    if (ul) {
+      if (!inUl) { closeLists(); out.push('<ul>'); inUl = true; }
+      out.push(`<li>${inlineMd(ul[1])}</li>`);
+      continue;
+    }
+
+    closeLists();
+    if (line.trim() === '') { out.push('<div style="height:6px"></div>'); }
+    else { out.push(`<p>${inlineMd(line)}</p>`); }
+  }
+  closeLists(); closeDetails();
+  return out.join('\n');
+}
+
+/* ---- Demo alert presets: server-rendered chips above the composer ---- */
+document.querySelectorAll('.demo-chip').forEach(b => {
+  b.addEventListener('click', () => {
+    inputEl.value = b.dataset.text;   // browser decodes entities automatically
+    inputEl.focus();
+  });
+});
+
+function addMsg(role, text) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + role;
+  const who = document.createElement('div');
+  who.className = 'who';
+  who.textContent = role === 'user' ? 'You' : 'Triage Assistant';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  if (role === 'user') {
+    bubble.textContent = text;            // plain text, browser-escaped
+  } else {
+    bubble.innerHTML = mdToHtml(text);    // pre-escaped by mdToHtml
+  }
+  wrap.appendChild(who); wrap.appendChild(bubble);
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return bubble;
+}
+
+function setStatus(d) {
+  const s = d.severity || {};
+  const pill = document.getElementById('sevPill');
+  pill.textContent = s.severity || '—';
+  pill.style.background = d.summary?.color || '#22304a';
+  pill.style.color = '#0b1220';
+  document.getElementById('scoreNum').textContent = (s.score ?? '–');
+  const bar = document.getElementById('scoreBar');
+  bar.style.background = d.summary?.color || '#4f8cff';
+  bar.style.width = (s.score || 0) + '%';
+
+  document.getElementById('kpiIoc').textContent = d.summary?.ioc_total ?? 0;
+  document.getElementById('kpiTech').textContent = d.summary?.techniques?.length ?? 0;
+
+  // ATT&CK list
+  const atkEl = document.getElementById('attackList');
+  if (d.attack_matches?.length) {
+    atkEl.className = '';
+    atkEl.innerHTML = d.attack_matches.slice(0, 6).map(m =>
+      `<div style="margin:4px 0"><span class="tid">${m.id}</span> ${m.name} <span class="tac">· ${m.tactic}</span></div>`
+    ).join('');
+  } else {
+    atkEl.className = 'empty';
+    atkEl.textContent = 'No ATT&CK techniques matched.';
+  }
+
+  // IOC chips
+  const iocEl = document.getElementById('iocList');
+  const iocs = d.iocs || {};
+  const chipHtml = [];
+  for (const [kind, vals] of Object.entries(iocs)) {
+    for (const v of (vals || []).slice(0, 6)) {
+      chipHtml.push(`<span class="chip">${escapeHtml(v)}</span>`);
+    }
+  }
+  if (chipHtml.length) {
+    iocEl.className = '';
+    iocEl.innerHTML = chipHtml.join(' ');
+  } else {
+    iocEl.className = 'empty';
+    iocEl.textContent = 'No IOCs detected.';
+  }
+}
+
+async function analyze() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  lastMessage = text;
+  addMsg('user', text);
+  inputEl.value = '';
+  sendBtn.disabled = true;
+
+  const typing = addMsg('bot', 'Analyzing alert… extracting IOCs, mapping ATT&CK, scoring severity…');
+  typing.classList.add('typing');
+
+  try {
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+    const data = await resp.json();
+    typing.classList.remove('typing');
+    if (!resp.ok) {
+      typing.textContent = '⚠️ ' + (data.error || 'Request failed.');
+    } else {
+      typing.textContent = data.chat_reply || 'Done.';
+      setStatus(data);
+    }
+  } catch (e) {
+    typing.classList.remove('typing');
+    typing.textContent = '⚠️ Network error: ' + e.message;
+  } finally {
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+}
+
+async function downloadReport() {
+  if (!lastMessage) { alert('Analyze an alert first.'); return; }
+  reportBtn.disabled = true;
+  reportBtn.textContent = '⏳ Generating…';
+  try {
+    const resp = await fetch('/api/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: lastMessage })
+    });
+    if (!resp.ok) throw new Error('Report generation failed');
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'soc_triage_report.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert('Report error: ' + e.message);
+  } finally {
+    reportBtn.disabled = false;
+    reportBtn.textContent = '⬇ Download HTML Report';
+  }
+}
+
+function printReport() {
+  if (!lastMessage) { alert('Analyze an alert first.'); return; }
+  const w = window.open('', '_blank');
+  fetch('/api/report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: lastMessage })
+  })
+    .then(r => r.text())
+    .then(html => {
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => w.print(), 400);
+    });
+}
+
+sendBtn.addEventListener('click', analyze);
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) analyze();
+});
+clearBtn.addEventListener('click', () => { location.reload(); });
+reportBtn.addEventListener('click', downloadReport);
+printBtn.addEventListener('click', printReport);
+inputEl.focus();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "id": "pb_unauthorized_access",
+  "name": "Unauthorized Access / Account Compromise",
+  "description": "Account take-over response: validate source, force reset, revoke sessions, review blast radius and enable MFA enforcement.",
+  "version": "1.0",
+  "triggers": ["unauthorized access", "account compromise", "atop", "credential", "brute force", "impossible travel"],
+  "mitre": ["T1078", "T1110", "T1531"],
+  "estimated_minutes": 15,
+  "steps": [
+    { "id": "s1", "kind": "title", "text": "1. Validate" },
+    { "id": "s2", "kind": "integration", "action": "siem.query", "params": { "query": "signin == {{incident.context.user}} | geomap last 48h" }, "label": "Recent logons & geo map" },
+    { "id": "s3", "kind": "integration", "action": "ti.ip_reputation", "params": { "value": "{{ioc.ip}}" }, "label": "Originating IP reputation" },
+    { "id": "s4", "kind": "condition", "on": "s3", "test": { "op": "eq", "field": "verdict", "value": "malicious" }, "then": "s5", "else": "s10", "label": "Is source malicious?" },
+    { "id": "s5", "kind": "title", "text": "2. Contain" },
+    { "id": "s6", "kind": "task", "text": "Confirm ownership with the user (out-of-band). Force password reset immediately.", "assign": "Identity Team" },
+    { "id": "s7", "kind": "integration", "action": "iam.revoke_sessions", "params": { "user": "{{incident.context.user}}" }, "label": "Revoke all active sessions" },
+    { "id": "s8", "kind": "integration", "action": "fw.block_ip", "params": { "ip": "{{ioc.ip}}", "rule": "ACCOUNT-COMPROMISE" }, "label": "Block attacker IP at perimeter" },
+    { "id": "s9", "kind": "integration", "action": "siem.query", "params": { "query": "user == {{incident.context.user}} AND (mail_read OR file_access) | table object,time" }, "label": "Blast radius - mail & file access" },
+    { "id": "s10", "kind": "task", "text": "Verify no admin escalation occurred; if so escalate to high-severity containment.", "assign": "SOC Analyst" },
+    { "id": "s11", "kind": "integration", "action": "ticketing.update", "params": { "status": "resolved" }, "label": "Update account-takeover ticket" }
+  ]
+}

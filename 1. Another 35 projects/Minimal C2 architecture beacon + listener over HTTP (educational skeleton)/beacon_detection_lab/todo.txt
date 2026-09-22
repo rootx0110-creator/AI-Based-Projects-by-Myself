@@ -1,0 +1,30 @@
+BEACON DETECTION LAB - TASK LIST
+=================================
+
+[x] analyzer.py: combined access-log parser
+[x] analyzer.py: classic pcap parser (Ethernet/IPv4/HTTP)
+[x] analyzer.py: beacon scoring (median interval, jitter CV, Gini)
+[x] analyzer.py: self-contained HTML report renderer
+[x] analyzer.py: CLI (-o report, --json findings, -t threshold, --ip filter)
+[x] dashboard.py: loopback web UI + upload + report download (HTML/JSON)
+[x] make_sample_data.py: synthetic benign + beacon-like traffic (log + pcap)
+[x] detections/: educational Sigma (x2) and YARA (x1) rules
+[x] docs: architecture.md, state.md, memory.md, readme.txt
+[x] verify: compile all, analyze both samples, dashboard round-trip test
+[x] launcher.py (windowed entry) + build.bat (PyInstaller rebuild script)
+[x] dist/BeaconDetectionLab.exe - dashboard exe, browser auto-open, tested
+[x] dist/beacon-analyzer.exe - CLI exe, tested against both samples
+
+[ ] TODO (next up)
+[ ] Optional: code-sign the executables (unsigned exes trigger SmartScreen)
+[ ] Optional: JSONL streaming input for netflow-style logs
+[ ] Optional: CSV export alongside HTML/JSON
+[ ] Optional: time-of-day histogram in the HTML report
+[ ] Optional: unit tests (unittest) for score_group edge cases
+[ ] Optional: pcapng + IPv6 support in the pcap parser
+[ ] Optional: dashboard dark mode toggle
+
+[ ] DONE CRITERIA for any new feature
+[ ] stdlib-only, no new dependencies
+[ ] documented in architecture.md + state.md updated
+[ ] verified against samples/access.log and samples/capture.pcap

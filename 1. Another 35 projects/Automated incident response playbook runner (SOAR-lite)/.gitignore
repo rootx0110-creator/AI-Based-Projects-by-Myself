@@ -1,0 +1,8 @@
+# runtime state — never commit
+data/
+build/
+dist/
+*.spec
+__pycache__/
+*.pyc
+.venv/

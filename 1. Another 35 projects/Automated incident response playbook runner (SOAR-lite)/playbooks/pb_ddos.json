@@ -1,0 +1,21 @@
+{
+  "id": "pb_ddos",
+  "name": "DDoS / Service Disruption",
+  "description": "Volumetric attack response: scrubber activation, rate limiting, geo-blocking, origin protection and provider escalation.",
+  "version": "1.0",
+  "triggers": ["ddos", "volumetric", "service disruption", "outage", "availability"],
+  "mitre": ["T1498", "T1499"],
+  "estimated_minutes": 10,
+  "steps": [
+    { "id": "s1", "kind": "title", "text": "1. Detect & Verify" },
+    { "id": "s2", "kind": "integration", "action": "siem.query", "params": { "query": "bandwidth == public_edge AND 5min avg > 2000 Mbps" }, "label": "Confirm volumetric spike" },
+    { "id": "s3", "kind": "integration", "action": "dns.query_burst", "params": { "zone": "{{incident.context.domain}}" }, "label": "Check for DNS amplification vector" },
+    { "id": "s4", "kind": "title", "text": "2. Mitigate" },
+    { "id": "s5", "kind": "integration", "action": "dcdn.scrub", "params": { "domain": "{{incident.context.domain}}" }, "label": "Route traffic to scrubber" },
+    { "id": "s6", "kind": "integration", "action": "waf.rate_limit", "params": { "target": "{{incident.context.domain}}", "rpm": 180 }, "label": "Apply edge rate limiting" },
+    { "id": "s7", "kind": "integration", "action": "fw.block_ip", "params": { "ip": "{{ioc.ip}}", "rule": "DDOS-MITIGATION" }, "label": "Blacklist abusive source ranges" },
+    { "id": "s8", "kind": "integration", "action": "dns.sinkhole", "params": { "domain": "{{ioc.domain}}" }, "label": "Sinkhole reflection domains" },
+    { "id": "s9", "kind": "task", "text": "Escalate to DDoS protection provider for layer-4 scrubbing; contact ISP for null-routing if needed.", "assign": "Network Ops" },
+    { "id": "s10", "kind": "integration", "action": "ticketing.update", "params": { "status": "resolved" }, "label": "Close mitigation event" }
+  ]
+}

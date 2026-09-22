@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+{% block title %}Incident · SOAR-Lite{% endblock %}
+{% block page %}<span id="page-ref">Incident</span>{% endblock %}
+{% block crumb %}triage · automation · reporting{% endblock %}
+{% block newbtn %}none{% endblock %}
+
+{% block content %}
+<div id="inc-root">
+
+  <!-- header -->
+  <div class="page-head">
+    <div class="grow">
+      <div class="flex wrap" style="gap:10px">
+        <span class="badge sev-" id="h-sev"></span>
+        <span class="badge st-" id="h-status"></span>
+        <span class="tag" id="h-type"></span>
+        <span class="tag" id="h-ref"></span>
+      </div>
+      <h1 id="h-title" style="margin-top:8px">…</h1>
+      <div class="lead" id="h-desc"></div>
+    </div>
+    <div class="flex" style="align-items:flex-end;flex-direction:column-reverse">
+      <div class="flex">
+        <select id="phase-sel" onchange="setPhase(this.value)" style="width:170px"></select>
+        <button class="btn primary" onclick="attachPlaybook(true)">⛭ Run Playbook</button>
+        <button class="btn" onclick="downloadReport()">⬇ HTML Report</button>
+        <button class="btn danger ghost" onclick="window.SOAR.openModal('m-note')">＋ Note</button>
+      </div>
+      <div style="font-size:12px" class="muted">Assigned: <b id="h-analyst"></b> · Source <span id="h-source"></span></div>
+    </div>
+  </div>
+
+  <!-- risk + about + iocs -->
+  <div class="grid cards-3">
+    <div class="card" style="max-width:240px">
+      <h3>Risk Score</h3>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="chart-donut" id="donut-risk" data-center="0" data-center-label="risk /100"
+             style="width:120px;height:120px"></div>
+      </div>
+      <div class="muted" id="h-risk-meta" style="font-size:12px;margin-top:8px"></div>
+    </div>
+    <div class="card" style="grid-column:span 2">
+      <h3>Case Intelligence</h3>
+      <div id="ctx-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px 18px"></div>
+      <div class="divider"></div>
+      <div class="flex between">
+        <h3 style="margin:0">Indicators of Compromise</h3>
+        <button class="btn sm" onclick="window.SOAR.openModal('m-ioc')">＋ Add IOC</button>
+      </div>
+      <div class="tbl-wrap mt">
+        <table class="tbl"><thead><tr><th>Type</th><th>Value</th><th>Verdict</th><th>TI score</th><th>First seen</th></tr></thead>
+        <tbody id="ioc-rows"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- executions + timeline -->
+  <div class="grid cards-2 mt" style="grid-template-columns:1.4fr 1fr">
+    <div class="card">
+      <h3>Playbook Executions</h3>
+      <div id="exec-list" class="stack"></div>
+    </div>
+    <div class="card">
+      <h3>Timeline</h3>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+
+  <!-- attach playbook modal -->
+  <div class="modal-backdrop" id="m-attach">
+    <div class="modal">
+      <div class="m-head"><h2>Attach &amp; Run Automation</h2><span class="x" data-close>×</span></div>
+      <div class="m-body">
+        <label class="fld">Playbook</label>
+        <select id="pb-sel"></select>
+        <div class="muted" id="pb-desc" style="font-size:12px;margin-top:8px"></div>
+        <label class="fld">Reference IOC <span class="hint">used to resolve {{ "{{ioc.*}}" }} parameters</span></label>
+        <select id="ioc-sel"></select>
+        <label class="fld"><input type="checkbox" id="pb-autorun" checked style="width:auto"> Start execution immediately</label>
+        <div id="pb-preview" class="codebox mt" style="display:none"></div>
+      </div>
+      <div class="m-foot">
+        <button class="btn ghost" data-close>Cancel</button>
+        <button class="btn" onclick="pbPreview()">Preview Params</button>
+        <button class="btn primary" onclick="attachPlaybook(undefined)">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- note modal -->
+  <div class="modal-backdrop" id="m-note">
+    <div class="modal">
+      <div class="m-head"><h2>Add Timeline Note</h2><span class="x" data-close>×</span></div>
+      <div class="m-body">
+        <textarea id="note-text" rows="4" placeholder="Investigation note, containment decision, comms…"></textarea>
+        <label class="fld">Author</label><input id="note-by" placeholder="SOC Analyst">
+      </div>
+      <div class="m-foot"><button class="btn ghost" data-close>Cancel</button>
+        <button class="btn primary" onclick="addNote()">Post Note</button></div>
+    </div>
+  </div>
+
+  <!-- ioc modal -->
+  <div class="modal-backdrop" id="m-ioc">
+    <div class="modal">
+      <div class="m-head"><h2>Register Indicator</h2><span class="x" data-close>×</span></div>
+      <div class="m-body">
+        <div class="grid" style="grid-template-columns:140px 1fr;gap:12px">
+          <div><label class="fld">Type</label><select id="ioc-type">
+            <option>ip</option><option>domain</option><option>url</option><option>hash</option><option>email</option><option>file</option><option>user</option><option>other</option>
+          </select></div>
+          <div><label class="fld">Value</label><input id="ioc-value" placeholder="e.g. 203.0.113.7"></div>
+        </div>
+        <label class="fld">Source</label><input id="ioc-source" placeholder="manual / siem / ti">
+      </div>
+      <div class="m-foot"><button class="btn ghost" data-close>Cancel</button>
+        <button class="btn primary" onclick="addIoc()">Register</button></div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const INC_ID = {{ inc_id | tojson }};
+let PBs = [], ACTIVE_RUN = null, LOCK = false;
+
+const phaseOptions = ["open","triage","contained","eradicated","recovered","monitoring","closed"];
+
+async function load() {
+  const { api, esc } = window.SOAR;
+  const inc = await api("/api/incidents/" + INC_ID);
+
+  document.title = inc.ref_no + " · SOAR-Lite";
+  document.getElementById("page-ref").textContent = inc.ref_no;
+  document.getElementById("h-ref").textContent = inc.ref_no;
+  document.getElementById("h-title").textContent = inc.title;
+  document.getElementById("h-desc").textContent = inc.description;
+  document.getElementById("h-analyst").textContent = inc.analyst;
+  document.getElementById("h-source").textContent = inc.source;
+  document.getElementById("h-type").textContent = inc.type.replace(/_/g, " ");
+
+  const sev = document.getElementById("h-sev");
+  sev.className = "badge sev-" + inc.severity;
+  sev.textContent = inc.severity;
+  const st = document.getElementById("h-status");
+  st.className = "badge st-" + inc.status;
+  st.textContent = inc.status;
+
+  // phase selector
+  const sel = document.getElementById("phase-sel");
+  sel.innerHTML = phaseOptions.map(p => `<option value="${p}" ${p === inc.phase ? "selected" : ""}>phase: ${p}</option>`).join("");
+
+  // risk donut
+  const dr = document.getElementById("donut-risk");
+  dr.dataset.center = inc.risk_score;
+  const frac = inc.risk_score / 100;
+  window.SOAR.donut("#donut-risk", [{ label: "risk", value: frac, color: riskColor(inc.risk_score) },
+                                    { label: "headroom", value: 1 - frac, color: "#10141c" }]);
+  document.getElementById("h-risk-meta").textContent =
+    `Weighted from severity, TI verdict, IOC density & asset criticality.`;
+
+  // context grid
+  const ctx = Object.entries(inc.context || {});
+  document.getElementById("ctx-grid").innerHTML = ctx.length ? ctx.map(([k, v]) =>
+    `<div><div class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.8px">${esc(k)}</div>
+     <div class="mono" style="word-break:break-all">${esc(v)}</div></div>`).join("") : `<div class="muted">No structured context.</div>`;
+
+  // IOCs
+  document.getElementById("ioc-rows").innerHTML = inc.iocs.length ? inc.iocs.map(i => `
+    <tr><td><code>${esc(i.type)}</code></td>
+    <td class="mono" style="word-break:break-all">${esc(i.value)}</td>
+    <td>${i.threat_verdict ? `<span class="badge ${i.threat_verdict === 'clean' ? '' : ''}" style="${verdictStyle(i.threat_verdict)}">${esc(i.threat_verdict)}</span>` : '<span class="muted">pending TI</span>'}</td>
+    <td class="num">${i.reputation_score ?? "—"}</td>
+    <td class="mono-sm nowrap">${(i.first_seen||"").replace("T"," ").replace("Z","")}</td></tr>`).join("")
+    : `<tr><td colspan="5" class="empty">No indicators recorded yet.</td></tr>`;
+
+  // timeline
+  document.getElementById("timeline").innerHTML = (inc.notes || []).slice().reverse().map(n => `
+    <div class="tl-item">
+      <div class="ts">${esc((n.ts||"").replace("T"," ").replace("Z",""))}</div>
+      <div class="by">${esc(n.by)}</div>
+      <div class="tx">${esc(n.text)}</div>
+    </div>`).join("") || `<div class="muted">No activity yet.</div>`;
+
+  // executions
+  renderExecs(inc.executions || []);
+
+  // poll while any run is live
+  clearTimeout(window._pollT);
+  if ((inc.executions || []).some(e => ["queued","running"].includes(e.status))) {
+    window._pollT = setTimeout(load, 1200);
+  }
+}
+
+function riskColor(s) { return s >= 70 ? "#ef4444" : s >= 40 ? "#f59e0b" : "#22a06b"; }
+function verdictStyle(v) {
+  const map = { malicious: "color:#f87171;background:rgba(239,68,68,.14)", ransomware: "color:#f87171;background:rgba(239,68,68,.14)",
+                suspicious: "color:#fbbf24;background:rgba(245,158,11,.13)", clean: "color:#34d399;background:rgba(34,160,107,.13)" };
+  const s = map[v]; return s ? ("display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;" + s) : "";
+}
+
+async function renderExecs(execs) {
+  const { api, esc } = window.SOAR;
+  const el = document.getElementById("exec-list");
+  if (!execs.length) {
+    el.innerHTML = `<div class="empty-state"><div class="em">⚙️</div>No automation run yet.<br>
+      Click <b>Run Playbook</b> to start the response.</div>`;
+    const dh = document.getElementById("exec-detail");
+    if (dh) dh.remove();
+    return;
+  }
+  // keep selection stable
+  if (!ACTIVE_RUN || !execs.some(e => e.id === ACTIVE_RUN)) ACTIVE_RUN = execs[0].id;
+
+  el.innerHTML = execs.map(e => {
+    const isRun = ["queued","running"].includes(e.status);
+    const isActive = e.id === ACTIVE_RUN;
+    return `<div class="card tight" style="cursor:pointer;${isActive ? "border-color:rgba(58,163,255,.5)" : ""}"
+      onclick="selectRun('${esc(e.id)}')">
+      <div class="flex between">
+        <div class="flex"><span class="badge st-${esc(e.status)}">${esc(e.status)}</span>
+        <b>${esc(e.playbook_name)}</b></div>
+        <span class="mono-sm">${e.step_count} steps</span>
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:6px">run ${esc(e.id)} · started ${esc((e.created_at||"").replace("T"," ").replace("Z",""))}</div>
+      ${isRun ? `<div class="progress mt" style="margin-top:10px"><span style="width:45%" class="run-ind"></span></div>` : ""}
+      ${isRun ? `<button class="btn danger sm" style="margin-top:8px" onclick="event.stopPropagation();cancelRun('${esc(e.id)}')">Cancel run</button>` : ""}
+    </div>`;
+  }).join("");
+
+  // detail of active
+  const ex = await api("/api/executions/" + ACTIVE_RUN);
+  renderRunDetail(ex);
+}
+
+function renderRunDetail(ex) {
+  const { esc } = window.SOAR;
+  let host = document.getElementById("exec-detail");
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "exec-detail";
+    document.getElementById("exec-list").appendChild(host);
+  }
+  const steps = ex.steps || [];
+  const done = steps.filter(s => s.status !== "pending").length;
+  const pct = steps.length ? (done / steps.length * 100) | 0 : 0;
+  const running = steps.some(s => s.status === "running");
+  const spinner = (s) => s.status === "running" ? `<span class="step-pill run">▶</span>` : "";
+
+  host.innerHTML = `
+    <div class="card tight">
+      <div class="flex between">
+        <b>${esc(ex.playbook_name)}</b>
+        <span class="badge st-${esc(ex.status)}">${esc(ex.status)}</span>
+      </div>
+      <div class="progress ${pct === 100 ? "ok" : ""}" style="margin:12px 0 6px"><span style="width:${pct}%"></span></div>
+      <div class="muted" style="font-size:12px">${done}/${steps.length} steps · ${pct}% complete
+        ${running ? " · <span style='color:#60a5fa'>automation running…</span>" : ""}
+        ${ex.was_interrupted ? " · <span style='color:#f87171'>interrupted by restart</span>" : ""}</div>
+      <div class="flex wrap mt">
+        <button class="btn sm" onclick="window.open('/api/executions/${esc(ex.id)}','_blank')">View raw run</button>
+        ${["running","queued"].includes(ex.status) ? `<button class="btn danger sm" onclick="cancelRun('${esc(ex.id)}')">Cancel</button>` : ""}
+      </div>
+    </div>
+    ${steps.map(s => {
+      const kindIcon = { title: "§", task: "✎", integration: "⚙", condition: "◇", delay: "⏱" }[s.kind] || "•";
+      let res = "";
+      if (s.status === "failed") res = `<span style="color:#f87171">✖ ${esc(s.error || "failed")}</span>`;
+      else if (s.kind === "condition") res = (s.output && s.output.matched) ? "branch taken ✓" : "branch not taken";
+      else if (s.kind === "integration") {
+        const o = s.output || {};
+        res = esc([o.verdict, o.status, o.error, o.detections].filter(Boolean).join(" · ") || "ok");
+      } else if (s.kind === "task") res = s.output ? `assign → ${esc(s.output.assigned)}` : "";
+      else if (s.kind === "delay") res = "";
+      return `<div class="flex" style="margin-top:10px;align-items:flex-start">
+        <span class="step-pill ${s.status === 'completed' ? 'done' : s.status === 'failed' ? 'fail' : s.status === 'running' ? 'run' : ''}">${kindIcon}</span>
+        <div class="grow" style="min-width:0">
+          <div class="flex between" style="flex-wrap:wrap;gap:4px">
+            <b style="font-size:13px">${esc(s.label || s.pb_step_id)}</b>
+            <span class="muted" style="font-size:11px">${esc(s.action || s.kind)}${s.latency_ms ? " · " + s.latency_ms + "ms" : ""}</span>
+          </div>
+          ${res ? `<div class="dim" style="font-size:12px;word-break:break-word">${res}</div>` : ""}
+          ${(s.input && s.input.params) ? `<div class="mono-sm stroke" style="font-size:11px;color:#8a93a6;margin-top:3px">${esc(JSON.stringify(s.input.params))}</div>` : ""}
+        </div>
+        <span class="badge st-${esc(s.status)}">${esc(s.status)}</span>
+      </div>`;
+    }).join("")}`;
+}
+
+function selectRun(id) {
+  ACTIVE_RUN = id;
+  document.querySelectorAll("#exec-list > .card").forEach(c => c.style.borderColor = "");
+  document.getElementById("exec-detail").style.display = "none";
+  load();
+}
+
+async function cancelRun(id) {
+  const { api, toast } = window.SOAR;
+  await api(`/api/executions/${id}/cancel`, { method: "POST" });
+  toast("Execution cancelled", "ok");
+  load();
+}
+
+async function setPhase(p) {
+  const { api, toast } = window.SOAR;
+  await api(`/api/incidents/${INC_ID}/phase`, { method: "POST", body: { phase: p } });
+  toast("Phase updated → " + p, "ok");
+  load();
+}
+
+async function addNote() {
+  const { api, toast, closeModal } = window.SOAR;
+  await api(`/api/incidents/${INC_ID}/notes`, { method: "POST",
+    body: { text: document.getElementById("note-text").value, by: document.getElementById("note-by").value || "analyst" } });
+  closeModal("m-note");
+  document.getElementById("note-text").value = "";
+  toast("Note posted", "ok");
+  load();
+}
+
+async function addIoc() {
+  const { api, toast, closeModal } = window.SOAR;
+  const body = { type: document.getElementById("ioc-type").value,
+                 value: document.getElementById("ioc-value").value.trim(),
+                 source: document.getElementById("ioc-source").value || "manual" };
+  if (!body.value) return toast("Value required", "err");
+  await api(`/api/incidents/${INC_ID}/iocs`, { method: "POST", body });
+  closeModal("m-ioc");
+  toast("IOC registered; risk re-scored", "ok");
+  load();
+}
+
+async function openAttach() {
+  const { api, esc } = window.SOAR;
+  if (!PBs.length) PBs = (await api("/api/playbooks")).playbooks;
+  const sel = document.getElementById("pb-sel");
+  sel.innerHTML = PBs.map(p =>
+    `<option value="${esc(p.id)}">${esc(p.name)} — ${p.step_count} steps · ~${p.estimated_minutes}min</option>`).join("");
+  sel.onchange = () => {
+    const p = PBs.find(x => x.id === sel.value);
+    document.getElementById("pb-desc").textContent = p ? p.description : "";
+  };
+  sel.onchange();
+  // ioc selector
+  const inc = await api("/api/incidents/" + INC_ID);
+  const isel = document.getElementById("ioc-sel");
+  isel.innerHTML = inc.iocs.length
+    ? inc.iocs.map(i => `<option value="${i.id}">${i.type} · ${esc(i.value)}</option>`).join("")
+    : `<option value="">(no IOC — params resolve empty)</option>`;
+  window.SOAR.openModal("m-attach");
+}
+
+async function attachPlaybook(runImmediately) {
+  if (runImmediately !== undefined && runImmediately !== true) {
+    // modal confirm path
+    const run = document.getElementById("pb-autorun").checked;
+    const pbId = document.getElementById("pb-sel").value;
+    const iocId = document.getElementById("ioc-sel").value;
+    const { api, toast, closeModal } = window.SOAR;
+    const exec = await api(`/api/incidents/${INC_ID}/playbook`, { method: "POST",
+      body: { playbook_id: pbId, run, ioc_id: iocId } });
+    closeModal("m-attach");
+    toast("Playbook attached" + (run ? " · execution started" : ""), "ok");
+    load();
+    return;
+  }
+  await openAttach();
+}
+
+async function pbPreview() {
+  const { api, esc } = window.SOAR;
+  const pbId = document.getElementById("pb-sel").value;
+  const d = await api(`/api/playbooks/${pbId}/preview`, { method: "POST", body: { incident_id: INC_ID } });
+  const pre = document.getElementById("pb-preview");
+  pre.style.display = "block";
+  pre.textContent = JSON.stringify(d.previews, null, 2);
+}
+
+async function downloadReport() {
+  const { api, toast, esc } = window.SOAR;
+  try {
+    const d = await api(`/api/incidents/${INC_ID}/report`, { method: "POST" });
+    const a = document.createElement("a");
+    a.href = d.download_url; a.download = d.file;
+    document.body.appendChild(a); a.click(); a.remove();
+    toast("Report downloaded · " + d.file, "ok");
+  } catch (e) { toast(e.message, "err"); }
+}
+
+window._openNewIncident = null; // hide primary button on this page
+load();
+</script>
+{% endblock %}

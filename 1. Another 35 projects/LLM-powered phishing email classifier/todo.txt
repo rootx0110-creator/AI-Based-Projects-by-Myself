@@ -1,0 +1,34 @@
+# Task Backlog - LLM-Powered Phishing Email Classifier
+
+Status legend:
+  [x] done      [~] in progress      [ ] todo
+
+## Milestone: MVP Web App
+- [x] Scaffold project docs and folder layout
+- [x] Build heuristic scoring engine (rule-based signals)
+- [x] Feature extraction (URLs, keywords, headers, brand impersonation)
+- [x] Optional LLM deep-dive integration (OpenAI-compatible)
+- [x] Verdict fusion (heuristics + LLM) with confidence + explanation
+- [x] Flask app with scan API
+- [x] Glassmorphism dark UI with animated classification
+- [x] HTML report generation + download
+- [x] EXE build script (PyInstaller) + verified standalone EXE
+- [x] End-to-end smoke test + sample phishing/safe emails
+
+## Milestone: Polish
+- [ ] Per-email persistence / scan history
+- [ ] Bulk analysis (.eml / .txt upload)
+- [ ] Local phishing corpus for offline testing
+- [ ] Threat-intel enrichment (URLhaus, Google Safe Browsing) - optional
+- [ ] Multi-language report export (PDF/JSON)
+
+## Milestone: Hardening
+- [ ] API rate limiting + scan size limits
+- [ ] Unit tests for the scoring engine (pytest)
+- [ ] Config via environment variables fallback
+- [ ] HTTPS reverse-proxy notes for LAN deployment
+
+## Idea Box
+- [ ] Browser-style "risk meter" popover panel
+- [ ] Real-time URL reputation check
+- [ ] Custom brand watchlist users can edit

@@ -1,0 +1,33 @@
+# TODO - XSS Payload Tester
+
+## Done
+[x] Scaffold project (app.py, engine.py, payloads.py, report.py)
+[x] Payload library: 29 payloads / 6 categories + custom payloads
+[x] GET + POST (form/json/query) injection
+[x] Reflection detection with payload+body decode variants
+[x] Context analysis (script/tag/event-sink) heuristics
+[x] Verdict + confidence + KPI summary
+[x] Baseline reachability probe
+[x] Colored UI (teal->violet gradient, amber accent; not black/white)
+[x] HTML report generation + download endpoint + token re-download
+[x] Report escaping & script-block redaction (safe snippets)
+[x] Sample vulnerable lab app (lab_app.py)
+[x] PyInstaller one-file EXE build script (build_exe.ps1)
+[x] requirements.txt
+[x] Docs: readme.txt, architecture.md, memory.md, state.md, todo.txt
+[x] End-to-end verification on Windows / Python 3.14
+
+## Next (nice-to-have / future)
+[ ] Payload-wise context preview on the UI (which sink each payload targets)
+[ ] Export CSV / JSON (besides HTML)
+[ ] Per-payload retry toggle and "test one payload" quick mode
+[ ] Save scan history between restarts (file instead of memory)
+[ ] Optional: headless detect mode using Playwright for DOM-based XSS
+[ ] Add Start-Test self-decoded payload set (HTML::decode2x edge cases)
+[ ] Request-pair diffing to auto-detect output encoding used by the app
+[ ] Localization / language toggle
+
+## Bugs to keep an eye on
+[ ] Report %-formatting: any new `%` inside the inline CSS must be `%%`.
+[ ] Concurrency limit: keep <= 16 to avoid overwhelming a host.
+[ ] Long response bodies: page-head is capped to 600 chars for redaction.

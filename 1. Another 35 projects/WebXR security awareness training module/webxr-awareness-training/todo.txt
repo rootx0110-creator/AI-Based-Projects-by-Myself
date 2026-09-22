@@ -1,0 +1,47 @@
+# WebXR Awareness Training Module - Development Todo
+
+## Phase 1: Core Setup
+- [x] Create project directory structure
+- [x] Write architecture.md
+- [x] Write memory.md
+- [x] Write state.md
+- [ ] Create index.html with basic structure
+- [ ] Create styles.css with dark/shadowy theme
+- [ ] Create app.js with core JavaScript logic
+
+## Phase 2: UI Development
+- [ ] Build navigation sidebar
+- [ ] Create dashboard view
+- [ ] Design lesson view template
+- [ ] Build quiz interface
+- [ ] Create report generation UI
+
+## Phase 3: Training Content
+- [ ] Add WebXR introduction module
+- [ ] Add XR Session management lessons
+- [ ] Add Reference Spaces lessons
+- [ ] Add Input Sources lessons
+- [ ] Add Safety & Best Practices module
+- [ ] Create quiz questions for each module
+
+## Phase 4: Functionality
+- [ ] Implement progress tracking
+- [ ] Add localStorage persistence
+- [ ] Build report generation system
+- [ ] Add HTML download functionality
+- [ ] Create achievement system
+
+## Phase 5: Polish
+- [ ] Test across browsers
+- [ ] Optimize animations
+- [ ] Add sound effects (optional)
+- [ ] Add keyboard shortcuts
+- [ ] Final UI review
+
+## Future Enhancements
+- [ ] Add WebXR device detection
+- [ ] Add actual WebXR demo scenes
+- [ ] Add video tutorials
+- [ ] Add multi-user progress sync (backend)
+- [ ] Add certificate generation
+- [ ] Add accessibility features

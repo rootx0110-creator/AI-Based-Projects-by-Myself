@@ -1,0 +1,147 @@
+{% extends "layout.html" %}
+{% block title %}{{ ch.title }} · AI-Driven CTF Hint Engine{% endblock %}
+{% block content %}
+
+<nav class="crumbs"><a href="/challenges">&#8592; Challenge Library</a></nav>
+
+<section class="ch-head panel">
+  <div class="ch-title-row">
+    <h2>{{ ch.title }}</h2>
+    <span class="status-pill {{ ch.status }}">{{ ch.status }}</span>
+  </div>
+  <div class="ch-tags">
+    <span class="badge" style="--c: {{ '#3fb950' if ch.difficulty == 'Easy' else ('#d29922' if ch.difficulty == 'Medium' else '#f85149') }}">{{ ch.difficulty }}</span>
+    <span class="chip-static">{{ ch.category }}</span>
+    <span class="chip-static">#{{ ch.id }}</span>
+    <span class="chip-static">{{ 'Prepared seed' if ch.source == 'seed' else 'Added by trainer' }}</span>
+    <span class="chip-static">{{ ch.hint_count }} hint{{ 's' if ch.hint_count != 1 }} used</span>
+  </div>
+  <pre class="ch-description">{{ ch.description }}</pre>
+</section>
+
+<div class="grid2 ch-grid">
+
+  <section class="panel" id="hintPanel">
+    <h2>Hint Engine</h2>
+    <div id="hintStatus" class="hint-status"></div>
+
+    <div id="hintHistory" class="hint-history">
+      {% for h in history %}
+      <div class="hint-card">
+        <div class="hint-meta">
+          <span class="src {{ h.source }}">{{ 'AI Coach' if h.source == 'ai' else ('Prepared hint' if h.source == 'authored' else 'Engine hint') }}</span>
+          <span class="hint-level">Level {{ h.level }}</span>
+        </div>
+        <p>{{ h.content }}</p>
+      </div>
+      {% endfor %}
+      {% if not history %}
+      <p class="muted">No hints taken yet. Stuck? Ask the engine for a gentle nudge.</p>
+      {% endif %}
+    </div>
+
+    <button id="hintBtn" class="btn primary bigger" {{ 'disabled' if ch.status == 'solved' }}>
+      &#128161; Ask for hint {{ (history|length) + 1 if history else '(level 1)' }}
+    </button>
+    <p class="mini muted">Prepared hints first, then the AI coach takes over. Each visit escalates the help.</p>
+  </section>
+
+  <section class="panel" id="solvePanel">
+    <h2>Verify Your Flag</h2>
+    <form id="solveForm" autocomplete="off">
+      <input type="text" id="flagInput" placeholder="ctf{...}" {{ 'disabled' if ch.status == 'solved' }}>
+      <button type="submit" class="btn ok-big" {{ 'disabled' if ch.status == 'solved' }}>Check</button>
+    </form>
+    <div id="solveMsg"></div>
+    {% if ch.status == 'solved' %}
+    <div class="congrats">&#127881; Solved! Great work.</div>
+    {% endif %}
+
+    <hr class="sep">
+    <h3>Trainer tools</h3>
+    <button id="manualSolve" class="btn small" {{ 'disabled' if ch.status == 'solved' }}>Mark as solved manually</button>
+    <p class="mini muted">Manual solve skips flag verification &mdash; for offline demos.</p>
+  </section>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const cid = {{ ch.id }};
+  const $ = (id) => document.getElementById(id);
+  const hintBtn = $("hintBtn");
+
+  async function post(url, body) {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    });
+    if (!r.ok) throw new Error((await r.json()).error || ("HTTP " + r.status));
+    return r.json();
+  }
+
+  if (hintBtn) hintBtn.addEventListener("click", async () => {
+    hintBtn.disabled = true;
+    hintBtn.textContent = "Thinking…";
+    $("hintStatus").className = "hint-status";
+    $("hintStatus").textContent = "";
+    try {
+      const d = await post("/api/challenge/" + cid + "/hint");
+      const box = document.createElement("div");
+      box.className = "hint-card new";
+      box.innerHTML = '<div class="hint-meta"><span class="src ' + d.source + '">' +
+        d.source_label + '</span><span class="hint-level">Level ' + d.level + '</span></div>' +
+        '<p>' + d.content.replace(/&/g, "&amp;").replace(/</g, "&lt;") + '</p>';
+      $("hintHistory").appendChild(box);
+      box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      if (d.remaining_prepared > 0) {
+        hintBtn.textContent = "Ask for hint (level " + (d.level + 1) + ")";
+      } else {
+        hintBtn.textContent = "Ask the AI coach (level " + (d.level + 1) + ")";
+      }
+    } catch (e) {
+      $("hintStatus").className = "hint-status error";
+      $("hintStatus").textContent = "Hint failed: " + e.message;
+    } finally {
+      hintBtn.disabled = false;
+      $("status").textContent;
+    }
+  });
+
+  const form = $("solveForm");
+  if (form) form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const answer = $("flagInput").value;
+    try {
+      const d = await post("/api/challenge/" + cid + "/verify", { answer: answer });
+      const msg = $("solveMsg");
+      if (d.correct) {
+        msg.className = "solve-msg ok";
+        msg.textContent = "Correct! Challenge solved. \uD83C\uDF89";
+        setTimeout(() => location.reload(), 900);
+      } else {
+        msg.className = "solve-msg error";
+        msg.textContent = "Not the flag we have on file. Keep digging \u2014 or ask for a hint.";
+      }
+    } catch (e) {
+      $("solveMsg").className = "solve-msg error";
+      $("solveMsg").textContent = "Verify failed: " + e.message;
+    }
+  });
+
+  const manual = $("manualSolve");
+  if (manual) manual.addEventListener("click", async () => {
+    try {
+      await post("/api/challenge/" + cid + "/solve");
+      location.reload();
+    } catch (e) {
+      $("solveMsg").className = "solve-msg error";
+      $("solveMsg").textContent = "Failed: " + e.message;
+    }
+  });
+})();
+</script>
+{% endblock %}

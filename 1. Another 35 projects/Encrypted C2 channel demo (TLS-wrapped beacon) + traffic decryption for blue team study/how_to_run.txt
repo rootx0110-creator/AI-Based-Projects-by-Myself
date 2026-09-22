@@ -1,0 +1,66 @@
+=====================================================================
+ HOW TO RUN
+=====================================================================
+
+OPTION 1 — STANDALONE EXE (no Python needed)
+--------------------------------------------
+1. Go to the  dist\  folder.
+2. Double-click  GLM_Beacon_Lab.exe  (a single portable file;
+   Windows SmartScreen may ask about an unsigned app — choose
+   "More info" > "Run anyway"; the binary is built locally from
+   the sources in this folder).
+3. In the app:
+     a. Click  "▶ Start listener + beacon"
+     b. Watch the LIVE TRAFFIC feed: TLS tunnel, REGISTER, PING...
+     c. Type a command (whoami, ipconfig, dir, tasklist, sleep 15)
+        in TASKING and press "Queue" — the next check-in picks it up
+        and the RESULT appears in the feed.
+     d. Open the  DECRYPTION LAB  tab: the captured frames are listed.
+        The campaign passphrase (purple-night by default) is already
+        filled in — press  "⏎ Decrypt frames"  and click frames to
+        see plaintext, ciphertext hexdump and header bytes.
+     e. Open  REPORT EXPORT  and click
+        "⬇ Generate & Save HTML Report"  to download the analyst
+        report (opens in your browser, fully self-contained).
+        "Save Capture (.txt)" and "Save Recovered Plaintext" are
+        there for evidence files too.
+4. Click "■ Stop" when finished, then close the window.
+
+OPTION 2 — RUN FROM SOURCE
+--------------------------
+Requires Python 3.10+ (tkinter included on Windows builds).
+
+    cd "Encrypted C2 channel demo (TLS-wrapped beacon) + traffic decryption for blue team study"
+    python app.py
+
+Headless self-test (no GUI; prints PASS at the end):
+
+    python -m engine
+
+OPTION 3 — REBUILD THE EXE
+--------------------------
+    pip install pyinstaller
+    pyinstaller GLM_Beacon_Lab.spec --noconfirm
+    -> dist\GLM_Beacon_Lab.exe
+
+TROUBLESHOOTING
+---------------
+* "Could not bind port 8443" — another instance is running, or the
+  port is taken. Change "Listener port" in the CAMPAIGN card and
+  restart. (The beacon connects to 127.0.0.1 only.)
+* No frames in the Decryption Lab — press Stop, then Start again;
+  frames accumulate while the listener is running.
+* "HMAC mismatch" in decrypt results — either the passphrase is
+  wrong, or those frames belong to an older session (session nonces
+  differ). This is intentional: MAC-first decryption shows you why.
+* Antivirus flags the EXE — expected for unsigned security-training
+  binaries. Rebuild it yourself from source (OPTION 3) or add an
+  exclusion for the dist folder.
+
+SAFE MODE NOTES
+---------------
+* All traffic is loopback (127.0.0.1) — nothing leaves your machine.
+* Commands are canned strings; the demo implant never executes real
+  OS commands.
+* The lab certificate in engine\certs\ is self-signed and local-only;
+  delete the folder any time — it regenerates on next start.

@@ -1,0 +1,26 @@
+{
+  "id": "pb_ransomware",
+  "name": "Ransomware Outbreak",
+  "description": "Full outbreak response: containment by isolation, process kill, encryption detection, recovery and stakeholder comms.",
+  "version": "1.2",
+  "triggers": ["ransomware", "encryption", "locker", "extortion"],
+  "mitre": ["T1486", "T1491", "T1562"],
+  "estimated_minutes": 30,
+  "steps": [
+    { "id": "s1", "kind": "title", "text": "1. Emergency Containment" },
+    { "id": "s2", "kind": "integration", "action": "edr.isolate_endpoint", "params": { "host": "{{incident.context.host}}" }, "label": "Isolate affected endpoint(s)" },
+    { "id": "s3", "kind": "task", "text": "Declare a CRITICAL incident to leadership. Freeze changes to shared drives.", "assign": "ICS/Cyber Lead" },
+    { "id": "s4", "kind": "integration", "action": "edr.kill_process", "params": { "process": "{{incident.context.process}}" }, "label": "Kill ransomware process tree" },
+    { "id": "s5", "kind": "integration", "action": "edr.quarantine_file", "params": { "hash": "{{ioc.hash}}" }, "label": "Quarantine sample binary" },
+    { "id": "s6", "kind": "integration", "action": "ti.hash_reputation", "params": { "value": "{{ioc.hash}}" }, "label": "Hashes across TI feeds" },
+    { "id": "s7", "kind": "condition", "on": "s6", "test": { "op": "eq", "field": "verdict", "value": "ransomware" }, "then": "s8", "else": "s11", "label": "Is it known ransomware?" },
+    { "id": "s8", "kind": "title", "text": "2. Eradication & Recovery" },
+    { "id": "s9", "kind": "task", "text": "Restore from last known-clean backup to isolated VLAN. Verify integrity with hashing.", "assign": "Ops Engineer" },
+    { "id": "s10", "kind": "integration", "action": "ticketing.update", "params": { "summary": "Ransomware variant identified; eradicate per IR plan verb 09.", "status": "in_progress" }, "label": "Update IR ticket" },
+    { "id": "s11", "kind": "integration", "action": "siem.query", "params": { "query": "process_creation == {{incident.context.process}} | timeline by host 24h" }, "label": "Distribution scan across fleet" },
+    { "id": "s12", "kind": "integration", "action": "fw.block_ip", "params": { "ip": "{{ioc.ip}}", "rule": "RANSOM-C2" }, "label": "Block C2 infrastructure" },
+    { "id": "s13", "kind": "integration", "action": "dns.sinkhole", "params": { "domain": "{{ioc.domain}}" }, "label": "Sinkhole ransomware C2 domain" },
+    { "id": "s14", "kind": "task", "text": "Rotate all credentials touched by affected hosts; enable EDR blocklists for the family IOCs.", "assign": "SOC Lead" },
+    { "id": "s15", "kind": "integration", "action": "ticketing.update", "params": { "status": "resolved" }, "label": "Close ticket after verification run" }
+  ]
+}

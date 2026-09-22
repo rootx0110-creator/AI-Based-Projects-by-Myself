@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Settings · SOAR-Lite{% endblock %}
+{% block page %}SOC Settings{% endblock %}
+{% block crumb %}risk weighting, integration toggles, instance identity{% endblock %}
+{% block newbtn %}none{% endblock %}
+
+{% block content %}
+<div class="grid cards-2">
+  <div class="card">
+    <h3>Risk Scoring Weights</h3>
+    <div id="weights"></div>
+    <div class="muted" style="font-size:12px;margin-top:12px">Weights blend severity, TI verdict, IOC density, asset criticality and ransomware index into the 0-100 risk score.</div>
+  </div>
+  <div class="card">
+    <h3>Integration Tuning</h3>
+    <div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Integration</th><th>Status</th><th>Latency</th><th>Fail rate</th></tr></thead>
+      <tbody id="integ-rows"></tbody></table></div>
+    <div class="muted" style="font-size:12px;margin-top:12px">Simulated adapters mirror real tooling. Disabling an integration makes its playbook steps fail gracefully.</div>
+  </div>
+</div>
+
+<div class="card mt">
+  <h3>Instance</h3>
+  <div class="flex wrap" style="gap:12px">
+    <div style="width:280px"><label class="fld">SOC label</label><input id="label" placeholder="SOAR-Lite — CyberSOC"></div>
+    <div style="width:180px"><label class="fld">Timezone</label><input id="tz" placeholder="UTC"></div>
+    <div style="display:flex;align-items:flex-end"><button class="btn primary" onclick="saveAll()">Save Configuration</button></div>
+  </div>
+</div>
+
+<div class="card mt" style="border-color:rgba(239,68,68,.3)">
+  <h3 style="color:#f87171">Danger Zone</h3>
+  <div class="flex">
+    <button class="btn danger" onclick="resetData()">Reset &amp; Re-seed All Data</button>
+    <div class="muted" style="font-size:12px">Backs up current state to data/backups/&lt;timestamp&gt; then restores a fresh demo dataset.</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let SETTINGS = {};
+
+function renderWeights() {
+  const w = SETTINGS.risk_weights || {};
+  document.getElementById("weights").innerHTML = Object.entries(w).map(([k, v]) => `
+    <div class="flex mt0" style="gap:12px;align-items:center;margin-top:10px">
+      <div style="width:150px" class="muted" style="font-size:12px">${k.replace(/_/g, " ")}</div>
+      <input type="range" min="0" max="100" value="${(v * 100).toFixed(0)}" style="flex:1"
+        oninput="document.getElementById('wv-${k}').textContent = (this.value/100).toFixed(2)"
+        data-w="${k}" onchange="setWeight(this)">
+      <span class="num" id="wv-${k}" style="width:46px;text-align:right">${v.toFixed(2)}</span>
+    </div>`).join("");
+}
+
+function setWeight(el) {
+  SETTINGS.risk_weights[el.dataset.w] = parseFloat(el.value) / 100;
+}
+
+function renderIntegs() {
+  const cfg = SETTINGS.integrations || {};
+  document.getElementById("integ-rows").innerHTML = INTEG_META.map(m => {
+    const c = cfg[m.key] || {};
+    return `<tr>
+      <td><b>${m.name}</b><div class="muted" style="font-size:11px">${m.vendor}</div></td>
+      <td><select data-key="${m.key}" data-f="enabled" onchange="setInteg(this)" style="width:110px">
+          <option value="true" ${c.enabled ? "selected" : ""}>enabled</option>
+          <option value="false" ${c.enabled ? "" : "selected"}>disabled</option></select></td>
+      <td><input type="number" min="0" max="5000" step="50" value="${c.latency_ms || 500}" style="width:100px"
+          data-key="${m.key}" data-f="latency_ms" onchange="setInteg(this)"></td>
+      <td><input type="number" min="0" max="100" value="${((c.failure_rate || 0) * 100).toFixed(0)}" style="width:80px"
+          data-key="${m.key}" data-f="failure_rate" onchange="setInteg(this)">
+          <span class="muted" style="font-size:11px">%</span></td>
+    </tr>`;
+  }).join("");
+}
+
+function setInteg(el) {
+  const val = el.dataset.f === "enabled" ? el.value === "true"
+            : el.dataset.f === "failure_rate" ? (parseFloat(el.value) || 0) / 100
+            : parseInt(el.value, 10) || 0;
+  const key = el.dataset.key;
+  SETTINGS.integrations[key] = SETTINGS.integrations[key] || {};
+  SETTINGS.integrations[key][el.dataset.f] = val;
+}
+
+async function saveAll() {
+  const { api, toast } = window.SOAR;
+  SETTINGS.risk_weights = SETTINGS.risk_weights || (await api("/api/settings")).settings.risk_weights;
+  const body = {
+    risk_weights: SETTINGS.risk_weights,
+    integrations: SETTINGS.integrations,
+    instance: { label: document.getElementById("label").value,
+                timezone: document.getElementById("tz").value },
+  };
+  try {
+    await api("/api/settings", { method: "PUT", body });
+    toast("Configuration saved", "ok");
+  } catch (e) { toast(e.message, "err"); }
+}
+
+async function resetData() {
+  const { api, toast } = window.SOAR;
+  if (!confirm("Reset all data and re-seed the demo dataset? Current state is backed up.")) return;
+  try {
+    const r = await api("/api/admin/reset", { method: "POST" });
+    toast("Data reset · backup at " + r.backup, "ok");
+    setTimeout(() => location.href = "/", 900);
+  } catch (e) { toast(e.message, "err"); }
+}
+
+(async () => {
+  const { api } = window.SOAR;
+  const d = await api("/api/settings");
+  SETTINGS = d.settings;
+  window.INTEG_META = d.integration_meta;
+  document.getElementById("label").value = (SETTINGS.instance || {}).label || "";
+  document.getElementById("tz").value = (SETTINGS.instance || {}).timezone || "";
+  renderWeights();
+  renderIntegs();
+})();
+</script>
+{% endblock %}

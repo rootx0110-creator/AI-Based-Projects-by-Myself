@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NL2Rule Translator — Natural Language to Sigma &amp; YARA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<header class="topbar">
+  <div class="brand" onclick="location.href='/'">
+    <div class="brand-mark">NL<span>2</span>R</div>
+    <div class="brand-text">
+      <div class="brand-title">NL&#8594;RULE <span class="accent">TRANSLATOR</span></div>
+      <div class="brand-sub">English &middot; Sigma &middot; YARA &middot; MITRE</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/" class="nav-link {{ 'active' if active=='home' }}">Translator</a>
+    <a href="/examples" class="nav-link {{ 'active' if active=='examples' }}">Examples</a>
+    <a href="/about" class="nav-link {{ 'active' if active=='about' }}">About</a>
+    <span class="nav-status"><i class="dot"></i>ENGINE ONLINE</span>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="hero-eyebrow">DETECTION ENGINEERING, FROM PLAIN ENGLISH</div>
+    <h1>Say it in English.<br><span class="grad">Get hunt-ready rules.</span></h1>
+    <p class="hero-sub">Describe malicious behavior like you'd tell a SOC analyst. The engine translates it into
+      production-shaped <b>Sigma</b> and <b>YARA</b> detection rules, mapped to MITRE ATT&amp;CK.</p>
+
+    <div class="typed-box">
+      <span class="typed-prompt">&#9656;</span>
+      <span id="typed"></span><span class="caret"></span>
+    </div>
+  </section>
+
+  <section class="workspace">
+    <div class="panel input-panel">
+      <div class="panel-head">
+        <span class="panel-title"><i class="label-sq"></i> BEHAVIOR DESCRIPTION</span>
+        <span class="panel-meta" id="input-meta">0 characters</span>
+      </div>
+      <textarea id="nl-input"
+        placeholder="Describe the behavior to detect… e.g.&#10;&#10;PowerShell downloads a file from hxxps://mal.example.com/payload.exe using Invoke-WebRequest, decodes it from Base64 and runs it with iex while staying hidden."></textarea>
+      <div class="input-tools">
+        <div class="chips" id="chip-row"></div>
+        <button class="btn btn-primary" id="btn-translate">
+          <span class="btn-label">TRANSLATE</span><span class="btn-ico">&#9889;</span>
+        </button>
+      </div>
+      <div class="phase-strip" id="phase-strip" style="display:none">
+        <div class="phase" data-phase="scan"><i></i>Scanning text</div>
+        <div class="phase" data-phase="entity"><i></i>Extracting artifacts</div>
+        <div class="phase" data-phase="mitre"><i></i>Mapping MITRE</div>
+        <div class="phase" data-phase="sigma"><i></i>Building Sigma</div>
+        <div class="phase" data-phase="yara"><i></i>Building YARA</div>
+      </div>
+    </div>
+
+    <div class="panel output-panel" id="output-panel">
+      <!-- empty state -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-radar"><span></span><span></span><span></span><span></span></div>
+        <div class="empty-title">Awaiting Translation</div>
+        <div class="empty-sub">Type a behavior above and hit <b>TRANSLATE</b> to generate your detection package.</div>
+      </div>
+
+      <!-- result -->
+      <div class="result" id="result" style="display:none">
+        <div class="result-head">
+          <div class="stat-cards">
+            <div class="stat-card">
+              <div class="stat-value conf-ring"><span id="r-confidence"></span><small>%</small></div>
+              <div class="stat-label">CONFIDENCE</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="r-entities">0</div>
+              <div class="stat-label">ARTIFACTS</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="r-concepts">0</div>
+              <div class="stat-label">CONCEPTS</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="r-mitre">0</div>
+              <div class="stat-label">TECHNIQUES</div>
+            </div>
+            <div class="stat-card lvl">
+              <div class="stat-value lvl-badge" id="r-level">--</div>
+              <div class="stat-label">LEVEL</div>
+            </div>
+          </div>
+          <div class="result-actions">
+            <button class="btn btn-ghost" id="btn-report">&#128194; DOWNLOAD REPORT</button>
+            <button class="btn btn-ghost" id="btn-copy-all">&#128203; COPY ALL</button>
+          </div>
+        </div>
+
+        <div class="logsource-bar">
+          <div class="ls-item"><span class="ls-k">LOGSOURCE</span><span class="ls-v" id="r-logsource">--</span></div>
+          <div class="ls-item"><span class="ls-k">RULE ID</span><span class="ls-v mono" id="r-ruleid">--</span></div>
+          <div class="ls-item"><span class="ls-k">STATUS</span><span class="ls-v tag-exp">EXPERIMENTAL</span></div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="overview">OVERVIEW</button>
+          <button class="tab" data-tab="sigma">SIGMA</button>
+          <button class="tab" data-tab="yara">YARA</button>
+          <button class="tab" data-tab="mitre">MITRE ATT&amp;CK</button>
+        </div>
+
+        <div class="tab-pane active" id="pane-overview">
+          <div class="ov-section">
+            <div class="ov-h">EXTRACTED ARTIFACTS</div>
+            <div id="ov-entities" class="entity-grid"></div>
+          </div>
+          <div class="ov-section">
+            <div class="ov-h">DETECTED CONCEPTS</div>
+            <div id="ov-concepts"></div>
+          </div>
+        </div>
+
+        <div class="tab-pane" id="pane-sigma">
+          <div class="code-toolbar">
+            <span class="code-tag">sigma/rule.yaml</span>
+            <button class="btn-copy" data-target="sigma">COPY</button>
+          </div>
+          <pre class="code-block" id="code-sigma"><code></code></pre>
+        </div>
+
+        <div class="tab-pane" id="pane-yara">
+          <div class="code-toolbar">
+            <span class="code-tag">yara/rule.yar</span>
+            <button class="btn-copy" data-target="yara">COPY</button>
+          </div>
+          <pre class="code-block" id="code-yara"><code></code></pre>
+        </div>
+
+        <div class="tab-pane" id="pane-mitre">
+          <div id="mitre-grid" class="mitre-grid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

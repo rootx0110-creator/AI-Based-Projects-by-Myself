@@ -1,0 +1,23 @@
+{
+  "id": "pb_phishing",
+  "name": "Phishing / Malicious Email",
+  "description": "Triages a reported phishing email, validates URLs and attachments, blocks infrastructure and forwards IOCs.",
+  "version": "1.0",
+  "triggers": ["phishing", "spearphishing", "malicious email", "spam"],
+  "mitre": ["T1566.001", "T1566.002", "T1204"],
+  "estimated_minutes": 12,
+  "steps": [
+    { "id": "s1", "kind": "title", "text": "1. Triage & Enrichment" },
+    { "id": "s2", "kind": "task", "text": "Confirm the email is a genuine phish by reviewing headers, sender and links. Photograph the original email for evidence.", "assign": "SOC Analyst" },
+    { "id": "s3", "kind": "integration", "action": "mail.trace", "params": { "message_id": "{{incident.context.message_id}}", "sender": "{{incident.context.sender}}" }, "label": "Trace message in email gateway" },
+    { "id": "s4", "kind": "integration", "action": "ti.url_reputation", "params": { "value": "{{ioc.value}}" }, "label": "URL reputation lookup" },
+    { "id": "s5", "kind": "condition", "on": "s4", "test": { "op": "eq", "field": "verdict", "value": "malicious" }, "then": "s6", "else": "s9", "label": "URL verdict check" },
+    { "id": "s6", "kind": "title", "text": "2. Containment" },
+    { "id": "s7", "kind": "integration", "action": "dns.sinkhole", "params": { "domain": "{{ioc.domain}}" }, "label": "Sinkhole phishing domain" },
+    { "id": "s8", "kind": "integration", "action": "fw.block_ip", "params": { "ip": "{{ioc.ip}}", "rule": "PHISH-BLOCK" }, "label": "Block C2 / hosting IP at edge firewall" },
+    { "id": "s9", "kind": "integration", "action": "mail.quarantine", "params": { "message_id": "{{incident.context.message_id}}" }, "label": "Quarantine offending message" },
+    { "id": "s10", "kind": "task", "text": "Publish user awareness note; flag mailbox rules created by the actor (persistence check).", "assign": "SOC Lead" },
+    { "id": "s11", "kind": "integration", "action": "ticketing.update", "params": { "summary": "Phishing contained; IOC set broadcast.", "status": "resolved" }, "label": "Update case in ticketing" },
+    { "id": "s12", "kind": "integration", "action": "siem.query", "params": { "query": "inbound_email match {{ioc.domain}} | stats count by recipient" }, "label": "Hunt for other recipients" }
+  ]
+}

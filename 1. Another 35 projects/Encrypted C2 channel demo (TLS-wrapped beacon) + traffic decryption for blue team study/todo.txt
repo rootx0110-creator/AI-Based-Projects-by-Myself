@@ -1,0 +1,27 @@
+GLM BEACON LAB — TODO / BACKLOG
+================================
+
+[x] Pure-python AES-CTR ("CBCS(TM)") with FIPS-197 vector check
+[x] HKDF-SHA256 session-key derivation from campaign passphrase
+[x] Hand-rolled DER + RSA-2048 self-signed cert (no external deps)
+[x] TLS 1.3 listener with full frame capture
+[x] GLM1 wire protocol (REGISTER/TASK/RESULT/PING/PONG/SLEEP)
+[x] Simulated beacon with jittered check-ins + canned commands
+[x] Operator tasking queue (whoami, ipconfig, dir, tasklist, sleep N)
+[x] MAC-first decryption exercise (wrong-key fails loudly)
+[x] Dictionary-attack hint against frame #1 (brute_force_hint)
+[x] SOC-style dark Tkinter console UI
+[x] Decryption Lab: frame list + plaintext + hexdump viewer
+[x] Self-contained HTML analyst report + download options
+[x] One-file PyInstaller EXE build
+[ ] Real libpcap writer (importable into Wireshark)
+[ ] JA3/JA4 fingerprint panel for the TLS handshake
+[ ] Multi-host beacon fleet (randomized host/user identities)
+[ ] Per-beacon keys + key theft scenario in the Decryption Lab
+[ ] Detection lab: side-by-side "normal HTTPS vs beacon" timing plots
+[ ] EXE icon + version resource
+[ ] Optional CLI mode (headless operator console)
+[ ] Packaging: code-signing note + checksum in how_to_run.txt
+
+Ethics reminder: educational simulation only. Never use against systems
+you do not own or have written authorization to test.

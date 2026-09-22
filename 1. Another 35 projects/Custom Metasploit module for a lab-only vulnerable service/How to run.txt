@@ -1,0 +1,22 @@
++ Thought: 1.3s
+Test it end-to-end like this:
+1. Start the lab target service (PowerShell, in the project folder):
+python vuln_service.py --host 127.0.0.1 --port 8080
+Keep this window open — it prints a request log line for every hit.
+2. Run the app in a second window:
+.\dist\MSF-Lab-Module-Studio.exe
+3. Walk the 4 sections:
+- Setup (default): click Apply configuration → status bar at the bottom should say "Configuration applied: 127.0.0.1:8080/exec".
+- Live Test (Alt+3): click Probe target → badge flips to "ONLINE - VulnLab lab service detected" and the log shows the banner. Then Simulate Metasploit check → "VERDICT: VULNERABLE". While these run, the buttons work and the result text appears below.
+- Builder (Alt+2): click Generate Ruby module → the Ruby code appears in the dark panel. Click Copy to clipboard, paste it somewhere to confirm.
+- Report (Alt+4): click Generate & download report (.html) → a Save dialog opens; save it, then say yes to open in browser. You should get a styled report with tables + the module source.
+4. Verify nothing broke silently after each test:
+Get-Content "$env:TEMP\msf_lab_studio_error.log"
+(No file = clean.)
+5. Optional automated check of the exe itself (runs its whole workflow headless and prints results):
+$env:MSF_STUDIO_SELFTEST="1"
+.\dist\MSF-Lab-Module-Studio.exe
+Remove-Item Env:MSF_STUDIO_SELFTEST
+Get-Content "$env:TEMP\msf_studio_selftest.out"
+You should see 10 PASS lines (13 PASS with a live lab and MSF_STUDIO_SELFTEST_LIVE=1).
+Quick sanity rule of thumb: any button that "does nothing" now means something threw — and that error will be in %TEMP%\msf_lab_studio_error.log.

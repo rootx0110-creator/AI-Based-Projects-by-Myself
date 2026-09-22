@@ -1,0 +1,32 @@
+TODO — Compliance Automation Suite
+==================================
+
+DONE
+[x] ISO 27001:2022 Annex A dataset (93 controls, 4 themes)
+[x] Bangladesh Bank ICT Guideline v2.0 dataset (18 domains)
+[x] NIST CSF 2.0 dataset (22 categories)
+[x] Crosswalk BB <-> ISO <-> NIST (bridge via BB domains)
+[x] JSON persistence with audit log + atomic writes
+[x] Scoring engine (weighted statuses, maturity levels L1-L5)
+[x] Gap analysis with risk scoring and recommendations
+[x] Control mapper endpoint + UI
+[x] Crosswalk matrix view
+[x] Dashboard UI (cards, bars, status distribution, theme heatmap)
+[x] Control register UI (search, bulk edit, per-row save)
+[x] Self-contained HTML report + download (/api/report)
+[x] PyInstaller build script (build_exe.ps1) + exe_start.py
+[x] Docs: architecture.md, readme.txt, memory.md, state.md
+
+NEXT (v1.1)
+[ ] Compile the EXE on this machine (pip install pyinstaller; run build_exe.ps1)
+[ ] Add per-control target date + evidence file upload (hash + archive)
+[ ] CSV export of the control register and gap list
+[ ] Print/PDF-optimized report variant
+[ ] Filtering dashboard by BB domain when assessing ISO controls
+
+LATER
+[ ] Full clause-level BB ICT mapping (B-xx.y sub-sections)
+[ ] Add PCI DSS / SOC 2 datasets as optional frameworks
+[ ] SQLite backend option for multi-user deployments
+[ ] Optional authentication (PIN or Windows user) for shared hosts
+[ ] Compare two assessment snapshots over time (progress tracking)

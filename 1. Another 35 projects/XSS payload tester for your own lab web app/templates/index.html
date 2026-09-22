@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XSS Payload Tester &mdash; Lab Edition</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="bg-blob b1"></div>
+  <div class="bg-blob b2"></div>
+
+  <header class="topbar">
+    <div class="lock">&#128274;</div>
+    <div>
+      <h1>XSS Payload Tester</h1>
+      <span class="tagline">Test XSS payloads against <em>your own</em> lab web app</span>
+    </div>
+    <div class="version">v{{ version }}</div>
+  </header>
+
+  <main class="layout">
+    <!-- ======================= Control panel ======================= -->
+    <section class="panel controls">
+      <h2 class="panel-title">Scan Configuration</h2>
+
+      <label class="field">
+        <span>Target URL <i>*</i></span>
+        <input id="url" type="url" placeholder="http://127.0.0.1:5000/search?er=1&amp;aaa=2"
+               value="http://127.0.0.1:5000/search?er=1">
+      </label>
+
+      <div class="grid2">
+        <label class="field">
+          <span>Parameter to inject</span>
+          <input id="param" type="text" value="q" placeholder="e.g. q, search, name">
+        </label>
+        <label class="field">
+          <span>Method</span>
+          <select id="method">
+            <option value="GET" selected>GET</option>
+            <option value="POST">POST</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>POST / injection location</span>
+        <select id="location">
+          <option value="query" selected>Query string</option>
+          <option value="form">Form body (x-www-form-urlencoded)</option>
+          <option value="json">JSON body</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Custom payloads <i>(one per line, optional)</i></span>
+        <textarea id="custom" rows="3" placeholder="&lt;script&gt;alert(1)&lt;/script&gt;&#10;&quot; onmouseover=&quot;alert(document.domain)"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Extra request headers <i>(one per line, e.g. Cookie: sid=abc)</i></span>
+        <textarea id="headers" rows="2" placeholder="X-Forwarded-For: 127.0.0.1"></textarea>
+      </label>
+
+      <div class="grid3">
+        <label class="field">
+          <span>Timeout (s)</span>
+          <input id="timeout" type="number" min="1" max="60" value="10">
+        </label>
+        <label class="field">
+          <span>Concurrency</span>
+          <input id="concurrency" type="number" min="1" max="16" value="4">
+        </label>
+        <label class="field chk">
+          <input id="follow" type="checkbox" checked>
+          <span for="follow">Follow redirects</span>
+        </label>
+      </div>
+
+      <button id="run" class="btn primary">&#9654;&nbsp; Run XSS Scan</button>
+      <button id="stop" class="btn ghost hidden">&#9632;&nbsp; Stop</button>
+
+      <p id="status" class="status">&nbsp;</p>
+    </section>
+
+    <!-- ======================= Results ======================= -->
+    <section class="panel results">
+      <div class="results-head">
+        <h2 class="panel-title">Results</h2>
+        <div class="head-actions">
+          <button id="download" class="btn small" title="Download the scan report as a standalone HTML file" disabled>
+            &#128229;&nbsp; Download HTML Report
+          </button>
+        </div>
+      </div>
+
+      <div id="kpi" class="kpi"></div>
+
+      <div id="baseline" class="baseline hidden"></div>
+
+      <div id="summary" class="summary hidden"></div>
+
+      <div id="table-wrap" class="table-wrap hidden">
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Payload</th>
+              <th>Verdict</th>
+              <th>Confidence</th>
+              <th>Markers</th>
+              <th>Evidence</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div id="empty" class="empty">Configure a target URL and click <b>&#9654; Run XSS Scan</b>.</div>
+    </section>
+  </main>
+
+  <div class="legal">
+    <p><b>Authorized use only.</b> Point this tool exclusively at web applications you own or have written
+    permission to test. Misuse against third-party targets may be illegal in your jurisdiction.</p>
+  </div>
+
+  <script>
+    window.APP_VERSION = "{{ version }}";
+  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

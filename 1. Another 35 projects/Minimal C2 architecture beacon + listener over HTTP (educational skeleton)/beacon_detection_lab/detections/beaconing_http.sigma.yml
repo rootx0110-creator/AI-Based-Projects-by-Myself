@@ -1,0 +1,74 @@
+title: Periodic HTTP Beaconing to Single Destination
+id: 7f3c1a2e-0001-4a7e-9b1c-beac0nlab001
+id-note: Replace with a proper UUIDv4 before production use (this one is illustrative).
+status: experimental
+description: >
+  Flags a source host that contacts the same external destination at a
+  fixed interval with low jitter - the classic periodic-check-in pattern.
+  Correlates on repeated identical requests from one client to one
+  destination. Educational example for the Beacon Detection Lab.
+author: Beacon Detection Lab (educational)
+date: 2026/09/19
+logsource:
+  category: proxy
+  product: network
+detection:
+  selection_method:
+    c-uri|endswith:
+      - '.php'
+      - '.asp'
+      - '.jsp'
+      - '/api/'
+      - '/ping'
+      - '/gate'
+      - '/update'
+  selection_repetition:
+    # Same client, same URI, repeated many times in the window
+    c-uri-count|gte: 20
+  condition: selection_method and selection_repetition
+fields:
+  - c-ip
+  - c-uri
+  - sc-status
+  - UserAgent
+falsepositives:
+  - Legitimate monitoring agents and uptime checkers (Pingdom, UptimeRobot)
+  - Mobile apps with aggressive polling (chat, MDM, telemetry)
+  - Update clients (AV, MDM) with fixed check-in schedules
+level: high
+tags:
+  - attack.command_and_control
+  - attack.t1071.001          # Application Layer Protocol: Web Protocols
+  - attack.t1043              # (deprecated) Commonly Used Port - kept for teaching legacy mappings
+---
+title: Low-Jitter Fixed-Interval Outbound Requests
+id: 7f3c1a2e-0002-4a7e-9b1c-beac0nlab002
+id-note: Replace with a proper UUIDv4 before production use.
+status: experimental
+description: >
+  Statistical companion rule: the inter-request gap distribution for one
+  (client, destination) pair has very low coefficient of variation
+  (< 0.05) and a median gap between 5 and 600 seconds. This is what the
+  lab's analyzer computes in Python; expressed here as guidance for SIEM
+  engineers who want the same logic in their platform.
+author: Beacon Detection Lab (educational)
+date: 2026/09/19
+logsource:
+  category: proxy
+  product: network
+detection:
+  stats:
+    inter_request_gap_cv|lt: 0.05
+    median_gap_seconds|gte: 5
+    median_gap_seconds|lte: 600
+    request_count|gte: 10
+  condition: stats
+fields:
+  - c-ip
+  - c-uri
+falsepositives:
+  - NTP-style polling, kiosk/POS heartbeat devices, telemetry SDKs
+level: medium
+tags:
+  - attack.command_and_control
+  - attack.t1071.001

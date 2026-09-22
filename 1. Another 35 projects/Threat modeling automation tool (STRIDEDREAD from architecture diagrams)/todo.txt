@@ -1,0 +1,46 @@
+STRIDEForge — TODO / ENHANCEMENT QUEUE
+======================================
+
+PRIORITY:  [P0] must   [P1] should   [P2] nice-to-have
+
+FEATURES
+--------
+[P1] Undo/redo stack for canvas edits (Ctrl+Z / Ctrl+Y).
+[P1] Snap-to-grid + smart auto-layout (topological placement).
+[P1] Editable DREAD scores: click sliders per factor to override base scores.
+[P1] Custom rules editor (YAML/JSON templates import) in the UI.
+[P2] Export report as PDF / Word (.docx) / CSV or XLSX threat matrix.
+[P2] CVE/NVD enrichment: match threats to real CVEs and link them.
+[P2] Threat lifetime tracking: status (Open/Mitigated/Verified/Won't-fix),
+     owner, due date; keep a state file on disk (JSON/SQLite).
+[P2] Multi-user / team mode with saved projects server-side.
+[P2] AI-assisted diagram import: upload image -> object detection -> nodes.
+[P2] PlantUML / Mermaid / draw.io XML import.
+[P2] Compare mode: analyze two versions, highlight risk deltas.
+[P2] DREAD weights configuration (weighted totals).
+[P2] MITRE ATT&CK mapping: label threats with technique IDs.
+[P2] Data classification annotations per flow (public/confidential/restricted).
+[P2] i18n (English/ES/DE/etc.), and light theme toggle.
+
+UX
+--
+[P1] Keyboard: Delete removes selection; Enter renames; shortcut palette (Ctrl+K).
+[P1] Zoom + pan canvas (wheel, pinch), minimap.
+[P1] Export diagram as SVG/PNG image.
+[P2] Dark/light theme toggle + user prefs persisted to localStorage.
+[P2] Annotation/comments on nodes, sticky notes on canvas.
+[P1] Threat card PDF single-threat export.
+
+ENGINE / QUALITY
+----------------
+[P1] More type-specific rules (k8s, serverless, IoT, blockchain, ML pipelines).
+[P1] Unit tests (pytest) for analyzer scoring & boundary logic.
+[P1] Rule validation test (all (kind,type,stride) keys well-formed, DREAD 1-10).
+[P2] Scoring calibration study against MS SDL / OWASP references.
+[P2] Confidence indicator per threat (rule specificity).
+
+HOUSEKEEPING
+------------
+[P2] CI: lint (ruff) + tests on commit.
+[P2] Version bump helper + CHANGELOG.
+[P1] Document scoring decisions in architecture.md appendix (done partially).

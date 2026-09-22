@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; script-src 'self'" />
+  <title>BreachMap - WebGL Data Breach World Map</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="bgfx">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    <div id="stars"></div>
+    <div class="grid-floor"></div>
+  </div>
+
+  <canvas id="webgl-canvas"></canvas>
+
+  <header id="topbar">
+    <div class="brand">
+      <span class="logo">&#9672;</span>
+      <div>
+        <h1>BreachMap</h1>
+        <span class="tagline">WebGL &middot; Live Threat Feed Visualization</span>
+      </div>
+    </div>
+    <div class="clock-wrap">
+      <span id="utc-clock">--:--:--</span>
+      <span class="live-pill" id="live-pill"><i></i> LIVE</span>
+    </div>
+  </header>
+
+  <aside id="feed-panel">
+    <div class="panel-head">
+      <h2>Live Threat Feed</h2>
+      <div class="feed-tools">
+        <select id="filter-type"><option value="all">All types</option></select>
+        <select id="filter-sev"><option value="all">All severities</option></select>
+        <button id="pause-btn" title="Pause feed">&#10074;&#10074;</button>
+      </div>
+    </div>
+    <ul id="feed-list"></ul>
+    <div id="feed-foot">
+      <input id="search-inp" type="text" placeholder="Search events, IPs, companies..." />
+    </div>
+  </aside>
+
+  <section id="statsbar">
+    <div class="stat"><label>Events Today</label><strong id="stat-events">0</strong></div>
+    <div class="stat"><label>Active Threats</label><strong id="stat-active">0</strong></div>
+    <div class="stat"><label>Countries</label><strong id="stat-countries">0</strong></div>
+    <div class="stat"><label>Rate / min</label><strong id="stat-rate">0</strong></div>
+    <div class="stat"><label>Records Exposed</label><strong id="stat-records">0</strong></div>
+  </section>
+
+  <div id="toolbar">
+    <button id="btn-report" class="primary">&#8681; Download HTML Report</button>
+    <button id="btn-json">Download JSON Log</button>
+    <button id="btn-reset" title="Reset view">&#8635;</button>
+    <label class="chk"><input type="checkbox" id="chk-arcs" checked /> Arcs</label>
+    <label class="chk"><input type="checkbox" id="chk-labels" checked /> Labels</label>
+  </div>
+
+  <div id="legend">
+    <span class="lg lg-crit">Critical</span>
+    <span class="lg lg-high">High</span>
+    <span class="lg lg-med">Medium</span>
+    <span class="lg lg-low">Low</span>
+  </div>
+
+  <div id="toast" class="hidden"></div>
+
+  <div id="tip">Drag to rotate &middot; Scroll to zoom</div>
+
+  <script src="app.bundle.js" type="module"></script>
+</body>
+</html>

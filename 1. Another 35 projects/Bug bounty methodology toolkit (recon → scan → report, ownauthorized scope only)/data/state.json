@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "authorization": {
+    "confirmed": false,
+    "statement": "",
+    "confirmed_at": null
+  },
+  "scope": [],
+  "runs": [],
+  "findings": [],
+  "recon_data": {},
+  "settings": {
+    "throttle_sec": 0.4,
+    "http_timeout": 8,
+    "max_hosts": 50
+  }
+}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ pb_id }} · Playbook · SOAR-Lite{% endblock %}
+{% block page %}<span id="pb-name">Playbook</span>{% endblock %}
+{% block crumb %}<span id="pb-sub">structured response automation</span>{% endblock %}
+{% block newbtn %}none{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="flex wrap grow">
+    <span class="tag mono" id="pb-id"></span>
+    <span class="tag" id="pb-mitre"></span>
+    <span class="tag" id="pb-run-stats"></span>
+  </div>
+  <a class="btn ghost" href="/playbooks">← Library</a>
+</div>
+
+<div class="card">
+  <h3 id="pb-desc-head">Overview</h3>
+  <div id="pb-desc" class="muted" style="font-size:13px"></div>
+</div>
+
+<div class="card mt" style="margin-top:14px;padding:0">
+  <div class="codebox" id="pb-json" style="border:0;border-radius:0"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(async () => {
+  const { api, esc } = window.SOAR;
+  const pb = await api("/api/playbooks/{{ pb_id }}");
+  document.title = pb.name + " · SOAR-Lite";
+  document.getElementById("pb-name").textContent = pb.name;
+  document.getElementById("pb-sub").textContent = "triggers: " + (pb.triggers || []).join(", ");
+  document.getElementById("pb-id").textContent = pb.id;
+  document.getElementById("pb-mitre").textContent = "MITRE " + (pb.mitre || []).join(", ");
+  document.getElementById("pb-desc").textContent = pb.description;
+  document.getElementById("pb-json").textContent = JSON.stringify(pb, null, 2);
+  const steps = pb.steps || [];
+  const auto = steps.filter(s => s.kind === "integration").length;
+  const cond = steps.filter(s => s.kind === "condition").length;
+  const manual = steps.filter(s => s.kind === "task").length;
+  document.getElementById("pb-run-stats").textContent =
+    `${steps.length} steps · ${auto} auto · ${cond} conditions · ${manual} manual`;
+})();
+</script>
+{% endblock %}

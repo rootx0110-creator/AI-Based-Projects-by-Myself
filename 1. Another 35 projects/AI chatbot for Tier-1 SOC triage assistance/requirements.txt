@@ -1,0 +1,4 @@
+flask>=3.0
+requests>=2.31
+pyinstaller>=6.10 ; python_version >= "3.8"
+pytest>=8.0

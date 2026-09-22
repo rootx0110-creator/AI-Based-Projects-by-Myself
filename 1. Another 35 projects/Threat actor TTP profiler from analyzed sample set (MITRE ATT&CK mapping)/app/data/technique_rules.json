@@ -1,0 +1,706 @@
+{
+  "T1059.001": {
+    "name": "Command & Scripting Interpreter: PowerShell",
+    "tactics": ["execution"],
+    "api": [],
+    "strings": ["powershell", "invoke-expression", "iex ", "-enc ", "encodedcommand", "windowspowershell", "add-type", "runspace", "ps1", "shell.exec", "wscript.shell"],
+    "dll": [],
+    "pe": {},
+    "yara": ["powershell"],
+    "weight": 1.0
+  },
+  "T1059.003": {
+    "name": "Command & Scripting Interpreter: Windows Command Shell",
+    "tactics": ["execution"],
+    "api": [],
+    "strings": ["cmd.exe", "cmd /c", "cmd /k", "command.com"],
+    "dll": [],
+    "pe": {},
+    "yara": ["cmd"],
+    "weight": 1.0
+  },
+  "T1047": {
+    "name": "Windows Management Instrumentation",
+    "tactics": ["execution"],
+    "api": ["connectserver", "execquery", "execmethod", "krfnavigate"],
+    "strings": ["win32_process", "root\\cimv2", "\\wbem", "wmic", "wmi"],
+    "dll": ["wbemprox.dll", "wbemcomn.dll"],
+    "pe": {},
+    "yara": [],
+    "weight": 0.9
+  },
+  "T1106": {
+    "name": "Native API",
+    "tactics": ["execution"],
+    "api": ["ntcreatefile", "ntopenfile", "ntreadfile", "ntwritefile", "ntallocatevirtualmemory", "ntprotectvirtualmemory", "ntcreatethread", "ntcreatesection", "ntqueryinformationprocess", "ntclose", "ntcreatethreadex", "ntwritememory", "ntcreatesymboliclink", "ntopenthread", "ntduplicateobject"],
+    "strings": [],
+    "dll": ["ntdll.dll"],
+    "pe": {},
+    "yara": [],
+    "weight": 0.7
+  },
+  "T1204": {
+    "name": "User Execution",
+    "tactics": ["execution"],
+    "api": ["sheexecuteexa", "winexec"],
+    "strings": [],
+    "dll": [],
+    "pe": {},
+    "yara": ["dropper", "loader"],
+    "weight": 0.5
+  },
+  "T1053.005": {
+    "name": "Scheduled Task/Job: Scheduled Task",
+    "tactics": ["execution", "persistence"],
+    "api": [],
+    "strings": ["schtasks", "\\tasks\\", "task scheduler", "create task", "at.exe"],
+    "dll": [],
+    "pe": {},
+    "yara": ["schtask"],
+    "weight": 1.0
+  },
+  "T1543.003": {
+    "name": "Windows Service",
+    "tactics": ["persistence", "privilege-escalation"],
+    "api": ["createservice", "openscmanager", "openservice", "controlservice", "startservice", "changeserviceconfig", "deleteservice", "createdepartment"],
+    "strings": ["\\system32\\drivers\\", "create service", "sc create", "service control"],
+    "dll": ["advapi32.dll"],
+    "pe": {},
+    "yara": ["service"],
+    "weight": 1.0
+  },
+  "T1546.010": {
+    "name": "Event Triggered Execution: AppInit DLLs",
+    "tactics": ["persistence"],
+    "api": [],
+    "strings": ["appinit_dlls", "loadappinit_dlls"],
+    "dll": [],
+    "pe": {},
+    "yara": [],
+    "weight": 1.0
+  },
+  "T1546.014": {
+    "name": "Event Triggered Execution: WMI Event Subscription",
+    "tactics": ["persistence"],
+    "api": [],
+    "strings": ["__eventfilter", "__eventconsumer", "__filtertoconsumerbinding", "root\\subscription"],
+    "dll": [],
+    "pe": {},
+    "yara": ["wmi"],
+    "weight": 1.0
+  },
+  "T1547.001": {
+    "name": "Boot or Logon Autostart: Registry Run Keys",
+    "tactics": ["persistence"],
+    "api": ["regsetvalueex", "regulationvalueex"],
+    "strings": ["currentversion\\run", "currentversion\\runonce", "currentversion\\runonceex", "run\\services", "\\startup\\", "userinit"],
+    "dll": [],
+    "pe": {},
+    "yara": ["runkey", "persist"],
+    "weight": 1.0
+  },
+  "T1547.009": {
+    "name": "Boot or Logon Autostart: Shortcut Modification",
+    "tactics": ["persistence"],
+    "api": [],
+    "strings": ["start menu\\programs\\startup", ".lnk", "appdata\\roaming\\microsoft\\windows\\start"],
+    "dll": [],
+    "pe": {},
+    "yara": [],
+    "weight": 0.8
+  },
+  "T1098": {
+    "name": "Account Manipulation",
+    "tactics": ["persistence"],
+    "api": ["netuseradd", "netusersetinfo", "netlocalgroupaddmembers", "netusergroups", "netusergetinfo"],
+    "strings": ["net user ", "net localgroup"],
+    "dll": ["netapi32.dll"],
+    "pe": {},
+    "yara": [],
+    "weight": 0.9
+  },
+  "T1136": {
+    "name": "Create Account",
+    "tactics": ["persistence"],
+    "api": ["netuseradd"],
+    "strings": ["net user /add", "useradd", "new user account"],
+    "dll": [],
+    "pe": {},
+    "yara": [],
+    "weight": 0.8
+  },
+  "T1505.003": {
+    "name": "Server Software Component: Web Shell",
+    "tactics": ["persistence"],
+    "api": [],
+    "strings": ["c99.php", "r57.php", "b374k", "cmd.aspx", "webshell", ".aspx", "command shell", "p0wnshell"],
+    "dll": [],
+    "pe": {},
+    "yara": ["webshell"],
+    "weight": 1.0
+  },
+  "T1574": {
+    "name": "Hijack Execution Flow",
+    "tactics": ["persistence", "privilege-escalation", "defense-evasion"],
+    "api": ["loadlibrary", "getprocaddress", "loadlibraryex", "lvimplnt"],
+    "strings": ["\\appdata\\local\\temp", "dll sideload", ".exe.local", "searcx"],
+    "dll": [],
+    "pe": {},
+    "yara": ["dll", "sideload"],
+    "weight": 0.7
+  },
+  "T1134": {
+    "name": "Access Token Manipulation",
+    "tactics": ["privilege-escalation", "defense-evasion"],
+    "api": ["impersonateloggedonuser", "duplicatetokenex", "duplicatetoken", "openprocesstoken", "setthreadtoken", "lookupprivilegevalue", "adjusttokenprivileges", "gettokeninformation", "ntimpersonatethread", "impersonateself", "logonuser", "logonuserw", "reverttoself"],
+    "strings": [],
+    "dll": ["advapi32.dll"],
+    "pe": {},
+    "yara": ["token", "priv"],
+    "weight": 1.0
+  },
+  "T1548.002": {
+    "name": "Abuse Elevation Control: Bypass User Account Control",
+    "tactics": ["privilege-escalation", "defense-evasion"],
+    "api": ["shelexexecute"],
+    "strings": ["fodhelper", "eventvwr.exe", "registry\\classes\\ms-settings", "cmstplua", "sdclt", "autoelevate", "uacme", "uac bypass"],
+    "dll": [],
+    "pe": {},
+    "yara": ["uac"],
+    "weight": 1.0
+  },
+  "T1055": {
+    "name": "Process Injection",
+    "tactics": ["privilege-escalation", "defense-evasion"],
+    "api": ["createremotethread", "virtualallocex", "virtualprotectex", "writeprocessmemory", "readprocessmemory", "setthreadcontext", "getthreadcontext", "ntcreatethreadex", "ntwritememory", "queueuserapc", "openprocess", "virtualserial", "reallocmem"],
+    "strings": ["create remote thread", "injection", "\\translate file"],
+    "dll": [],
+    "pe": {},
+    "yara": ["inject", "remotethread"],
+    "weight": 1.0,
+    "suppresses_children": ["T1055.012"]
+  },
+  "T1055.012": {
+    "name": "Process Injection: Process Hollowing",
+    "tactics": ["defense-evasion", "defense-evasion"],
+    "parent_id": "T1055",
+    "api": ["ntunmapviewofsection", "zwunmapviewofsection", "ntwritememory", "setthreadcontext", "getthreadcontext", "ntcreatesection", "ntmapviewofsection"],
+    "strings": ["hollow", "phantom dx", "system32\\svchost.exe"],
+    "dll": [],
+    "pe": {},
+    "yara": ["hollow"],
+    "weight": 1.0
+  },
+  "T1027": {
+    "name": "Obfuscated Files or Information",
+    "tactics": ["defense-evasion"],
+    "api": ["cryptencrypt", "cryptdecrypt", "bcryptencrypt", "bcryptdecrypt", "virtualalloc", "rtldecompressbuffer"],
+    "strings": ["xor", "base64", "obfuscat", "decode", "decrypt", "aes", "rc4", "sha256", "cipher", "\\x1a", "encrypted payload"],
+    "dll": ["crypt32.dll", "bcrypt.dll"],
+    "pe": {"packer": "*", "entropy_min": 7.0},
+    "yara": ["packed", "obfus", "payload", "xor", "base64"],
+    "weight": 1.0
+  },
+  "T1140": {
+    "name": "Deobfuscate/Decode Files or Information",
+    "tactics": ["defense-evasion"],
+    "api": [],
+    "strings": ["certutil -decode", "frombase64string", "base64decode", "decodebytes", "uncompress", "decompress", "-d "],
+    "dll": [],
+    "pe": {},
+    "yara": ["decode"],
+    "weight": 0.8
+  },
+  "T1112": {
+    "name": "Modify Registry",
+    "tactics": ["defense-evasion"],
+    "api": ["regsetvalueex", "regcreatekeyex", "regdeletekey", "regdeletevalue", "regreplacekey", "regoverridepredefkey", "ntsetvaluekey", "regcreatekey"],
+    "strings": ["reg add ", "reg delete ", "regedit /s"],
+    "dll": ["advapi32.dll"],
+    "pe": {},
+    "yara": ["registry"],
+    "weight": 0.6
+  },
+  "T1070.001": {
+    "name": "Indicator Removal: Clear Windows Event Logs",
+    "tactics": ["defense-evasion"],
+    "api": ["cleareventloga", "cleareventlogw", "backupeventloga"],
+    "strings": ["clear-eventlog", "wevtutil", "el -", "event log cleared"],
+    "dll": ["advapi32.dll"],
+    "pe": {},
+    "yara": ["cleaner", "evasion"],
+    "weight": 1.0
+  },
+  "T1070.004": {
+    "name": "Indicator Removal: File Deletion",
+    "tactics": ["defense-evasion"],
+    "api": ["deletefilea", "deletefilew", "ntdeletefile", "removedirectory", "deletefile"],
+    "strings": ["del /f", "del /s", "/c del", "erase ", "shadowcopy"],
+    "dll": [],
+    "pe": {},
+    "yara": ["wipe", "delete"],
+    "weight": 0.8
+  },
+  "T1070.006": {
+    "name": "Indicator Removal: Timestomping",
+    "tactics": ["defense-evasion"],
+    "api": ["setfiletime", "setfileinformationbyhandle", "ntsetinformationfile", "setfiletimea"],
+    "strings": ["timestomp", "touch -t "],
+    "dll": [],
+    "pe": {},
+    "yara": ["timestomp"],
+    "weight": 1.0
+  },
+  "T1036": {
+    "name": "Masquerading",
+    "tactics": ["defense-evasion"],
+    "api": [],
+    "strings": ["svchost.exe", "csrss.exe", "winlogon.exe", "explorer.exe", "googleupdate.exe", "chrome.exe", "\\windows\\system32\\svchost", "rundll32.exe"],
+    "dll": [],
+    "pe": {},
+    "yara": ["masquerade"],
+    "weight": 0.6
+  },
+  "T1497": {
+    "name": "Virtualization/Sandbox Evasion",
+    "tactics": ["defense-evasion"],
+    "api": ["checkremotedebuggerpresent"],
+    "strings": ["vmware", "vbox", "virtualbox", "qemu", "sandboxie", "wireshark", "vboxservice", "vmtoolsd", "\\machine id", "\\cuckoo", "joesandbox", "cpuid", "autoit3", "hwid", "smc\\video", "vmwaretray"],
+    "dll": [],
+    "pe": {},
+    "yara": ["vm", "sandbox", "anti"],
+    "weight": 1.0
+  },
+  "T1622": {
+    "name": "Debugger Evasion",
+    "tactics": ["defense-evasion"],
+    "api": ["isdebuggerpresent", "checkremotedebuggerpresent", "outputdebugstringa", "outputdebugstringw", "ntqueryinformationprocess", "ntquerysysteminformation"],
+    "strings": ["dbghelp", "debugger", "processdebugport"],
+    "dll": [],
+    "pe": {},
+    "yara": ["debug", "anti_debug"],
+    "weight": 1.0
+  },
+  "T1218": {
+    "name": "System Binary Proxy Execution",
+    "tactics": ["defense-evasion"],
+    "api": ["shelexecute"],
+    "strings": ["rundll32", "regsvr32", "mshta", "msiexec", "cmstp", "pcalua ", "forfiles"],
+    "dll": [],
+    "pe": {},
+    "yara": ["proxy", "lolbin"],
+    "weight": 0.9
+  },
+  "T1562": {
+    "name": "Impair Defenses",
+    "tactics": ["defense-evasion"],
+    "api": ["wscsetsingleton", "wscregisterforsecurity"],
+    "strings": ["add-mppreference", "mpcmdrun", "disable realtime", "\\windefend", "\\wscsvc", "netsh advfirewall", "firewall off", "\\stop win", "security center", "disable antivirus", "cleanerv"],
+    "dll": [],
+    "pe": {},
+    "yara": ["defender", "edr", "killav"],
+    "weight": 1.0
+  },
+  "T1003": {
+    "name": "OS Credential Dumping",
+    "tactics": ["credential-access"],
+    "api": ["lsacallauthenticationpackage", "lsaenumeratelogon sessions", "lsaenumeratelogonsessions", "lsarfreememory", "sspi"],
+    "strings": ["mimikatz", "sekurlsa", "pwdump", "samdump", "ntds.dit", "kerberoast", "dcsync", "dumpcred", "cachedump", "wdigest", "logonpasswords", "cache ", "\\security\\sam\\", "\\sam dump"],
+    "dll": ["secur32.dll"],
+    "pe": {},
+    "yara": ["mimikatz", "cred", "dump"],
+    "weight": 1.0
+  },
+  "T1003.001": {
+    "name": "OS Credential Dumping: LSASS Memory",
+    "tactics": ["credential-access"],
+    "parent_id": "T1003",
+    "api": ["minidumpwritedump", "windump"],
+    "strings": ["comsvcs.dll", "lsass", "sekurlsa", "lsass.dmp", "minidump", "procdump", "\\lsass", "dumpit", "taskmgr"],
+    "dll": ["dbghelp.dll"],
+    "pe": {},
+    "yara": ["lsass"],
+    "weight": 1.0
+  },
+  "T1056.001": {
+    "name": "Input Capture: Keylogging",
+    "tactics": ["collection"],
+    "api": ["getasync keystate", "getasynckeystate", "getkeystate", "getkeyboardstate", "setwindowshookex", "setwindowshookexa"],
+    "strings": ["keylog", "wh_keyboard", "hookman", "getkeystate", "\\key log", "keydump"],
+    "dll": ["user32.dll"],
+    "pe": {},
+    "yara": ["keylog"],
+    "weight": 1.0
+  },
+  "T1555.004": {
+    "name": "Credentials from Password Stores: Windows Credential Manager",
+    "tactics": ["credential-access"],
+    "api": ["credreada", "credreadw", "credenumeratea", "credenumeratew", "cryptunprotectdata", "credread", "credfree"],
+    "strings": ["credential manager", "vault\\creds", "\\appdata\\local\\microsoft\\credentials", "protected storage"],
+    "dll": ["credui.dll"],
+    "pe": {},
+    "yara": ["cred"],
+    "weight": 1.0
+  },
+  "T1552": {
+    "name": "Unsecured Credentials",
+    "tactics": ["credential-access"],
+    "api": [],
+    "strings": [".kdbx", "id_rsa", "\\.ssh\\", "passwords.txt", "\\secrets\\", "\\creds\\", ".pgpass", "aws_access_key", "api_key", "loginpass"],
+    "dll": [],
+    "pe": {},
+    "yara": ["password", "cred"],
+    "weight": 0.7
+  },
+  "T1082": {
+    "name": "System Information Discovery",
+    "tactics": ["discovery"],
+    "api": ["getcomputernamea", "getcomputernamew", "getversionexa", "getversionexw", "getnativesysteminfo", "getsysteminfo", "globalmemorystatusex", "getsystemdefaultlangid", "getlocaleinfoa", "getsystemmetrics", "getproductinfo", "getcurrenthwprofile", "getsystemtimespaninfo", "uname"],
+    "strings": ["systeminfo", "\\windows nt\\currentversion\\productname"],
+    "dll": ["kernel32.dll"],
+    "pe": {},
+    "yara": ["sysinfo", "fingerprint"],
+    "weight": 0.9
+  },
+  "T1083": {
+    "name": "File and Directory Discovery",
+    "tactics": ["discovery"],
+    "api": ["findfirstfile", "findnextfile", "findfirstfileex", "findfirstfileexw", "getfileattributes", "getcurrentdirectory", "setcurrentdirectory", "gettemppath", "findfirstfilew"],
+    "strings": ["dir /s", "\\*.doc", "\\*.pdf", "\\*.xls", "findstr /s"],
+    "dll": ["kernel32.dll"],
+    "pe": {},
+    "yara": ["steal", "files"],
+    "weight": 0.8
+  },
+  "T1057": {
+    "name": "Process Discovery",
+    "tactics": ["discovery"],
+    "api": ["createtoolhelp32snapshot", "process32first", "process32next", "enumprocesses", "enumprocessmodules", "ntquerysysteminformation", "getprocessheap"],
+    "strings": ["toolhelp32", "process32", "\\process list", "tasklist"],
+    "dll": ["psapi.dll", "toolhelp32.dll"],
+    "pe": {},
+    "yara": ["process"],
+    "weight": 0.9
+  },
+  "T1012": {
+    "name": "Query Registry",
+    "tactics": ["discovery"],
+    "api": ["regopenkeyex", "regqueryvalueex", "regenumkeyex", "regenumvalue", "reggetvalue", "ntquerykey"],
+    "strings": ["reg query", "query \\registry", "\\currentversion\\run"],
+    "dll": ["advapi32.dll"],
+    "pe": {},
+    "yara": ["registry"],
+    "weight": 0.7
+  },
+  "T1016": {
+    "name": "System Network Configuration Discovery",
+    "tactics": ["discovery"],
+    "api": ["getadaptersinfo", "getipaddrtable", "getipforwardtable", "getadaptersaddresses", "getbestinterface", "wsastartup", "getifaddrs", "gethostname"],
+    "strings": ["ipconfig", "getmac", "\\net\\interfaces", "adapter"],
+    "dll": ["iphlpapi.dll"],
+    "pe": {},
+    "yara": ["network"],
+    "weight": 0.9
+  },
+  "T1049": {
+    "name": "System Network Connections Discovery",
+    "tactics": ["discovery"],
+    "api": ["gettcptable", "getudptable", "gettcptable2", "getextendedtcptable", "getextendedudptable", "gettcptablea"],
+    "strings": ["netstat", "\\net\\tcp"],
+    "dll": ["iphlpapi.dll"],
+    "pe": {},
+    "yara": [],
+    "weight": 0.9
+  },
+  "T1518": {
+    "name": "Software Discovery (Security Software)",
+    "tactics": ["discovery"],
+    "api": [],
+    "strings": ["windows defender", "kaspersky", "avast", "avg antivirus", "norton", "mcafee", "eset", "bitdefender", "malwarebytes", "firewall", "security center", "securitycenter2", "crowdstrike", "symantec", "sophos", "carbon black", "trend micro", "endpoint security"],
+    "dll": [],
+    "pe": {},
+    "yara": ["av_check", "security"],
+    "weight": 0.9
+  },
+  "T1124": {
+    "name": "System Time Discovery",
+    "tactics": ["discovery"],
+    "api": ["getsystemtime", "getlocaltime", "gettickcount", "gettickcount64", "timegettime", "queryperformancecounter", "getsystemtimespan", "getuptime"],
+    "strings": [],
+    "dll": ["winmm.dll"],
+    "pe": {},
+    "yara": [],
+    "weight": 0.5
+  },
+  "T1010": {
+    "name": "Application Window Discovery",
+    "tactics": ["discovery"],
+    "api": ["enumwindows", "getwindowtext", "findwindow", "getforegroundwindow", "enumchildwindows", "getwindowtexta"],
+    "strings": [],
+    "dll": ["user32.dll"],
+    "pe": {},
+    "yara": ["window"],
+    "weight": 0.7
+  },
+  "T1007": {
+    "name": "System Service Discovery",
+    "tactics": ["discovery"],
+    "api": ["enumservicesstatusex", "enumservicesstatus", "queryserviceconfig", "queryservicestatus", "enumdependentservices", "queryservicestatusex"],
+    "strings": ["\\services\\", "sc query"],
+    "dll": ["advapi32.dll"],
+    "pe": {},
+    "yara": [],
+    "weight": 0.8
+  },
+  "T1033": {
+    "name": "System Owner/User Discovery",
+    "tactics": ["discovery"],
+    "api": ["getusernamea", "getusernamew", "netusergetinfo", "getusernameex"],
+    "strings": ["whoami", "\\user name"],
+    "dll": ["advapi32.dll"],
+    "pe": {},
+    "yara": [],
+    "weight": 0.7
+  },
+  "T1113": {
+    "name": "Screen Capture",
+    "tactics": ["collection"],
+    "api": ["bitblt", "getdc", "createcompatibledc", "getdesktopwindow", "getwindowdc", "stretchblt", "stretchdibits", "printwindow", "getpixel", "createcompatiblebitmap"],
+    "strings": ["screen capture", "\\capture\\", "printscreen", "screenshot"],
+    "dll": ["gdi32.dll"],
+    "pe": {},
+    "yara": ["screen", "screenshot"],
+    "weight": 1.0
+  },
+  "T1115": {
+    "name": "Clipboard Data",
+    "tactics": ["collection"],
+    "api": ["getclipboarddata", "openclipboard", "getclipboardsequencenumber", "setclipboarddata", "getclipboardowner"],
+    "strings": ["clipboard"],
+    "dll": ["user32.dll"],
+    "pe": {},
+    "yara": ["clipboard"],
+    "weight": 0.9
+  },
+  "T1123": {
+    "name": "Audio Capture",
+    "tactics": ["collection"],
+    "api": ["waveinopen", "waveinstart", "mcIsendstring", "mcisendstring", "directsoundcapturecreate", "waveinaddbuffer"],
+    "strings": [".wav", "\\device\\audio"],
+    "dll": ["winmm.dll"],
+    "pe": {},
+    "yara": ["audio"],
+    "weight": 0.9
+  },
+  "T1560": {
+    "name": "Archive Collected Data",
+    "tactics": ["collection"],
+    "api": [],
+    "strings": ["7z.exe", "winrar", "rar a ", "zip a ", "tar.exe", "-cvf", "\\-a ", "import tempfile"], 
+    "dll": [],
+    "pe": {},
+    "yara": ["archive"],
+    "weight": 0.7
+  },
+  "T1071.001": {
+    "name": "Application Layer Protocol: Web Protocols",
+    "tactics": ["command-and-control"],
+    "api": ["httpsendrequest", "internetopen", "internetconnect", "internetreadfile", "internetopenurl", "winhttpopen", "winhttpconnect", "winhttpsendrequest", "urldownloadtofile", "winhttpreaddata", "internetwritefile", "internetqueryoption", "loadurl"],
+    "strings": ["http://", "https://", "get /", "post /", "user-agent", "referer"],
+    "dll": ["wininet.dll", "winhttp.dll"],
+    "pe": {},
+    "yara": ["c2", "beacon", "http"],
+    "weight": 1.0
+  },
+  "T1095": {
+    "name": "Non-Application Layer Protocol",
+    "tactics": ["command-and-control"],
+    "api": ["sendto", "recvfrom", "wsasendto", "wsarecvfrom", "deviceiocontrol", "ring0", "raw socket"],
+    "strings": ["icmp", "ping ", "\\socks\\"],
+    "dll": ["ws2_32.dll"],
+    "pe": {},
+    "yara": ["icmp"],
+    "weight": 0.8
+  },
+  "T1090": {
+    "name": "Proxy",
+    "tactics": ["command-and-control"],
+    "api": [],
+    "strings": ["socks5", "socks4", ".onion", "tor.exe", "proxychains", "proxycfg", "http_proxy", "all_proxy"],
+    "dll": [],
+    "pe": {},
+    "yara": ["proxy", "tor"],
+    "weight": 0.8
+  },
+  "T1568": {
+    "name": "Dynamic Resolution (DGA)",
+    "tactics": ["command-and-control"],
+    "api": ["getaddrinfo", "gethostbyname", "gethostbynameex", "dnsquery_a", "dnsquery"],
+    "strings": ["dga", "domain generation", "wordlists", "random domain", "\\algorithm"],
+    "dll": ["dnsapi.dll"],
+    "pe": {},
+    "yara": ["dga"],
+    "weight": 0.8
+  },
+  "T1572": {
+    "name": "Protocol Tunneling",
+    "tactics": ["command-and-control"],
+    "api": ["createnamedpipe", "connectnamedpipe", "callnamedpipe", "setnamedpipehandlestate"],
+    "strings": ["\\createpipe", "named pipe", "meterpreter", "dnscat2", "icmpsh", "iodine", "beacon"],
+    "dll": ["kernel32.dll"],
+    "pe": {},
+    "yara": ["beacon", "pipe", "tunnel"],
+    "weight": 0.9
+  },
+  "T1219": {
+    "name": "Remote Access Software",
+    "tactics": ["command-and-control"],
+    "api": [],
+    "strings": ["teamviewer", "anydesk", "radmin", "vnc", "ammyy admin", "logmein", "rustdesk", "tightvnc", "\\\\ipc$", "vegaser"],
+    "dll": [],
+    "pe": {},
+    "yara": ["rat", "remote"],
+    "weight": 0.8
+  },
+  "T1573": {
+    "name": "Encrypted Channel",
+    "tactics": ["command-and-control"],
+    "api": ["cryptencrypt", "cryptdecrypt", "bcryptencrypt", "bcryptdecrypt", "cryptacquirecontext", "wsasprintf"],
+    "strings": ["openssl", "aes-256", "aes-128", "rc4", "3des", "schannel", "tls 1.2", "tls1.3"],
+    "dll": ["crypt32.dll", "bcrypt.dll"],
+    "pe": {},
+    "yara": ["crypto", "encrypt", "ssl"],
+    "weight": 0.8
+  },
+  "T1105": {
+    "name": "Ingress Tool Transfer",
+    "tactics": ["command-and-control"],
+    "api": ["urldownloadtofile", "winhttpreaddata", "internetreadfile", "urlmon"],
+    "strings": ["certutil", "bitsadmin", "invoke-webrequest", "downloadstring", "wget", "curl.exe", "urldownloadtofile", "\\download to"],
+    "dll": ["urlmon.dll"],
+    "pe": {},
+    "yara": ["download", "dropper"],
+    "weight": 1.0
+  },
+  "T1041": {
+    "name": "Exfiltration Over C2 Channel",
+    "tactics": ["exfiltration"],
+    "api": ["httpsendrequest", "internetwritefile", "wsasend", "send"],
+    "strings": ["exfil", "upload", "multipart/form-data"],
+    "dll": ["wininet.dll"],
+    "pe": {},
+    "yara": ["exfil", "upload"],
+    "weight": 0.8
+  },
+  "T1567": {
+    "name": "Exfiltration Over Web Service",
+    "tactics": ["exfiltration"],
+    "api": [],
+    "strings": ["pastebin", "gist.github", "transfer.sh", "sendspace", "dropbox", "mega.nz", "anonfiles", "file.io", "0x0.st", "wetransfer", "api.telegram", "discordapp.com/api/webhooks", "slack.com/api"],
+    "dll": [],
+    "pe": {},
+    "yara": ["exfil", "telegram"],
+    "weight": 0.9
+  },
+  "T1048": {
+    "name": "Exfiltration Over Alternative Protocol",
+    "tactics": ["exfiltration"],
+    "api": ["internetconnectftp", "ftpcommand"],
+    "strings": ["ftp.exe", "wput", "ncftp", "lnet \\-l ", "\\-pw ", "mail.from", "smtp", "pop3", "imap"],
+    "dll": ["wininet.dll"],
+    "pe": {},
+    "yara": ["ftp", "mail"],
+    "weight": 0.8
+  },
+  "T1020": {
+    "name": "Automated Exfiltration",
+    "tactics": ["exfiltration"],
+    "api": [],
+    "strings": ["scheduled upload", "autoexfil", "every 5 minutes", "timed exfil"],
+    "dll": [],
+    "pe": {},
+    "yara": ["exfil"],
+    "weight": 0.6
+  },
+  "T1486": {
+    "name": "Data Encrypted for Impact",
+    "tactics": ["impact"],
+    "api": ["cryptencrypt", "cryptdecrypt", "bcryptencrypt", "deviceiocontrol", "encryptfilea", "encryptfile"],
+    "strings": ["wanacry", "wana decryptor", "encrypting", "ransom", "decrypt", ".locked", ".crypted", ".encrypted", "bitcoin", "monero", "pay ransom", "readme.txt", "\\-to decrypt", "file encryption", "#{marker}"],
+    "dll": [],
+    "pe": {},
+    "yara": ["ransom", "encrypt"],
+    "weight": 1.0
+  },
+  "T1490": {
+    "name": "Inhibit System Recovery",
+    "tactics": ["impact"],
+    "api": ["devic econtrol", "deviceiocontrol"],
+    "strings": ["vssadmin", "\\\\.\\volume", "shadowcopy", "bcdedit", "wbadmin", "delete shadows", "\\system restore", "wmic shadowcopy"],
+    "dll": [],
+    "pe": {},
+    "yara": ["wipe", "wannacry"],
+    "weight": 1.0
+  },
+  "T1489": {
+    "name": "Service Stop",
+    "tactics": ["impact"],
+    "api": ["controlservice", "terminateprocess", "killpagefile"],
+    "strings": ["net stop", "sc stop", "stop service", "\\-svc"],
+    "dll": ["advapi32.dll"],
+    "pe": {},
+    "yara": ["service"],
+    "weight": 0.9
+  },
+  "T1499": {
+    "name": "Endpoint Denial of Service",
+    "tactics": ["impact"],
+    "api": ["createthread", "createremotethread", "setevent"],
+    "strings": ["ddos", "fork bomb", "flood", "hammer", "starhammer", "\\-flood"],
+    "dll": [],
+    "pe": {},
+    "yara": ["ddos", "flood"],
+    "weight": 0.8
+  },
+  "T1529": {
+    "name": "System Shutdown/Reboot",
+    "tactics": ["impact"],
+    "api": ["exitwindowsex", "initiatesystemshutdown", "initiatesystemshutdownw", "ntshutdownsystem", "lockworkstation", "setthingssamples"],
+    "strings": ["shutdown -s", "shutdown -r", "reboot", "\\-restart"],
+    "dll": ["user32.dll"],
+    "pe": {},
+    "yara": ["shutdown"],
+    "weight": 0.9
+  },
+  "T1561": {
+    "name": "Disk Wipe",
+    "tactics": ["impact"],
+    "api": ["quickformat", "setvolumeinformation"],
+    "strings": ["format c: ", "\\cyb", "diskpart", "clean all", "wipe"],
+    "dll": [],
+    "pe": {},
+    "yara": ["wipe"],
+    "weight": 0.9
+  },
+  "T1021.001": {
+    "name": "Remote Services: Remote Desktop Protocol",
+    "tactics": ["lateral-movement"],
+    "api": [],
+    "strings": ["mstsc", "\\remote desktop", "port 3389", "\\3389"],
+    "dll": [],
+    "pe": {},
+    "yara": ["rdp"],
+    "weight": 0.7
+  },
+  "T1021.002": {
+    "name": "Remote Services: SMB/Windows Admin Shares",
+    "tactics": ["lateral-movement"],
+    "api": ["wnetaddconnection", "netuseadd", "scmessagetransport"],
+    "strings": ["admin$", "\\c$", "\\\\\\\\[0-9]", "smb", "psexec", "\\windows\\\\.*\\.exe",
+    "\\net use "],
+    "dll": ["mpr.dll"],
+    "pe": {},
+    "yara": ["psexec", "smb"],
+    "weight": 0.8
+  }
+}

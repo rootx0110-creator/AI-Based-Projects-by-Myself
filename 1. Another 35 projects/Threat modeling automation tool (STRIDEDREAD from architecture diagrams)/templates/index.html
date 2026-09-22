@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STRIDEForge — Threat Modeling Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="bg-orbs">
+  <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#06b6d4"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#lg)" d="M16 2 4 8v8c0 7 5 12.5 12 14 7-1.5 12-7 12-14V8L16 2z"/>
+      <path fill="#0b1020" d="M11 16.5l3.5 3.5L21 13l-1.6-1.6-4.9 4.9-1.9-1.9z"/>
+    </svg>
+    <span class="brand-name">STRIDE<em>Forge</em></span>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="dashboard"><span class="ti">◆</span>Dashboard</button>
+    <button class="tab" data-tab="canvas"><span class="ti">⌗</span>Diagram</button>
+    <button class="tab" data-tab="analysis"><span class="ti">⚑</span>Analysis</button>
+    <button class="tab" data-tab="report"><span class="ti">▤</span>Report</button>
+  </nav>
+  <div class="top-actions">
+    <button class="btn btn-ghost" id="btnExport" title="Export architecture as JSON">Export</button>
+    <button class="btn btn-primary" id="btnAnalyze"><span class="pulse-dot"></span>Analyze Risk</button>
+  </div>
+</header>
+
+<main class="main">
+
+<!-- ============ DASHBOARD ============ -->
+<section class="tab-panel active" id="tab-dashboard">
+  <div class="hero">
+    <div class="hero-left">
+      <h1>Automated <span class="grad">STRIDE&nbsp;·&nbsp;DREAD</span> threat modeling</h1>
+      <p>Draw your architecture, let the engine generate a full STRIDE threat
+         register with DREAD severity scores and download a professional
+         HTML report.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary big" id="btnNewCanvas">🡢  Open Diagram</button>
+        <button class="btn btn-ghost big" id="btnLoadEcom">Load Sample</button>
+      </div>
+      <div class="hero-badges">
+        <span>STRIDE × 6 categories</span><span>DREAD × 5 factors</span><span>Residual risk controls</span><span>HTML report export</span>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hc-head">Live analysis status</div>
+      <div class="hc-big" id="dashOverall">—</div>
+      <div class="hc-row"><span>Threats identified</span><b id="dashTotal">0</b></div>
+      <div class="hc-row"><span>Critical</span><b id="dashCrit" class="c-crit">0</b></div>
+      <div class="hc-row"><span>High</span><b id="dashHigh" class="c-high">0</b></div>
+      <div class="hc-row"><span>Medium</span><b id="dashMed" class="c-med">0</b></div>
+      <div class="hc-row"><span>Components / Flows</span><b id="dashEls">0 / 0</b></div>
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="panel">
+      <h3>Load a sample architecture</h3>
+      <div class="sample-list" id="sampleList"></div>
+      <h3 style="margin-top:24px">Start from scratch</h3>
+      <div class="quick-actions">
+        <button class="btn btn-ghost sm" id="btnNewModel">Blank diagram</button>
+        <label class="btn btn-ghost sm file"><input type="file" id="fileImport" accept=".json,.txt" hidden>Import JSON</label>
+        <label class="btn btn-ghost sm file"><input type="file" id="fileImage" accept="image/*" hidden>Add diagram image</label>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>How it works</h3>
+      <ol class="steps">
+        <li><b>Diagram</b> — drop processes, data stores &amp; entities on the canvas, connect data flows, draw trust boundaries.</li>
+        <li><b>Context</b> — flag internet exposure, sensitive data (PII/PCI/PHI) and controls already in place.</li>
+        <li><b>Analyze</b> — the engine generates STRIDE threats and DREAD scores for every element &amp; flow.</li>
+        <li><b>Report</b> — review the analysis and download a standalone HTML report.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="panel stats-panel">
+    <div class="stat"><div class="s-num" id="sEls">0</div><div class="s-lbl">Components</div></div>
+    <div class="stat"><div class="s-num" id="sFlows">0</div><div class="s-lbl">Data flows</div></div>
+    <div class="stat"><div class="s-num" id="sZones">0</div><div class="s-lbl">Trust boundaries</div></div>
+    <div class="stat"><div class="s-num" id="sThreats">—</div><div class="s-lbl">Threats</div></div>
+    <div class="stat"><div class="s-num" id="sAvg">—</div><div class="s-lbl">Avg DREAD</div></div>
+  </div>
+</section>
+
+<!-- ============ CANVAS ============ -->
+<section class="tab-panel" id="tab-canvas">
+  <div class="canvas-wrap">
+    <div class="toolbar" id="toolbar">
+      <div class="tb-group">
+        <button class="tool active" data-tool="select" title="Select / move (V)"><span class="ti">➤</span></button>
+        <button class="tool" data-tool="process" title="Process / component"><svg viewBox="0 0 24 24" width="18" height="18"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18" stroke="currentColor" stroke-width="2"/></svg></button>
+        <button class="tool" data-tool="store" title="Data store"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 6c0-1.7 4-3 9-3s9 1.3 9 3-4 3-9 3-9-1.3-9-3z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 6v12c0 1.7 4 3 9 3s9-1.3 9-3V6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+        <button class="tool" data-tool="entity" title="External entity"><svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+      </div>
+      <div class="tb-group">
+        <button class="tool" data-tool="flow" title="Data flow"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M3 12h14l-4-4m4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="12" r="2" fill="currentColor"/></svg></button>
+        <button class="tool" data-tool="boundary" title="Trust boundary"><svg viewBox="0 0 24 24" width="18" height="18"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4 3"/></svg></button>
+      </div>
+      <div class="tb-group">
+        <button class="tool" data-tool="entry" title="Mark entry point / internet"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2-6.3-4.5-6.3 4.5L8 13.8l-6-4.6h7.6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+        <button class="tool" data-tool="delete" title="Delete (Del)"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="tb-group">
+        <label class="tool" title="Upload image to trace over"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 5h16v14H4zM4 15l4-4 3 3 5-6 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><input type="file" id="fileImage2" accept="image/*" hidden></svg></label>
+        <button class="tool" id="btnClearImage" title="Remove image">✕</button>
+      </div>
+      <div class="hint">Drag to place · double-click to rename · Del to delete</div>
+    </div>
+
+    <div class="canvas-scroll" id="canvasScroll">
+      <svg id="svgCanvas" width="1600" height="900">
+        <defs>
+          <pattern id="grid" width="26" height="26" patternUnits="userSpaceOnUse">
+            <path d="M26 0H0v26" fill="none" stroke="rgba(255,255,255,.045)" stroke-width="1"/>
+          </pattern>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="#7dd3fc"/>
+          </marker>
+          <linearGradient id="nodeGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="rgba(139,92,246,.28)"/><stop offset="1" stop-color="rgba(6,182,212,.16)"/>
+          </linearGradient>
+        </defs>
+        <rect id="canvasBg" x="0" y="0" width="1600" height="900" fill="url(#grid)"/>
+        <image id="bgImageTrace" x="0" y="0" width="1600" height="900" opacity="0.5" style="display:none" preserveAspectRatio="xMidYMid meet"/>
+        <g id="gBoundaries"></g>
+        <g id="gFlows"></g>
+        <g id="gNodes"></g>
+        <g id="gDraft"></g>
+      </svg>
+    </div>
+
+    <div class="props" id="propsPanel">
+      <div id="propsEmpty" class="props-empty">
+        <div class="pe-icon">◔</div>
+        <b>No selection</b>
+        <p>Pick a tool on the left, then click the canvas to add processes,
+           data stores, external entities, flows or boundaries. Select an
+           element to edit its properties here.</p>
+        <div class="pe-model">
+          <label>Architecture name</label>
+          <input type="text" id="modelName" placeholder="Untitled Architecture">
+          <p id="modelStat" class="model-stat">0 components · 0 flows · 0 boundaries</p>
+        </div>
+      </div>
+      <div id="propsEl" class="prop-form" style="display:none">
+        <div class="pf-head"><div class="pf-badge" id="pfBadge">P</div><div><input class="pf-title" id="pfLabel" value=""></div></div>
+        <label>Type</label>
+        <select id="pfType"></select>
+        <label>Zone</label>
+        <select id="pfZone">
+          <option value="internet">Internet</option>
+          <option value="dmz">DMZ</option>
+          <option value="internal">Internal</option>
+          <option value="restricted">Restricted</option>
+          <option value="partner">Partner</option>
+          <option value="default">Default</option>
+        </select>
+        <div class="pf-flags">
+          <label class="chk"><input type="checkbox" data-flag="internet"><span class="pch">✓</span><span>🌐 Internet-facing</span></label>
+          <label class="chk"><input type="checkbox" data-flag="pii"><span class="pch">✓</span><span>🔒 PII</span></label>
+          <label class="chk"><input type="checkbox" data-flag="pci"><span class="pch">✓</span><span>💳 PCI</span></label>
+          <label class="chk"><input type="checkbox" data-flag="phi"><span class="pch">✓</span><span>🏥 PHI</span></label>
+        </div>
+        <div class="pf-controls-label">Controls in place (residual risk)</div>
+        <div class="pf-flags">
+          <label class="chk"><input type="checkbox" data-flag="authn"><span class="pch">✓</span><span>Auth</span></label>
+          <label class="chk"><input type="checkbox" data-flag="authz"><span class="pch">✓</span><span>Authz</span></label>
+          <label class="chk"><input type="checkbox" data-flag="encrypted"><span class="pch">✓</span><span>Encrypted</span></label>
+          <label class="chk"><input type="checkbox" data-flag="logged"><span class="pch">✓</span><span>Logging</span></label>
+          <label class="chk"><input type="checkbox" data-flag="rate_limited"><span class="pch">✓</span><span>Rate-limit</span></label>
+        </div>
+      </div>
+      <div id="propsFlow" class="prop-form" style="display:none">
+        <div class="pf-head"><div class="pf-badge flow">⇄</div><div><input class="pf-title" id="pfFlowLabel" value=""></div></div>
+        <div class="flow-endpoints" id="pfFlowEnds"></div>
+        <label>Transport properties</label>
+        <div class="pf-flags">
+          <label class="chk"><input type="checkbox" data-fflag="encrypted"><span class="pch">✓</span><span>🔐 Encrypted in transit</span></label>
+          <label class="chk"><input type="checkbox" data-fflag="authenticated"><span class="pch">✓</span><span>🪪 Authenticated</span></label>
+        </div>
+      </div>
+      <div id="propsBoundary" class="prop-form" style="display:none">
+        <div class="pf-head"><div class="pf-badge bd">⛨</div><div><input class="pf-title" id="pfBoundaryLabel" value=""></div></div>
+        <label>Zone name</label>
+        <input type="text" id="pfBoundaryZone" placeholder="internal">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ANALYSIS ============ -->
+<section class="tab-panel" id="tab-analysis">
+  <div class="analysis-head">
+    <div class="an-left">
+      <div class="an-overall">
+        <div class="an-grade" id="anGrade">—</div>
+      </div>
+      <div class="an-stats" id="anStats"></div>
+    </div>
+    <div class="an-actions">
+      <button class="btn btn-ghost sm" id="btnRerun">↻ Re-analyze</button>
+      <button class="btn btn-primary sm" id="btnGotoReport">Download Report →</button>
+    </div>
+  </div>
+
+  <div class="stride-chips" id="strideChips"></div>
+
+  <div class="an-filters">
+    <div class="risk-filter">
+      <span class="rf-title">Risk</span>
+      <button class="chip active" data-risk="all">All</button>
+      <button class="chip" data-risk="Critical">Critical</button>
+      <button class="chip" data-risk="High">High</button>
+      <button class="chip" data-risk="Medium">Medium</button>
+      <button class="chip" data-risk="Low">Low</button>
+    </div>
+    <input type="search" id="threatSearch" class="search" placeholder="Search threats, elements, mitigations…">
+  </div>
+
+  <div class="threat-list" id="threatList"></div>
+  <div class="empty-state" id="analysisEmpty" style="display:none">
+    <div class="es-orb">⚑</div>
+    <b>No analysis yet</b>
+    <p>Draw or load an architecture, then press <b>Analyze Risk</b> in the top bar.</p>
+  </div>
+</section>
+
+<!-- ============ REPORT ============ -->
+<section class="tab-panel" id="tab-report">
+  <div class="report-head">
+    <div>
+      <h2>Report</h2>
+      <p class="sub">Standalone HTML — embeds all styling, ready for e-mail or archive.</p>
+    </div>
+    <div class="report-actions">
+      <label class="btn btn-ghost sm file">🗂 Report title <input type="text" id="reportTitle" class="in-ghost" placeholder="Untitled Architecture"></label>
+      <button class="btn btn-primary" id="btnDownloadReport">⬇ Download HTML Report</button>
+    </div>
+  </div>
+  <div class="report-frame-wrap">
+    <iframe id="reportFrame" class="report-frame" title="Report preview"></iframe>
+    <div class="report-loading" id="reportLoading"><div class="spinner"></div><span>Generating report…</span></div>
+  </div>
+</section>
+
+</main>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

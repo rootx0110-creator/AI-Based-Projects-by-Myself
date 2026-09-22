@@ -1,0 +1,36 @@
+TODO — Enterprise Cybersecurity Policy Generator
+=================================================
+Legend: [x] done | [ ] todo | [-] blocked
+
+RELEASE v1.0 (current)
+----------------------
+[x] Scaffold docs (readme, architecture, state, memory, todo)
+[x] Interview wizard: 6 pages, branching
+[x] Policy engine: 12 domains + regulator detection
+[x] Risk/gap model + heat map + roadmap
+[x] Board-ready preview with TOC and cover page
+[x] Download standalone HTML report
+[x] Print / Save-as-PDF flow
+[x] EXE packaging (pywebview + PyInstaller script)
+
+NEXT RELEASE v1.1
+-----------------
+[ ] DOCX / Word export (client-side, e.g. via MSOffice XML)
+[ ] One-page executive slide deck export (HTML slide)
+[ ] Localization framework (add ES/DE first; LNG map ready)
+[ ] Save/load multiple company profiles with workspace picker
+[ ] Diff view: "what changed vs previous approved version"
+
+BACKLOG v1.2+
+-------------
+[ ] Optional server sync / share links (encrypted)
+[ ] Policy review workflow (draft -> legal -> CISO -> board)
+[ ] Plug-in LLM backend for narrative enrichment (API contract)
+[ ] Pre-built annex templates: GDPR DSR, PCI SAQ, vendor SLA
+[ ] Audit-readiness checklist generator from gaps
+
+QUALITY / HOUSEKEEPING (ongoing)
+--------------------------------
+[ ] Keep exported HTML under 200KB for email attachment
+[ ] Add automated smoke test script for the report generator
+[ ] Test on Windows 7/8 (icon/DPI) - low priority

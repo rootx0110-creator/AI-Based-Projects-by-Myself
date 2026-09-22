@@ -1,0 +1,1 @@
+"""SOAR-Lite core package."""

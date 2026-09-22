@@ -1,0 +1,12 @@
+TODO - Wazuh/OSSEC Detection Rule Pack Studio
+=============================================
+
+[x] Build rule pack core (data model, library, validation)           DONE
+[x] HTML report generator (pack / coverage / severity / single)     DONE
+[x] GUI: dashboard, library, chain, builder, reports                DONE
+[x] CLI smoke test (report gen + validation)                        DONE
+[x] Packaging: PyInstaller onefile EXE build                        DONE
+[ ] Verify EXE launches on a clean machine (no dev python)          PENDING
+[ ] Operational test: deploy local_rules.xml on Wazuh 4.x manager   PENDING
+[ ] Extend library: add SSH brute-force + web 401/429 rules         PENDING
+[ ] Optional: PDF report export (wkhtmltopdf hook placeholder)      BACKLOG

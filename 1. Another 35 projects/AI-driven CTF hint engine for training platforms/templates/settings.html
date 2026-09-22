@@ -1,0 +1,166 @@
+{% extends "layout.html" %}
+{% block title %}Settings · AI-Driven CTF Hint Engine{% endblock %}
+{% block content %}
+
+<div class="page-head"><h2>Settings</h2></div>
+
+<div class="grid2">
+
+  <section class="panel">
+    <h2>AI Coach Provider</h2>
+    <p class="mini muted">Optional. Leave disabled to use the built-in prepared + engine hints.</p>
+    <label class="switch-row">
+      <input type="checkbox" id="aiEnabled" {{ 'checked' if ai_enabled }}>
+      <span class="switch-ui"></span> Enable AI coach
+    </label>
+
+    <form id="aiForm" class="form">
+      <div class="field">
+        <label for="provider">Provider</label>
+        <select id="provider">
+          <option value="openai" {{ 'selected' if settings.provider == 'openai' }}>OpenAI compatible</option>
+          <option value="anthropic" {{ 'selected' if settings.provider == 'anthropic' }}>Anthropic (Claude)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="base_url">API Base URL</label>
+        <input type="text" id="base_url" value="{{ settings.base_url }}" placeholder="https://api.openai.com/v1  (or local proxy)">
+      </div>
+      <div class="field">
+        <label for="api_key">API Key</label>
+        <input type="password" id="api_key" value="{{ settings.api_key }}" placeholder="sk-...">
+      </div>
+      <div class="field">
+        <label for="model">Model</label>
+        <input type="text" id="model" value="{{ settings.model }}" placeholder="gpt-4o-mini / claude-sonnet-4-20250514">
+      </div>
+      <div class="row-btns">
+        <button type="submit" class="btn primary">Save Settings</button>
+        <button type="button" id="testBtn" class="btn">Test Connection</button>
+      </div>
+      <div id="aiMsg"></div>
+    </form>
+  </section>
+
+  <section class="panel" id="add">
+    <h2>Add Challenge</h2>
+    <form id="addForm" class="form">
+      <div class="field">
+        <label for="n_title">Title</label>
+        <input type="text" id="n_title" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="n_category">Category</label>
+          <select id="n_category">
+            {% for c in cats %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="n_difficulty">Difficulty</label>
+          <select id="n_difficulty">
+            {% for d in diffs %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="n_desc">Description</label>
+        <textarea id="n_desc" rows="5" placeholder="What does the attacker/trainee see?"></textarea>
+      </div>
+      <div class="field">
+        <label for="n_flag">Flag (answer checked case-insensitively)</label>
+        <input type="text" id="n_flag" placeholder="ctf{...}">
+      </div>
+      <div class="field">
+        <label for="n_hints">Prepared hints (one per line, level 1 = nudge first)</label>
+        <textarea id="n_hints" rows="4" placeholder="Gentle nudge&#10;The technique&#10;Concrete approach"></textarea>
+      </div>
+      <button type="submit" class="btn primary">Add Challenge</button>
+      <div id="addMsg"></div>
+    </form>
+  </section>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+
+  async function post(url, body) {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    });
+    if (!r.ok) throw new Error((await r.json()).error || ("HTTP " + r.status));
+    return r.json();
+  }
+
+  $("aiForm").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const msg = $("aiMsg");
+    try {
+      await post("/api/settings", {
+        provider: $("provider").value,
+        base_url: $("base_url").value,
+        api_key: $("api_key").value,
+        model: $("model").value,
+        enabled: $("aiEnabled").checked
+      });
+      msg.className = "solve-msg ok";
+      msg.textContent = "Settings saved.";
+    } catch (e) {
+      msg.className = "solve-msg error";
+      msg.textContent = "Save failed: " + e.message;
+    }
+  });
+
+  $("testBtn").addEventListener("click", async () => {
+    const btn = $("testBtn");
+    const msg = $("aiMsg");
+    btn.disabled = true;
+    msg.className = "solve-msg";
+    msg.textContent = "Testing...";
+    try {
+      const d = await post("/api/settings/test", {
+        provider: $("provider").value,
+        base_url: $("base_url").value,
+        api_key: $("api_key").value,
+        model: $("model").value,
+        enabled: $("aiEnabled").checked
+      });
+      msg.className = d.ok ? "solve-msg ok" : "solve-msg error";
+      msg.textContent = d.ok ? ("Connected. Model replied: " + d.reply) : ("Failed: " + d.error);
+    } catch (e) {
+      msg.className = "solve-msg error";
+      msg.textContent = "Test failed: " + e.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $("addForm").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const msg = $("addMsg");
+    try {
+      const d = await post("/api/challenges", {
+        title: $("n_title").value,
+        category: $("n_category").value,
+        difficulty: $("n_difficulty").value,
+        description: $("n_desc").value,
+        flag: $("n_flag").value,
+        hints: $("n_hints").value
+      });
+      msg.className = "solve-msg ok";
+      msg.textContent = "Challenge #" + d.id + " added.";
+      ["n_title", "n_desc", "n_flag", "n_hints"].forEach(id => $(id).value = "");
+    } catch (e) {
+      msg.className = "solve-msg error";
+      msg.textContent = "Add failed: " + e.message;
+    }
+  });
+})();
+</script>
+{% endblock %}

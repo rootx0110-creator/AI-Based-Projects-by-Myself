@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Playbooks · SOAR-Lite{% endblock %}
+{% block page %}Playbook Library{% endblock %}
+{% block crumb %}automation runs these structured response guides{% endblock %}
+{% block newbtn %}none{% endblock %}
+
+{% block content %}
+<div class="grid cards-3" id="pb-grid"></div>
+
+<div class="card mt" style="margin-top:18px">
+  <h3>How it works</h3>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+    <div><div class="mono" style="color:#60a5fa">title</div><div class="muted" style="font-size:12px">Section heading / playbook phases</div></div>
+    <div><div class="mono" style="color:#60a5fa">task</div><div class="muted" style="font-size:12px">Manual analyst action, recorded for audit</div></div>
+    <div><div class="mono" style="color:#60a5fa">integration</div><div class="muted" style="font-size:12px">Automated adapter call (SIEM, TI, EDR, FW…)</div></div>
+    <div><div class="mono" style="color:#60a5fa">condition</div><div class="muted" style="font-size:12px">Branch on prior result (verdict, count…)</div></div>
+    <div><div class="mono" style="color:#60a5fa">delay</div><div class="muted" style="font-size:12px">Time-boxed pause between actions</div></div>
+    <div><div class="mono" style="color:#60a5fa">{{"{{ incident.* }}"}}</div><div class="muted" style="font-size:12px">Templates bind live incident &amp; IOC context</div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(async () => {
+  const { api, esc } = window.SOAR;
+  const d = await api("/api/playbooks");
+  const grid = document.getElementById("pb-grid");
+  grid.innerHTML = d.playbooks.map(p => `
+    <a href="/playbooks/${esc(p.id)}" class="card dark-card" style="text-decoration:none;color:inherit;transition:border-color .15s;display:block" onmouseover="this.style.borderColor='rgba(58,163,255,.5)'" onmouseout="this.style.borderColor=''">
+      <div class="flex between">
+        <b style="font-size:15px">${esc(p.name)}</b>
+        <span class="tag mono">v${esc(p.version)}</span>
+      </div>
+      <div class="muted" style="font-size:12px;margin-top:6px;min-height:38px">${esc(p.description)}</div>
+      <div class="flex mt" style="gap:8px;flex-wrap:wrap">
+        ${p.mitre.map(m => `<span class="tag mono" style="color:#c4b5fd">${esc(m)}</span>`).join("")}
+      </div>
+      <div class="flex between mt" style="margin-top:14px;padding-top:10px;border-top:1px solid var(--border)">
+        <span class="mono-sm">${p.step_count} steps · ~${p.estimated_minutes} min</span>
+        <span class="tag" style="color:#60a5fa;border-color:rgba(58,163,255,.4)">${esc((p.triggers||[]).join(", "))}</span>
+      </div>
+    </a>`).join("") || `<div class="empty-state">No playbooks found.</div>`;
+})();
+</script>
+{% endblock %}

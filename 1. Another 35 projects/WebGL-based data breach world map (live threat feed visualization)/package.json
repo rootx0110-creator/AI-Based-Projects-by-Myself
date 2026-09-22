@@ -1,0 +1,60 @@
+{
+  "name": "breachmap",
+  "version": "1.0.0",
+  "description": "WebGL-based data breach world map with a live threat feed visualization",
+  "main": "main.js",
+  "author": "BreachMap",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "bundle": "node scripts/bundle.js",
+    "build": "node scripts/bundle.js && electron-builder --win portable",
+    "build:nsis": "node scripts/bundle.js && electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.breachmap.app",
+    "productName": "BreachMap World Map",
+    "copyright": "Copyright (c) 2026 BreachMap",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "src/index.html",
+      "src/styles.css",
+      "src/app.bundle.js",
+      "build/icon.ico"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "BreachMap-World-Map-${version}.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.4.3",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.28.2"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

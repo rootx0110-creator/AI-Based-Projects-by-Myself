@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}AI-Driven CTF Hint Engine{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <a class="logo" href="/" title="Dashboard">&#9679;&#9679;&#9679;</a>
+    <div>
+      <h1><a href="/" class="brand-link">AI-Driven CTF Hint Engine</a></h1>
+      <p class="tag">Trained coach for your hand-on lab platform</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/" class="{{ 'on' if request.path == '/' }}">Dashboard</a>
+    <a href="/challenges" class="{{ 'on' if request.path.startswith('/challenges') and request.path != '/' }}">Challenges</a>
+    <a href="/settings" class="{{ 'on' if request.path == '/settings' }}">Settings</a>
+    <a class="btn small" href="/download/report" title="Download HTML report">&#8681; Report</a>
+  </nav>
+</header>
+
+<main class="wrap">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="foot">
+  <span>AI-Driven CTF Hint Engine &mdash; training platform skill</span>
+  <span id="clock"></span>
+</footer>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

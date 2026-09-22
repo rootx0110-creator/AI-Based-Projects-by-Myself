@@ -1,0 +1,5 @@
+flask>=3.0
+requests>=2.31
+
+# Optional: to build the standalone EXE, install pyinstaller and run build_exe.ps1
+# pip install pyinstaller

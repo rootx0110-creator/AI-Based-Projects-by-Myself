@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block title %}Challenges · AI-Driven CTF Hint Engine{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h2>Challenge Library</h2>
+  <a class="btn small" href="/settings#add">+ Add Challenge</a>
+</div>
+
+<form class="controls" method="get" action="/challenges">
+  <input type="text" name="q" value="{{ q }}" placeholder="Search title or description..." autocomplete="off">
+  <select name="category" onchange="this.form.submit()">
+    <option value="">All categories</option>
+    {% for c in categories %}
+    <option value="{{ c }}" {{ 'selected' if c == sel_cat }}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <select name="status" onchange="this.form.submit()">
+    <option value="">All statuses</option>
+    <option value="todo" {{ 'selected' if sel_status == 'todo' }}>To Do</option>
+    <option value="in_progress" {{ 'selected' if sel_status == 'in_progress' }}>In Progress</option>
+    <option value="solved" {{ 'selected' if sel_status == 'solved' }}>Solved</option>
+  </select>
+</form>
+
+<section class="grid">
+  {% for it in items %}
+  <a class="card" href="/challenge/{{ it.id }}">
+    <div class="card-top">
+      <span class="card-title">{{ it.title }}</span>
+      <span class="status-pill {{ it.status }}">{{ it.status }}</span>
+    </div>
+    <div class="card-tags">
+      <span class="badge" style="--c: {{ '#3fb950' if it.difficulty == 'Easy' else ('#d29922' if it.difficulty == 'Medium' else '#f85149') }}">{{ it.difficulty }}</span>
+      <span class="chip-static">{{ it.category }}</span>
+      <span class="chip-static">#{{ it.id }}</span>
+    </div>
+    <p class="card-summary">{{ it.description.split('\n')[0][:110] }}{% if it.description|length > 110 %}…{% endif %}</p>
+    <div class="card-meta">
+      <span>&#128064; {{ it.hint_count }} hint{{ 's' if it.hint_count != 1 }} used</span>
+      <span>{{ 'Prepared' if it.source == 'seed' else 'User' }} content</span>
+    </div>
+  </a>
+  {% else %}
+  <div class="empty">No challenges match. <a href="/settings#add">Add one</a> or adjust filters.</div>
+  {% endfor %}
+</section>
+
+{% endblock %}

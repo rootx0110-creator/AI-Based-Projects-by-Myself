@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Join — {{ ctf_name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="panel form-panel glow">
+    <h2>New Operative Registration</h2>
+    {% if error %}<div class="form-error">✖ {{ error }}</div>{% endif %}
+    <form method="post">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required minlength="3" autocomplete="username" autofocus>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required minlength="4" autocomplete="new-password">
+      <div class="mt">
+        <button class="btn primary" type="submit" style="width:100%">▸ Create Account</button>
+      </div>
+    </form>
+    <p class="muted mt">Already enlisted? <a href="{{ url_for('ctf.login') }}">Authenticate</a></p>
+  </div>
+</div>
+{% endblock %}

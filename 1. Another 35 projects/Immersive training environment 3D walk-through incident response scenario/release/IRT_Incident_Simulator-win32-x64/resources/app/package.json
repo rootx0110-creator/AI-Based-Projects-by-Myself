@@ -1,0 +1,8 @@
+{
+  "name": "irt-simulator",
+  "version": "1.0.0",
+  "description": "Immersive Training Environment - 3D Walkthrough Incident Response Scenario",
+  "main": "shell/main.js",
+  "author": "IRT SIM",
+  "license": "MIT"
+}

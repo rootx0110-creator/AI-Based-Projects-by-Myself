@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard · AI-Driven CTF Hint Engine{% endblock %}
+{% block content %}
+
+<section class="stats-bar">
+  <div class="stat"><b id="st_total">{{ stats.total }}</b><span>Challenges</span></div>
+  <div class="stat"><b class="ok">{{ stats.solved }}</b><span>Solved</span></div>
+  <div class="stat"><b class="warn">{{ stats.in_progress }}</b><span>In Progress</span></div>
+  <div class="stat"><b>{{ stats.todo }}</b><span>To Do</span></div>
+  <div class="stat"><b class="accent">{{ stats.hints }}</b><span>Hints Given</span></div>
+  <div class="stat"><b class="ai">{{ stats.ai_hints }}</b><span>AI Hints</span></div>
+</section>
+
+<div class="grid2">
+  <section class="panel">
+    <h2>Challenges by Category</h2>
+    {% if stats.categories %}
+    <div class="cat-bars">
+      {% for r in stats.categories %}
+      <div class="cat-row">
+        <span class="cat-name">{{ r.category }}</span>
+        <div class="track"><div class="fill" style="width: {{ r.c / stats.total * 100 }}%"></div></div>
+        <b>{{ r.c }}</b>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No challenges yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Quick Pick</h2>
+    {% if todo_items %}
+    <div class="quick">
+      <a class="quick-card" href="/challenge/{{ todo_items[0].id }}">&#128640; Start: {{ todo_items[0].title }}</a>
+      <a class="quick-card" href="/challenges?status=in_progress">&#8987; Resume: {{ stats.in_progress }} in progress</a>
+      <a class="quick-card" href="/challenges?status=solved">&#9989; Review: {{ stats.solved }} solved</a>
+    </div>
+    {% else %}
+    <p class="muted">All challenges solved. Add a new one in Settings.</p>
+    {% endif %}
+  </section>
+</div>
+
+<div class="grid2">
+  <section class="panel">
+    <h2>Recent Solved</h2>
+    {% if stats.recent_solved %}
+    <ul class="feed">
+      {% for r in stats.recent_solved %}
+      <li><span class="ok">&#10003;</span> {{ r.title }} <em>{{ r.category }}</em></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">Nothing solved yet. Pick a challenge and get your first hint!</p>
+    {% endif %}
+  </section>
+
+  <section class="panel">
+    <h2>Latest Hints</h2>
+    {% if recent %}
+    <ul class="feed">
+      {% for h in recent %}
+      <li>
+        <span class="src {{ h.source }}">{{ 'AI' if h.source == 'ai' else ('Prepared' if h.source == 'authored' else 'Engine') }}</span>
+        <a href="/challenge/{{ h.challenge_id }}">{{ h.challenge_title }}</a> #{{ h.level }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No hints yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+{% endblock %}

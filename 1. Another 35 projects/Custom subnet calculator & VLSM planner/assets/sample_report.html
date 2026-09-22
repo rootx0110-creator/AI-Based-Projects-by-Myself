@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang='en'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Subnet Calculation</title>
+<style>
+:root{
+  --bg:#eaf0f6; --panel:#ffffff; --ink:#0f172a; --muted:#5b6b7b;
+  --accent:#1d4ed8; --teal:#0f766e; --warn:#b45309; --grid:#d9e2ec;
+  --zebra:#f4f8fc;
+}
+*{box-sizing:border-box;}
+body{margin:0;padding:28px 36px;background:var(--bg);color:var(--ink);
+  font:14px/1.5 'Segoe UI',system-ui,sans-serif;}
+.wrap{max-width:1080px;margin:0 auto;}
+header{background:linear-gradient(120deg,#0f172a 0%,#1e3a8a 60%,#1d4ed8 100%);
+  color:#fff;border-radius:14px;padding:22px 28px;display:flex;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+header h1{margin:0;font-size:22px;font-weight:600;}
+header .sub{opacity:.85;font-size:12.5px;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;margin:20px 0;}
+.card{background:var(--panel);border:1px solid var(--grid);border-radius:12px;
+  padding:14px 16px;}
+.card .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.card .v{font-size:20px;font-weight:700;margin-top:4px;font-family:'Consolas',monospace;}
+section{background:var(--panel);border:1px solid var(--grid);border-radius:12px;
+  padding:18px 22px;margin:16px 0;}
+section h2{margin:0 0 12px;font-size:15px;padding-left:10px;
+  border-left:4px solid var(--accent);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#eef4fb;text-align:left;padding:9px 10px;color:#334;font-weight:600;
+  border-bottom:2px solid var(--grid);}
+td{padding:8px 10px;border-bottom:1px solid var(--grid);}
+tr:nth-child(even) td{background:var(--zebra);}
+td.num,th.num{font-family:'Consolas',monospace;}
+.ok{color:var(--teal);font-weight:600;}
+.warn{color:var(--warn);font-weight:600;}
+.mono{font-family:'Consolas',monospace;}
+.binary{font-family:'Consolas',monospace;letter-spacing:.15em;word-break:break-all;}
+.bits-n{color:#1d4ed8;font-weight:700;}
+.bits-h{color:#0f766e;}
+.bits-off{color:#9aa7b5;}
+.note{background:#fff8e1;border:1px solid #f0dfa0;border-radius:8px;padding:10px 14px;
+  color:#6b4d00;font-size:12.5px;margin:12px 0;}
+.meta{color:var(--muted);font-size:12px;}
+footer{margin:24px 0 6px;color:var(--muted);font-size:11.5px;text-align:center;}
+@media print{
+  body{background:#fff;padding:0;}
+  header{border-radius:0;background:#0f172a;-webkit-print-color-adjust:exact;
+    print-color-adjust:exact;}
+  section,.card{break-inside:avoid;}
+}
+</style></head>
+<body><div class='wrap'>
+<header><div><h1>Subnet Calculation</h1><div class='sub'>Subnet calculator output · IPv4</div></div><div class='sub'>SubnetPlanner v1.0.0</div></header>
+<div class='meta'>Input: <b>192.168.1.10</b> &nbsp;·&nbsp; Prefix: <b>/26</b> &nbsp;·&nbsp; IP class: <b>C</b></div><div class='cards'><div class='card'><div class='k'>Network</div><div class='v'>192.168.1.0</div></div><div class='card'><div class='k'>Broadcast</div><div class='v'>192.168.1.63</div></div><div class='card'><div class='k'>First usable</div><div class='v'>192.168.1.1</div></div><div class='card'><div class='k'>Last usable</div><div class='v'>192.168.1.62</div></div><div class='card'><div class='k'>Usable hosts</div><div class='v'>62</div></div><div class='card'><div class='k'>Total addresses</div><div class='v'>64</div></div><div class='card'><div class='k'>Subnet mask</div><div class='v'>255.255.255.192</div></div><div class='card'><div class='k'>Wildcard</div><div class='v'>0.0.0.63</div></div></div><section><h2>Address bits — network / host</h2><div class='binary'><span class='bits-n'>1</span><span class='bits-n'>1</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-off'>·</span><span class='bits-n'>1</span><span class='bits-h'>0</span><span class='bits-n'>1</span><span class='bits-h'>0</span><span class='bits-n'>1</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-off'>·</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-n'>1</span><span class='bits-off'>·</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-h'>0</span><span class='bits-n'>1</span><span class='bits-h'>0</span><span class='bits-n'>1</span><span class='bits-h'>0</span></div><div class='meta' style='margin-top:8px'>legend: <span class='bits-n'>network bits</span> · <span class='bits-h'>host bits</span></div><p>Classful C block (<b>/24</b>); borrowed <b>2</b> bit(s) &rarr; <b>4</b> equal subnets.</p></section><section><h2>Details</h2><table><tbody><tr><th>Subnet mask</th><td class='mono'>255.255.255.192</td><th>Mask bits</th><td class='mono'>11111111111111111111111111000000</td></tr><tr><th>Wildcard mask</th><td class='mono'>0.0.0.63</td><th>Prefix</th><td class='num'>/26</td></tr><tr><th>Network bits</th><td class='num'>26</td><th>Host bits</th><td class='num'>6</td></tr><tr><th>First usable</th><td class='mono'>192.168.1.1</td><th>Last usable</th><td class='mono'>192.168.1.62</td></tr><tr><th>Broadcast</th><td class='mono'>192.168.1.63</td><th>Total addresses</th><td class='num'>64</td></tr></tbody></table></section><section><h2>Derived subnets</h2><table><thead><tr><th>#</th><th>Network</th><th>First usable</th><th>Last usable</th><th>Broadcast</th><th>Mask</th><th>Usable</th></tr></thead><tbody><tr><td class='num'>0</td><td class='mono'>192.168.1.0</td><td class='mono'>192.168.1.1</td><td class='mono'>192.168.1.62</td><td class='mono'>192.168.1.63</td><td class='mono'>255.255.255.192</td><td class='num'>62</td></tr><tr><td class='num'>1</td><td class='mono'>192.168.1.64</td><td class='mono'>192.168.1.65</td><td class='mono'>192.168.1.126</td><td class='mono'>192.168.1.127</td><td class='mono'>255.255.255.192</td><td class='num'>62</td></tr><tr><td class='num'>2</td><td class='mono'>192.168.1.128</td><td class='mono'>192.168.1.129</td><td class='mono'>192.168.1.190</td><td class='mono'>192.168.1.191</td><td class='mono'>255.255.255.192</td><td class='num'>62</td></tr><tr><td class='num'>3</td><td class='mono'>192.168.1.192</td><td class='mono'>192.168.1.193</td><td class='mono'>192.168.1.254</td><td class='mono'>192.168.1.255</td><td class='mono'>255.255.255.192</td><td class='num'>62</td></tr></tbody></table><div class='note'>Showing all subnets in this report.</div></section>
+<footer>Generated 2026-09-19 00:44:13 · SubnetPlanner 1.0.0 · Local, offline report</footer></div></body></html><!DOCTYPE html>
+<html lang='en'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>VLSM Plan</title>
+<style>
+:root{
+  --bg:#eaf0f6; --panel:#ffffff; --ink:#0f172a; --muted:#5b6b7b;
+  --accent:#1d4ed8; --teal:#0f766e; --warn:#b45309; --grid:#d9e2ec;
+  --zebra:#f4f8fc;
+}
+*{box-sizing:border-box;}
+body{margin:0;padding:28px 36px;background:var(--bg);color:var(--ink);
+  font:14px/1.5 'Segoe UI',system-ui,sans-serif;}
+.wrap{max-width:1080px;margin:0 auto;}
+header{background:linear-gradient(120deg,#0f172a 0%,#1e3a8a 60%,#1d4ed8 100%);
+  color:#fff;border-radius:14px;padding:22px 28px;display:flex;
+  align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+header h1{margin:0;font-size:22px;font-weight:600;}
+header .sub{opacity:.85;font-size:12.5px;}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;margin:20px 0;}
+.card{background:var(--panel);border:1px solid var(--grid);border-radius:12px;
+  padding:14px 16px;}
+.card .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.card .v{font-size:20px;font-weight:700;margin-top:4px;font-family:'Consolas',monospace;}
+section{background:var(--panel);border:1px solid var(--grid);border-radius:12px;
+  padding:18px 22px;margin:16px 0;}
+section h2{margin:0 0 12px;font-size:15px;padding-left:10px;
+  border-left:4px solid var(--accent);}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#eef4fb;text-align:left;padding:9px 10px;color:#334;font-weight:600;
+  border-bottom:2px solid var(--grid);}
+td{padding:8px 10px;border-bottom:1px solid var(--grid);}
+tr:nth-child(even) td{background:var(--zebra);}
+td.num,th.num{font-family:'Consolas',monospace;}
+.ok{color:var(--teal);font-weight:600;}
+.warn{color:var(--warn);font-weight:600;}
+.mono{font-family:'Consolas',monospace;}
+.binary{font-family:'Consolas',monospace;letter-spacing:.15em;word-break:break-all;}
+.bits-n{color:#1d4ed8;font-weight:700;}
+.bits-h{color:#0f766e;}
+.bits-off{color:#9aa7b5;}
+.note{background:#fff8e1;border:1px solid #f0dfa0;border-radius:8px;padding:10px 14px;
+  color:#6b4d00;font-size:12.5px;margin:12px 0;}
+.meta{color:var(--muted);font-size:12px;}
+footer{margin:24px 0 6px;color:var(--muted);font-size:11.5px;text-align:center;}
+@media print{
+  body{background:#fff;padding:0;}
+  header{border-radius:0;background:#0f172a;-webkit-print-color-adjust:exact;
+    print-color-adjust:exact;}
+  section,.card{break-inside:avoid;}
+}
+</style></head>
+<body><div class='wrap'>
+<header><div><h1>VLSM Plan</h1><div class='sub'>Variable-length subnet masking · IPv4</div></div><div class='sub'>SubnetPlanner v1.0.0</div></header>
+<div class='meta'>Planning rule: largest demand first · block = smallest power of two ≥ (hosts + 2)</div><div class='cards'><div class='card'><div class='k'>Base network</div><div class='v'>10.10.0.0</div></div><div class='card'><div class='k'>Prefix</div><div class='v'>/24</div></div><div class='card'><div class='k'>Capacity</div><div class='v'>256</div></div><div class='card'><div class='k'>Used</div><div class='v'>216</div></div><div class='card'><div class='k'>Utilization</div><div class='v'>84.4%</div></div></div><section><h2>Allocated segments</h2><table><thead><tr><th>Segment</th><th>Req. hosts</th><th>Prefix</th><th>Block</th><th>Network</th><th>First</th><th>Last</th><th>Broadcast</th><th>Mask</th><th>Usable</th></tr></thead><tbody><tr><td>Finance floor</td><td class='num'>120</td><td class='num'>/25</td><td class='num'>128</td><td class='mono'>10.10.0.0</td><td class='mono'>10.10.0.1</td><td class='mono'>10.10.0.126</td><td class='mono'>10.10.0.127</td><td class='mono'>255.255.255.128</td><td class='num'>126</td></tr><tr><td>Marketing LAN</td><td class='num'>30</td><td class='num'>/27</td><td class='num'>32</td><td class='mono'>10.10.0.128</td><td class='mono'>10.10.0.129</td><td class='mono'>10.10.0.158</td><td class='mono'>10.10.0.159</td><td class='mono'>255.255.255.224</td><td class='num'>30</td></tr><tr><td>HR department</td><td class='num'>15</td><td class='num'>/27</td><td class='num'>32</td><td class='mono'>10.10.0.160</td><td class='mono'>10.10.0.161</td><td class='mono'>10.10.0.190</td><td class='mono'>10.10.0.191</td><td class='mono'>255.255.255.224</td><td class='num'>30</td></tr><tr><td>Guest Wi-Fi</td><td class='num'>8</td><td class='num'>/28</td><td class='num'>16</td><td class='mono'>10.10.0.192</td><td class='mono'>10.10.0.193</td><td class='mono'>10.10.0.206</td><td class='mono'>10.10.0.207</td><td class='mono'>255.255.255.240</td><td class='num'>14</td></tr><tr><td>Management</td><td class='num'>3</td><td class='num'>/29</td><td class='num'>8</td><td class='mono'>10.10.0.208</td><td class='mono'>10.10.0.209</td><td class='mono'>10.10.0.214</td><td class='mono'>10.10.0.215</td><td class='mono'>255.255.255.248</td><td class='num'>6</td></tr></tbody></table></section>
+<footer>Generated 2026-09-19 00:44:13 · SubnetPlanner 1.0.0 · Local, offline report</footer></div></body></html>

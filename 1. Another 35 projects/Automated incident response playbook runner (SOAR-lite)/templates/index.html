@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · SOAR-Lite{% endblock %}
+{% block page %}Security Operations Dashboard{% endblock %}
+{% block crumb %}live view of the SOC queue, automation health and response status{% endblock %}
+
+{% block content %}
+<div class="grid cards-4">
+  <div class="kpi" style="--kpi-color:#ef4444">
+    <div class="label">Critical · High</div>
+    <div class="value"><span id="kpi-critical">–</span><small> open</small></div>
+    <div class="drift up" id="kpi-critical-across">unique cases needing priority triage</div>
+  </div>
+  <div class="kpi" style="--kpi-color:#3aa3ff">
+    <div class="label">Active Incidents</div>
+    <div class="value"><span id="kpi-open">–</span><small> in queue</small></div>
+    <div class="drift ok" id="kpi-analysts">analysts on shift</div>
+  </div>
+  <div class="kpi" style="--kpi-color:#f59e0b">
+    <div class="label">Avg Risk Score</div>
+    <div class="value"><span id="kpi-risk">–</span><small>/100</small></div>
+    <div class="drift" id="kpi-iocs">IOCs tracked</div>
+  </div>
+  <div class="kpi" style="--kpi-color:#22d3ee">
+    <div class="label">Automation</div>
+    <div class="value"><span id="kpi-running">–</span><small> live runs</small></div>
+    <div class="drift" id="kpi-completed">runs completed today</div>
+  </div>
+</div>
+
+<div class="grid cards-2 mt">
+  <div class="card">
+    <h3>Incidents by Severity</h3>
+    <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap;">
+      <div class="chart-donut" id="donut-sev" data-center="0" data-center-label="incidents"></div>
+      <div class="legend" id="legend-sev" style="flex-direction:column;"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Incidents by Type</h3>
+    <div class="bars" id="bars-type"></div>
+  </div>
+</div>
+
+<div class="grid cards-2 mt">
+  <div class="card">
+    <h3>Lifecycle Phase Distribution</h3>
+    <div class="bars" id="bars-phase"></div>
+  </div>
+  <div class="card">
+    <h3>Live Executions</h3>
+    <div id="live-runs" class="tbl-wrap"></div>
+    <div class="muted" style="margin-top:10px;font-size:12px;">Runs execute playbook steps in real time against simulated integrations.</div>
+  </div>
+</div>
+
+<div class="card mt">
+  <h3>Recent Incidents</h3>
+  <div class="tbl-wrap" id="recent-table"></div>
+</div>
+
+<div class="card mt">
+  <h3>Integration Health</h3>
+  <div class="legend" id="integ-health" style="margin-top:0"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(async function () {
+  const { api, esc, donut, bars, toast } = window.SOAR;
+  const snap = await api("/api/dashboard");
+  const totals = snap.totals;
+  const sevColors = { critical: "#ef4444", high: "#f59e0b", medium: "#fde047", low: "#34d399", informational: "#94a3b8" };
+
+  document.getElementById("kpi-critical").textContent = totals.critical + totals.high;
+  document.getElementById("kpi-open").textContent = totals.open;
+  document.getElementById("kpi-risk").textContent = totals.avg_risk || 0;
+  document.getElementById("kpi-running").textContent = totals.running;
+  document.getElementById("kpi-iocs").textContent = totals.iocs + " IOCs ( " + totals.threat_iocs + " hostile)";
+  document.getElementById("kpi-completed").textContent = totals.completed + " done · " + totals.failed + " errored";
+  document.getElementById("kpi-analysts").textContent = totals.analysts_active + " analysts · " + totals.executions + " total runs";
+  document.getElementById("kpi-critical-across").textContent = totals.critical + " critical / " + totals.high + " high active";
+
+  const navOpen = document.getElementById("nav-open-count");
+  if (totals.open > 0) { navOpen.textContent = totals.open; navOpen.style.display = "inline-block"; }
+
+  // donut by severity
+  const sevItems = Object.entries(snap.by_sev).map(([k, v]) => ({ label: k, value: v, color: sevColors[k] || "#64748b" })).filter(i => i.value > 0);
+  const dEl = document.getElementById("donut-sev");
+  dEl.dataset.center = totals.incidents;
+  donut("#donut-sev", sevItems);
+  const legend = document.getElementById("legend-sev");
+  sevItems.forEach(i => {
+    legend.insertAdjacentHTML("beforeend",
+      `<span><span class="sw" style="background:${i.color}"></span>${esc(i.label)} · <b>${i.value}</b></span>`);
+  });
+
+  // bars by type
+  const typeRows = Object.entries(snap.by_type).map(([k, v]) => ({ label: k.replace(/_/g, " "), value: v, color: "#3aa3ff" }));
+  bars("#bars-type", typeRows.length ? typeRows : [{ label: "no data", value: 0, color: "#3aa3ff" }]);
+
+  const phaseOrder = ["open", "triage", "contained", "eradicated", "recovered", "closed"];
+  const phaseColors = { open: "#3aa3ff", triage: "#60a5fa", contained: "#f59e0b", eradicated: "#a78bfa", recovered: "#34d399", closed: "#94a3b8" };
+  const phaseRows = phaseOrder.map(p => ({ label: p, value: snap.by_phase[p] || 0, color: phaseColors[p] })).filter(r => r.value > 0);
+  bars("#bars-phase", phaseRows.length ? phaseRows : [{ label: "no data", value: 0, color: "#64748b" }]);
+
+  // live runs
+  const lr = document.getElementById("live-runs");
+  if (snap.live_runs.length === 0) {
+    lr.innerHTML = `<div class="empty" style="color:#5f6b7a;padding:26px;text-align:center;">No executions running right now</div>`;
+    document.getElementById("nav-run-count").style.display = "none";
+  } else {
+    document.getElementById("nav-run-count").textContent = snap.live_runs.length;
+    document.getElementById("nav-run-count").style.display = "inline-block";
+    lr.innerHTML = `<table class="tbl">
+      <thead><tr><th>Ref</th><th>Playbook</th><th>Status</th><th>Elapsed</th></tr></thead>
+      <tbody>${snap.live_runs.map(r => `
+        <tr><td class="num"><a href="/incidents/${esc(r.incident_id)}">${esc(r.ref_no)}</a></td>
+        <td>${esc(r.playbook)}</td>
+        <td><span class="badge st-running">running</span></td>
+        <td class="num">${r.run_time_seconds}s</td></tr>`).join("")}</tbody></table>`;
+  }
+
+  // recent incidents
+  const inc = await api("/api/incidents");
+  const list = inc.incidents.slice(0, 7);
+  document.getElementById("recent-table").innerHTML = list.length ? `
+    <table class="tbl">
+      <thead><tr><th>Ref</th><th>Title</th><th>Type</th><th>Severity</th><th>Risk</th><th>Status</th><th>Analyst</th></tr></thead>
+      <tbody>${list.map(i => `
+        <tr data-ref="${esc(i.ref_no)}">
+          <td class="num">${esc(i.ref_no)}</td>
+          <td><a href="/incidents/${esc(i.id)}">${esc(i.title)}</a></td>
+          <td>${esc(i.type.replace(/_/g, " "))}</td>
+          <td><span class="badge sev-${esc(i.severity)}">${esc(i.severity)}</span></td>
+          <td class="num">${i.risk_score}</td>
+          <td><span class="badge st-${esc(i.status)}">${esc(i.status)}</span></td>
+          <td>${esc(i.analyst)}</td></tr>`).join("")}</tbody></table>` : `<div class="empty-state"><div class="em">🛎️</div>No incidents yet — create your first one.</div>`;
+  document.querySelectorAll("#recent-table tr[data-ref]").forEach(r =>
+    window.SOAR.rowClick(r, "/incidents/" + r.dataset.ref));
+
+  // integration health pills
+  document.getElementById("integ-health").innerHTML = snap.integrations.map(ig => `
+    <span><i class="pip ${ig.ok ? "ok" : "down"}"></i>${esc(ig.key)} <span class="muted">(${ig.latency_ms}ms)</span></span>`).join("");
+
+  // refresh every 3s for the live feel
+  setInterval(async () => {
+    try {
+      const s2 = await api("/api/dashboard");
+      document.getElementById("kpi-running").textContent = s2.totals.running;
+      if (s2.totals.running !== snap.totals.running) location.reload();
+    } catch (e) {}
+  }, 3000);
+})().catch(e => window.SOAR.toast("Dashboard error: " + e.message, "err"));
+</script>
+{% endblock %}

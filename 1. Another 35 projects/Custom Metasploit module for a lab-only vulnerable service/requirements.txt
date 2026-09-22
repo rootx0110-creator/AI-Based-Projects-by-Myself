@@ -1,0 +1,5 @@
+# Runtime: the app uses only Python stdlib + tkinter (bundled with CPython).
+# No runtime pip dependencies are required.
+
+# --- Optional: only needed to build the standalone EXE ---
+pyinstaller>=6.0

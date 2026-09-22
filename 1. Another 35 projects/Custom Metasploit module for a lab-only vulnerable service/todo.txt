@@ -1,0 +1,79 @@
+TODO list — MSF Lab Module Studio
+=================================
+Legend: [x] done  [ ] todo  [!] blocked  [~] in progress
+
+Build milestone
+---------------
+[x] Backend: module_builder.py (Ruby generator + probe + HTML/JSON report)
+[x] Lab service: vuln_service.py (/health, /exec, /flag; LAB ONLY)
+[x] GUI: app.py 4 sections (Setup / Builder / Live Test / Report)
+[x] GUI: soft aqua/teal theme (not black, not white)
+[x] GUI: report download in HTML format
+[x] Docs: architecture.md, memory.md, state.md, todo.txt, readme.txt
+[x] Build: PyInstaller one-file exe -> dist/
+
+Verification
+------------
+[x] Probe detects VulnLab banner -> check() = Vulnerable
+[x] Generated Ruby module: end-balanced, embed RHOSTS/RPORT
+[x] Report download writes valid HTML (opened in browser test)
+[x] GUI smoke test: all sections mount + switch
+[x] FIX v1.0.1: tkinter thread-safety in Live Test (worker no longer calls
+    root.after directly; queue.Queue + main-thread poller).
+[x] FIX: add %TEMP%\msf_lab_studio_error.log diagnostics for windowed exe.
+[x] FIX the REAL blank-UI bug: card() frames were never .pack()ed into their
+    section page -> empty content area, every click looked dead. card() now
+    packs itself. Verified on frozen exe via PrintWindow capture.
+[x] ADD keyboard nav Alt+1..4 (also makes automation deterministic).
+[x] ADD headless selftest: MSF_STUDIO_SELFTEST=1 exe -> %TEMP%\
+    msf_studio_selftest.out (10 checks now PASS inside frozen binary).
+
+Advanced upgrade (v2.0) - "smarter, more automated"
+---------------------------------------------------
+[x] Backend multi-vuln catalog: VULN_TEMPLATES with 3 lab vuln classes:
+    cmd-injection (Exploit), path-traversal (auxiliary/scanner),
+    config-leak (auxiliary/scanner; /backup). Token-based Ruby rendering.
+[x] Lab service extended: /file (path traversal + flag) and /backup
+    (unauthenticated config disclosure with plaintext db_password).
+[x] Auto-detection: LabServiceProbe.detect_all() checks every template,
+    returns per-vuln verdicts + evidence + summary.
+[x] TCP port scanner: scan_tcp_ports() over COMMON_PORTS, in a worker thread.
+[x] JSON report twin: LabHtmlReport.to_json() / download_json button in GUI.
+[x] Activity timeline in Live Test (last 40 events) + in HTML report.
+[x] Smart advisor card: context-aware recommendation (offline / vuln match /
+    template mismatch / tips) updates after every action.
+[x] Config persistence: %LOCALAPPDATA%\MSFLabStudio\profile.json with
+    remember-settings checkbox; saved on apply/reset/close.
+[x] Template picker in Setup: switching templates auto-adopts module class,
+    module name, TARGETURI, friendly name and CVE reference.
+[x] Selftest extended to 10 checks (template switch, JSON parse/write,
+    offline detect_all, offline port scan).
+[x] In-process integration smoke: all 3 vulns detected against live lab.
+[x] REBUILT dist\MSF-Lab-Module-Studio.exe (12.2 MB); frozen selftest 10/10
+    PASS inside the real binary.
+[x] Live-GUI harness (real lab running): 19/19 checks pass - detect_all,
+    port scan, template switch, check, endpoint verify, timeline, advisor,
+    HTML + JSON report content.
+
+Next ideas
+----------
+[ ] Editable Ruby source in Builder before save
+[ ] MSF version targeting dropdown (msf6 / modern)
+[ ] Export PDF via printing the HTML (no extra deps)
+[ ] Auto-launch vuln_service.py from the "Lab target helper" card
+[ ] Unit tests for module_builder (pytest, no tkinter needed)
+
+Known limitations
+-----------------
+[!] check() on Windows-lab boxes: vuln_service uses cmd shell on win32, so
+    the injected "$(...)" one-liner is Linux-targeted; document difference.
+[!] GUI is light-theme only by design; user requested non-black, non-white.
+[!] Port scanner is a plain TCP connect sweep (no banner grabbing) and uses
+    only stdlib socket - deliberately, to keep the frozen exe dependency-free.
+
+Longer term
+-----------
+[ ] Add a 4th lab vuln (e.g. reflected XSS in /info) to demonstrate the Web
+    Exploitation Framework path (auxiliary + javascript)
+[ ] Plugin-style loader so new vuln templates drop into a folder without
+    touching the GUI code

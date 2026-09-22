@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PolicyForge — Enterprise Cybersecurity Policy Generator</title>
+<style>
+:root{
+  --bg:#080d1c; --bg2:#0e1630;
+  --panel:rgba(255,255,255,.045); --panel2:rgba(255,255,255,.07);
+  --border:rgba(255,255,255,.09);
+  --txt:#e8eefc; --muted:#93a1c4; --dim:#6b79a0;
+  --accent:#4f8cff; --accent2:#22d3ee; --violet:#8b5cf6;
+  --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+  --grad:linear-gradient(135deg,#4f8cff 0%,#22d3ee 100%);
+  --radius:16px;
+  --shadow:0 20px 60px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg); color:var(--txt); line-height:1.55; overflow-x:hidden;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(900px 500px at 12% -10%, rgba(79,140,255,.22), transparent 60%),
+    radial-gradient(800px 600px at 110% 8%, rgba(34,211,238,.16), transparent 55%),
+    radial-gradient(700px 700px at 50% 120%, rgba(139,92,246,.14), transparent 60%);
+}
+::selection{background:rgba(79,140,255,.4)}
+a{color:var(--accent2);text-decoration:none}
+button{font-family:inherit}
+
+/* ---------- App shell ---------- */
+.app-header{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;gap:16px;
+  padding:14px 28px;
+  background:rgba(8,13,28,.72); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.3px}
+.brand .logo{
+  width:36px;height:36px;border-radius:10px;background:var(--grad);
+  display:grid;place-items:center;color:#fff;font-size:18px;font-weight:900;box-shadow:0 6px 20px rgba(79,140,255,.5);
+}
+.brand small{display:block;color:var(--dim);font-weight:500;font-size:11px;letter-spacing:1.5px;text-transform:uppercase}
+.spacer{flex:1}
+.chip{
+  font-size:11px;font-weight:700;letter-spacing:1px;padding:6px 12px;border-radius:999px;
+  background:rgba(52,211,153,.12);color:var(--good);border:1px solid rgba(52,211,153,.35);
+}
+.header-btn{
+  border:1px solid var(--border);background:var(--panel);color:var(--txt);
+  padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:.2s;
+}
+.header-btn:hover{background:var(--panel2);border-color:rgba(255,255,255,.2)}
+main{max-width:1180px;margin:0 auto;padding:28px 24px 80px}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:0;
+  font-weight:700;letter-spacing:.2px;transition:.2s;border-radius:12px;
+  padding:13px 24px;font-size:14px;
+}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 10px 30px rgba(79,140,255,.4)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(79,140,255,.55)}
+.btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--txt)}
+.btn-ghost:hover{background:var(--panel2);border-color:rgba(255,255,255,.25)}
+.btn-good{background:linear-gradient(135deg,#10b981,#22d3ee);color:#fff;box-shadow:0 10px 30px rgba(16,185,129,.35)}
+.btn-good:hover{transform:translateY(-2px)}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:9px}
+
+/* ---------- Landing ---------- */
+#view-landing{animation:fadeUp .5s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.hero{padding:64px 0 30px;text-align:center}
+.hero .kicker{
+  display:inline-block;font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--accent2);border:1px solid rgba(34,211,238,.35);background:rgba(34,211,238,.08);
+  padding:7px 16px;border-radius:999px;margin-bottom:22px;
+}
+.hero h1{
+  font-size:clamp(34px,5.4vw,58px);line-height:1.08;font-weight:800;letter-spacing:-1px;
+  background:linear-gradient(120deg,#fff 20%,var(--accent) 60%,var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero p{max-width:720px;margin:20px auto 0;color:var(--muted);font-size:17px}
+.hero-cta{display:flex;gap:14px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+.stats{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:44px 0 10px}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px 26px;text-align:center;backdrop-filter:blur(8px)}
+.stat b{font-size:26px;display:block;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{font-size:12px;color:var(--muted);letter-spacing:.5px}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:34px}
+.feat{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:22px;transition:.25s}
+.feat:hover{transform:translateY(-4px);border-color:rgba(79,140,255,.45);box-shadow:0 16px 40px rgba(79,140,255,.18)}
+.feat .f-ic{
+  width:40px;height:40px;border-radius:11px;display:grid;place-items:center;margin-bottom:14px;
+  font-weight:800;font-size:15px;color:#fff;background:var(--grad);
+}
+.feat h3{font-size:15px;margin-bottom:7px}
+.feat p{font-size:13px;color:var(--muted)}
+
+/* ---------- Stepper ---------- */
+.stepper{display:flex;align-items:center;gap:0;margin:10px 0 26px;flex-wrap:wrap}
+.step-item{display:flex;align-items:center;gap:10px;color:var(--dim)}
+.step-item .n{
+  width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;
+  border:1px solid var(--border);background:var(--panel);transition:.3s;
+}
+.step-item .lbl{font-size:12px;font-weight:600;letter-spacing:.4px}
+.step-line{width:36px;height:2px;background:var(--border);margin:0 8px;flex:none}
+.step-item.on{color:var(--txt)}
+.step-item.on .n{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(79,140,255,.45)}
+.step-item.done .n{background:rgba(52,211,153,.18);color:var(--good);border-color:rgba(52,211,153,.4)}
+
+/* ---------- Wizard ---------- */
+.wizard-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:22px;
+  padding:30px 34px;backdrop-filter:blur(12px);box-shadow:var(--shadow);animation:fadeUp .35s ease both;
+}
+.w-card-head{margin-bottom:20px}
+.w-card-head h2{font-size:24px;font-weight:800;letter-spacing:-.3px}
+.w-card-head p{color:var(--muted);font-size:14px;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field label{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.2px}
+.field label b{color:var(--txt)}
+input[type=text],input[type=number],select,textarea{
+  background:rgba(0,0,0,.28);border:1px solid var(--border);color:var(--txt);
+  padding:11px 14px;border-radius:11px;font-size:14px;font-family:inherit;outline:none;transition:.2s;width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,140,255,.18)}
+input::placeholder{color:var(--dim)}
+textarea{resize:vertical;min-height:90px}
+.hint{font-size:12px;color:var(--dim)}
+
+/* chips (framework select) */
+.chip-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.fw-chip{
+  border:1px solid var(--border);background:var(--panel);border-radius:999px;
+  padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;user-select:none;transition:.2s;color:var(--muted);
+}
+.fw-chip:hover{border-color:rgba(79,140,255,.5)}
+.fw-chip.on{background:rgba(79,140,255,.16);border-color:var(--accent);color:#cfe0ff;box-shadow:0 0 0 3px rgba(79,140,255,.12)}
+.fw-chip.auto{outline:1px dashed rgba(34,211,238,.5)}
+.fw-chip .auto-tag{margin-left:6px;font-size:10px;color:var(--accent2);letter-spacing:.5px;text-transform:uppercase}
+
+/* segmented rating */
+.seg{display:flex;border:1px solid var(--border);border-radius:11px;overflow:hidden;background:rgba(0,0,0,.28)}
+.seg button{
+  flex:1;padding:10px 4px;border:0;background:transparent;color:var(--dim);
+  font-size:12px;font-weight:700;cursor:pointer;transition:.2s;
+}
+.seg button.on{background:var(--grad);color:#fff}
+.seg button + button{border-left:1px solid var(--border)}
+
+/* slider */
+input[type=range]{-webkit-appearance:none;width:100%;height:8px;border-radius:99px;background:rgba(255,255,255,.12);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--grad);cursor:pointer;box-shadow:0 2px 10px rgba(79,140,255,.6)}
+.range-row{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:4px}
+.slider-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.slider-head b{color:var(--accent2);font-size:16px}
+
+/* domain posture grid */
+.dom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.dom-card{background:rgba(0,0,0,.22);border:1px solid var(--border);border-radius:14px;padding:16px;transition:.25s}
+.dom-card:hover{border-color:rgba(79,140,255,.4)}
+.dom-card .d-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.dom-card .d-ic{width:34px;height:34px;flex:none;border-radius:10px;background:rgba(79,140,255,.14);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:13px}
+.dom-card .d-ttl{font-weight:700;font-size:14px}
+.dom-card .d-st{font-size:11px;letter-spacing:.6px;text-transform:uppercase;font-weight:700}
+.dom-card .d-st.low{color:var(--bad)} .dom-card .d-st.mid{color:var(--warn)} .dom-card .d-st.high{color:var(--good)}
+.dom-score{font-size:26px;font-weight:800;margin-top:8px;color:var(--accent2)}
+.dom-score small{font-size:11px;color:var(--dim);font-weight:600}
+
+/* wizard actions */
+.wizard-actions{display:flex;justify-content:space-between;margin-top:26px;gap:12px}
+
+/* ---------- Report view ---------- */
+.report-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 22px;position:sticky;top:64px;z-index:40}
+.report-toolbar .spacer{flex:1}
+#report-sheet{
+  background:#fff;color:#1c2536;border-radius:6px;box-shadow:0 30px 80px rgba(0,0,0,.55);
+  max-width:900px;margin:0 auto;padding:0 0 40px;transition:.3s;
+}
+.report-sheet-pad{padding:46px 58px}
+.grade-badge{display:inline-block;font-size:13px;font-weight:800;padding:6px 14px;border-radius:999px}
+.grade-A{background:#dcfce7;color:#15803d} .grade-B{background:#d1fae5;color:#047857}
+.grade-C{background:#fef3c7;color:#b45309} .grade-D{background:#ffedd5;color:#c2410c}
+.grade-F{background:#fee2e2;color:#b91c1c}
+
+/* ---------- Footer ---------- */
+.app-footer{padding:26px;text-align:center;color:var(--dim);font-size:13px;border-top:1px solid var(--border);margin-top:20px}
+
+/* ---------- Print: only the paper sheet ---------- */
+@media print{
+  body{background:#fff}
+  body::before,.app-header,.report-toolbar,.app-footer,#view-landing,#view-wizard{display:none!important}
+  main{padding:0;max-width:none}
+  #report-sheet{box-shadow:none;border-radius:0;max-width:none}
+  .report-sheet-pad{padding:0}
+  .page-break{page-break-after:always;break-after:page}
+}
+@media (max-width:720px){
+  .wizard-card{padding:20px 18px}
+  .report-sheet-pad{padding:22px 18px}
+  .step-line{width:20px;margin:0 5px}
+  .step-item .lbl{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <div class="logo">PF</div>
+    <div>PolicyForge<small>Enterprise Cybersecurity Policy Generator</small></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="chip" id="status-chip">Interview</div>
+  <button class="header-btn" id="resetBtn" title="Start a new interview">New</button>
+</header>
+
+<main>
+  <!-- ================= LANDING ================= -->
+  <section id="view-landing">
+    <div class="hero">
+      <div class="kicker">Interview &rarr; Board-Ready Policy Document</div>
+      <h1>Turn a structured interview into a board-grade cybersecurity policy.</h1>
+      <p>Answer 25 guided questions about your business, risk appetite and current security posture.
+         PolicyForge drafts a formal, compliance-aware policy document — executive summary, control
+         chapters, risk heat-map, roadmap and sign-off — ready to circulate to your board.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" id="startBtn">Start the interview</button>
+        <button class="btn btn-ghost" id="sampleBtn">Load a sample company</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>25+</b><span>Guided questions</span></div>
+      <div class="stat"><b>12</b><span>Policy domains</span></div>
+      <div class="stat"><b>10</b><span>Framework map</span></div>
+      <div class="stat"><b>1</b><span>Self-contained HTML export</span></div>
+    </div>
+    <div class="features">
+      <div class="feat"><div class="f-ic">01</div><h3>Adaptive policy engine</h3><p>Text, tone and remediation clauses adapt to your sector, size and security maturity.</p></div>
+      <div class="feat"><div class="f-ic">02</div><h3>Regulator intelligence</h3><p>GDPR, NIS2, SOC 2, PCI DSS, HIPAA and more — suggested automatically from your profile.</p></div>
+      <div class="feat"><div class="f-ic">03</div><h3>Board risk picture</h3><p>Residual-risk heat table, overall risk grade and KPIs the board can actually monitor.</p></div>
+      <div class="feat"><div class="f-ic">04</div><h3>Printer-perfect export</h3><p>Download a standalone HTML report or print-to-PDF. No server, no data leaves your machine.</p></div>
+    </div>
+  </section>
+
+  <!-- ================= WIZARD ================= -->
+  <section id="view-wizard" hidden>
+    <div class="stepper" id="stepper"></div>
+    <div class="wizard-card" id="wizardCard"></div>
+  </section>
+
+  <!-- ================= REPORT ================= -->
+  <section id="view-report" hidden>
+    <div class="report-toolbar">
+      <button class="btn btn-ghost btn-sm" id="backBtn">Edit answers</button>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="printBtn">Print / PDF</button>
+      <button class="btn btn-good btn-sm" id="downloadBtn">Download HTML report</button>
+    </div>
+    <div id="report-sheet"></div>
+  </section>
+</main>
+
+<footer class="app-footer">
+  PolicyForge &mdash; offline-first, single-file policy generator. Your interview data stays on this device.
+</footer>
+
+<script>
+"use strict";
+/* =================================================================
+   PolicyForge — Enterprise Cybersecurity Policy Generator
+   Interview → Board-Ready Policy Document (single-file SPA)
+================================================================= */
+const $ = s => document.querySelector(s);
+
+/* -----------------------------------------------------------------
+   STEP CONFIGURATION
+----------------------------------------------------------------- */
+const STEPS = [
+  { id:0, label:"Company" },
+  { id:1, label:"Compliance" },
+  { id:2, label:"Risk appetite" },
+  { id:3, label:"Security posture" },
+  { id:4, label:"Capability" },
+  { id:5, label:"Generate" }
+];
+
+const SECTORS = [
+  "Financial services","Healthcare","Technology / software","Retail / e-commerce",
+  "Manufacturing","Energy / utilities","Government / public sector","Education",
+  "Professional services","Transportation / logistics","Media / telecoms","Non-profit","Other"
+];
+const GEOGRAPHIES = ["European Union / UK","United States / Canada","Asia-Pacific","Middle East / Africa","Latin America","Global (multi-region)"];
+
+/* framework registry: label + one-line board rationale */
+const FRAMEWORKS = [
+  { id:"nist",   name:"NIST CSF 2.0", note:"US & global benchmark for cyber risk management." },
+  { id:"iso",    name:"ISO/IEC 27001:2022", note:"Certifiable international information-security standard." },
+  { id:"soc2",   name:"SOC 2 (I / II)", note:"Trust-services attestation demanded by enterprise clients." },
+  { id:"pci",    name:"PCI DSS v4.0", note:"Mandatory when storing, processing or transmitting card data." },
+  { id:"gdpr",   name:"GDPR", note:"EU/UK data-protection regulation; penalises privacy failures." },
+  { id:"nis2",   name:"NIS2", note:"EU resilience directive for essential & important entities." },
+  { id:"hipaa",  name:"HIPAA / HITECH", note:"US healthcare data confidentiality & privacy (ePHI)." },
+  { id:"sox",    name:"SOX", note:"US financial-controls law; requires reliable IT controls and audit trails." },
+  { id:"nydfs",  name:"GLBA / NYDFS 500", note:"US financial-services privacy, security and reporting rules." },
+  { id:"fedramp",name:"FedRAMP / FISMA", note:"US federal cloud-authorisation and NIST-based compliance." },
+  { id:"nerc",   name:"NERC CIP", note:"North-American electricity bulk-system reliability standards." },
+  { id:"cmmc",   name:"CMMC 2.0", note:"US defense-industrial-base cybersecurity certification." }
+];
+const SECTOR_FW = {
+  "Financial services":["pci","nydfs","sox"],
+  "Healthcare":["hipaa"],
+  "Technology / software":["soc2","iso"],
+  "Retail / e-commerce":["pci"],
+  "Manufacturing":["iso","nis2"],
+  "Energy / utilities":["nis2","nerc"],
+  "Government / public sector":["fedramp"],
+  "Education":[],
+  "Professional services":["soc2","iso"],
+  "Transportation / logistics":["nis2","iso"],
+  "Media / telecoms":["nis2","gdpr"],
+  "Non-profit":[],
+  "Other":["iso"]
+};
+const GEO_FW = { "European Union / UK":["gdpr","nis2"], "United States / Canada":[],
+  "Asia-Pacific":[], "Middle East / Africa":[], "Latin America":[], "Global (multi-region)":["gdpr"] };
+
+/* -----------------------------------------------------------------
+   POLICY DOMAINS  (12) — posture 1..5 + adaptive controls
+----------------------------------------------------------------- */
+const DOMAINS = [
+  { id:"access", num:1, title:"Access & Identity Management",
+    always:[
+      "All users, systems and services shall be individually identified and authenticated before accessing corporate resources.",
+      "Access shall be granted on the principle of least privilege and revoked promptly on role change or departure.",
+      "Privileged accounts shall be segregated from standard accounts and used only for legitimate administrative activity."
+    ],
+    from:{ 3:[
+      "Multi-factor authentication (MFA) shall be enforced for all remote access, administrative access and access to sensitive data.",
+      "Access rights shall be reviewed by data owners at least quarterly, with the review formally documented."
+    ],4:[
+      "Identity and access management shall be governed through a central directory with automated provisioning and de-provisioning.",
+      "Privileged access management (PAM) shall provide vaulted, time-boxed session-based elevation for all administrators.",
+      "Role-based access controls shall be backed by an entitlement matrix maintained per application and data set."
+    ],5:[
+      "Privileged access activity shall be continuously monitored with real-time alerting on anomalous entitlement use.",
+      "Access reviews shall be automated and evidence-based, integrated into annual penetration and cyber assurance testing."
+    ]},
+    kpis:["% of accounts reviewed within the quarter","Time-to-de-provision after departure (P95)","% of privileged sessions vaulted and logged"],
+    gap:r => ["Raise identity assurance to " + (r<3 ? "enforce MFA (step-up authentication) across remote and privileged access" : "automate quarterly access reviews and evidence them for auditors")+"."]
+  },
+  { id:"data", num:2, title:"Data Protection & Privacy",
+    always:[
+      "Personal and confidential data shall be classified, handled and transmitted according to its sensitivity and legal basis.",
+      "Data minimisation shall apply: no more personal data than necessary shall be collected, used or retained."
+    ],
+    from:{ 3:[
+      "Encryption at rest and in transit shall be enforced for all confidential data, with keys managed and rotated.",
+      "A retention schedule shall define legal retention periods, with confidential destruction on expiry."
+    ],4:[
+      "Data subject rights (access, erasure, portability) shall be fulfilled within regulator deadlines via a documented process.",
+      "Storage inventories and data-flow maps shall be maintained and reviewed on at least an annual basis."
+    ],5:[
+      "Privacy impact and transfer-impact assessments shall gate every new system, vendor or data flow.",
+      "Data Loss Prevention (DLP) shall tag and monitor confidential data across email, web and removable media."
+    ]},
+    kpis:["% of confidential data encrypted at rest","% of data subjects within SLA","Coverage of the DLP policy on critical channels"],
+    gap:r => ["Deploy " + (r<3 ? "encryption (at rest & in transit) for confidential data" : "a retention schedule and data-flow inventory")+" as the first privacy milestone."]
+  },
+  { id:"device", num:3, title:"Endpoint & Device Security",
+    always:[
+      "All endpoints shall be corporately managed, supported and kept patched against known vulnerabilities.",
+      "Standards anti-virus / anti-malware protection shall be active on every managed device."
+    ],
+    from:{ 3:[
+      "Endpoint detection and response (EDR) shall provide behaviour-based detection and remote containment.",
+      "Hard-disk encryption shall be enforced on all laptops and mobile devices."
+    ],4:[
+      "A zero-trust posture shall require device-health attestation before access to internal services.",
+      "Application control shall deny unsigned or unapproved executables by default."
+    ],5:[
+      "Automated patching with exception workflows, pilot testing rings and emergency (zero-day) channels shall be in place.",
+      "Endpoint hygiene metrics shall feed identity revocation and conditional-access policies."
+    ]},
+    kpis:["Patch compliance (P95)","% of endpoints with EDR online","Mean time to contain an endpoint alert (hours)"],
+    gap:r => ["Bring endpoints to " + (r<3 ? "a managed baseline with enforced anti-malware and patching" : "EDR coverage plus hard-disk encryption on remote assets")+"."]
+  },
+  { id:"network", num:4, title:"Network & Perimeter Defense",
+    always:[
+      "The corporate network shall be segmented so that critical assets are isolated from general user traffic.",
+      "Perimeter and internal firewalls shall be configuration-managed, reviewed and logged."
+    ],
+    from:{ 3:[
+      "All inbound and outbound traffic shall traverse an active intrusion detection/prevention capability.",
+      "Remote access shall require MFA and terminate at a hardened gateway with session logging."
+    ],4:[
+      "Zero-trust network access (ZTNA) shall be preferred for application connectivity inside and outside the office.",
+      "DNS filtering and egress filtering shall block known-malicious domains and exfiltration channels."
+    ],5:[
+      "Network anomalies shall be detected via machine-assisted baselining with automated response triggers.",
+      "A full network topology & architecture review shall join the annual security testing programme."
+    ]},
+    kpis:["% of critical zones covered by IDS/IPS","Firewall rule review completion (quarterly)","% of remote access via MFA + ZTNA"],
+    gap:r => [r<3 ? "Map and segment the network, placing gateways behind centrally managed firewalls." : "Add active detection (IDS/IPS/ZTNA) across all egress and remote-access paths."]
+  },
+  { id:"appsec", num:5, title:"Application & Software Security",
+    always:[
+      "Security requirements shall be defined before development begins and tested before any release goes live.",
+      "Third-party and open-source components shall be inventoried and screened for known vulnerabilities."
+    ],
+    from:{ 3:[
+      "Static and dynamic code analysis (SAST / DAST) shall be embedded in the delivery pipeline.",
+      "A vulnerability-driven change process shall prioritise fixes by exploitability and business exposure."
+    ],4:[
+      "Secure-by-default coding standards, threat modelling and peer review shall gate code merges.",
+      "Security testing (including penetration testing of high-value applications) shall run at least annually."
+    ],5:[
+      "The software supply chain shall be attested with signed builds and SBOM verification.",
+      "A dedicated AppSec function shall run bug-bounty / coordinated-disclosure and exploit-as-a-test programmes."
+    ]},
+    kpis:["% of releases scanned pre-production","Open-critical vulnerabilities (count & age)","Pen-tests completed without critical findings"],
+    gap:r => ["Embed " + (r<3 ? "basic SAST + dependency scanning into the delivery pipeline" : "annual penetration testing and threat-modelling into the SDLC")+"."]
+  },
+  { id:"cloud", num:6, title:"Cloud & Infrastructure Security",
+    always:[
+      "Cloud and on-premise infrastructure shall be configured to secure baselines and inventoried in a CMDB.",
+      "Administrative consoles for infrastructure shall require MFA and be subject to audit logging."
+    ],
+    from:{ 3:[
+      "Infrastructure-as-code with policy-as-code shall make configuration drift detectable and retroactively fixable.",
+      "Sensitive keys and secrets shall be vaulted — never committed to code or config files."
+    ],4:[
+      "Clinical role and tenant boundaries shall be enforced across multi-cloud and hybrid estates.",
+      "Continuous compliance scanning shall evidence baseline control (CIS-style benchmarks) hardening."
+    ],5:[
+      "A mature cloud-native security platform shall unify posture, workload, and runtime protection.",
+      "Chaos-resistant designs, automated failover and immutable backups shall be tested each quarter."
+    ]},
+    kpis:["% of workloads meeting secure baseline","% of secrets vaulted","Drift events remediated within SLA (hours)"],
+    gap:r => ["Harden " + (r<3 ? "cloud/on-premise builds to a secure baseline and inventory all assets" : "with policy-as-code plus continuous compliance scanning")+"."]
+  },
+  { id:"supply", num:7, title:"Third-Party & Supply-Chain Security",
+    always:[
+      "Engagement with any third party that touches corporate data or systems shall follow a formal onboarding and risk assessment.",
+      "Consent to share personal or confidential data shall be documented, with the legal basis recorded."
+    ],
+    from:{ 3:[
+      "Vendor assessments shall consider security posture, sub-processors, and past incident history before contract signature.",
+      "Standard clauses on security, breach notification and audit access shall be embedded in every supplier agreement."
+    ],4:[
+      "An inventory of vendors grouped by criticality shall drive tiered due-diligence and re-certification cycles.",
+      "Continuous monitoring of vendor status (e.g. certifications, breaches) shall feed third-party risk reviews."
+    ],5:[
+      "Exit strategies, data-return and secure-deletion obligations shall be defined for every critical supplier.",
+      "Supply-chain controls shall extend to sub-processors with chain-of-custody attestation."
+    ]},
+    kpis:["% of critical vendors with signed security clauses","Vendor assessments overdue","Average due-diligence cycle time (days)"],
+    gap:r => ["Create " + (r<3 ? "a supplier inventory with tiered risk assessments and standard clauses" : "scheduled re-certification and breach-monitoring of critical vendors")+"."]
+  },
+  { id:"incident", num:8, title:"Incident Response & Forensics",
+    always:[
+      "A documented incident-response plan shall define roles, escalation paths and regulatory notification responsibilities.",
+      "All suspected incidents shall be reported immediately to the security function; non-reporting is a disciplinary matter."
+    ],
+    from:{ 3:[
+      "A dedicated IR team (internal or retainered) shall be reachable 24/7 with pre-agreed authority to contain.",
+      "Events shall be captured in a timeline artefact set sufficient for root-cause and, where required, legal use."
+    ],4:[
+      "Table-top exercises staged against realistic attack scenarios shall run at least twice a year.",
+      "Forensic-grade evidence capture, chain-of-custody and controlled external communications shall be documented."
+    ],5:[
+      "Cyber-recovery assurance shall extend to the full incident lifecycle with measurable SLAs (detect, contain, recover).",
+      "Lessons-learned reviews shall produce measurable control improvements tracked through to closure."
+    ]},
+    kpis:["Time-to-detect (hours)","Time-to-contain (hours)","% of incidents with documented post-mortems closed out"],
+    gap:r => ["Stand up a formal " + (r<3 ? "incident-response plan with named responder roles and escalation path" : "24/7 IR capability with scheduled table-top exercises")+"."]
+  },
+  { id:"bc", num:9, title:"Business Continuity & Disaster Recovery",
+    always:[
+      "Critical services shall be identified with agreed recovery time (RTO) and recovery point (RPO) objectives.",
+      "Backups of critical data shall be automated, encrypted, tested and stored in a physically separate location."
+    ],
+    from:{ 3:[
+      "A business-continuity plan shall integrate people, process and technology recovery for top-tier services.",
+      "Restore tests of critical systems shall be performed at least twice a year and evidenced."
+    ],4:[
+      "Resilience designs (active-active or failover) shall protect primary delivery of board-critical services.",
+      "Major-crisis exercises shall include executive decision-cell simulation and live restore of priority services."
+    ],5:[
+      "Recovery objectives shall be continuously measured against realistic failure scenarios each quarter.",
+      "Continuous replication for hot-data tiers shall make RPO target near-zero where risk appetite requires."
+    ]},
+    kpis:["% of critical services meeting RTO","Backup restore tests passed","RPO attainment (data loss window)"],
+    gap:r => ["Define " + (r<3 ? "RTO/RPO for critical services and schedule tested, off-site backups" : "regular restore tests and business-continuity exercises for top-tier services")+"."]
+  },
+  { id:"monitor", num:10, title:"Logging, Monitoring & Audit",
+    always:[
+      "Security-relevant logs (authentications, admin activity, firewall, cloud control-plane) shall be captured and protected.",
+      "Log retention periods shall match legal and framework requirements and be documented."
+    ],
+    from:{ 3:[
+      "Logs shall feed a centralised platform with alerting on high-risk events and scheduled review schedules.",
+      "Time synchronisation and log-integrity (tamper protection) shall cover all monitoring sources."
+    ],4:[
+      "Use-case-driven detections aligned to the regulated threat model shall run continuously with tuning cycles.",
+      "Behavioural baselining and threat-intelligence enrichment shall improve detection quality each quarter."
+    ],5:[
+      "A modern SOC (internal or MSSP) operating 24/7 shall evidence detection and response SLAs.",
+      "Independent audit of monitoring effectiveness (red-team / detection tests) shall run annually."
+    ]},
+    kpis:["Log-source coverage %","Alert mean-time-to-triage (min)","Detection-engineering backlog age"],
+    gap:r => ["Concentrate " + (r<3 ? "critical logs centrally with alerting on high-risk events" : "a 24/7 monitoring capability with tuned detection use-cases")+"."]
+  },
+  { id:"assets", num:11, title:"Asset & Configuration Management",
+    always:[
+      "All hardware, software and network assets shall be inventoried, owned and risk-tagged.",
+      "End-of-life and end-of-support assets shall be formally approved for hardened retirement."
+    ],
+    from:{ 3:[
+      "Baseline security configurations shall be defined per asset class and enforced via policy/automation where possible.",
+      "Vulnerability scanning of all production assets shall run at least monthly with SLA-driven remediation."
+    ],4:[
+      "Configuration drift shall be detected continuously and automatically re-paired against baselines.",
+      "A vulnerability management programme shall extend to cloud workloads, containers and runtime images."
+    ],5:[
+      "Asset lifecycle automation (discovery-to-retirement) shall feed all other security programmes.",
+      "Exposure metrics (e.g. attack-surface heat) shall be reported to the board each quarter."
+    ]},
+    kpis:["Inventory accuracy %","% of assets on supported versions","Vulnerabilities fixed within SLA"],
+    gap:r => ["Build " + (r<3 ? "an accurate asset inventory with per-asset-class baseline controls" : "continuous baseline enforcement and monthly scanning with SLA-based remediation")+"."]
+  },
+  { id:"workforce", num:12, title:"Acceptable Use & Workforce Awareness",
+    always:[
+      "Acceptable-use rules shall cover internet, e-mail, personal devices and social media and shall be signed by all staff.",
+      "Every employee shall complete security awareness training at onboarding and annually thereafter."
+    ],
+    from:{ 3:[
+      "Periodic phishing simulations with coaching shall reduce susceptibility to socially engineered attacks.",
+      "A clear consequence framework shall discourage unsafe behaviours without punishing honest reporting."
+    ],4:[
+      "Role-based training (finance, HR, developers, executives) shall cover financial fraud, data handling and secure coding.",
+      "Exit and join procedures shall revoke access same-day and brief new joiners on their obligations."
+    ],5:[
+      "A security-culture programme with champions shall measure and raise secure-behaviour adoption.",
+      "Executive-education and insider-risk monitoring shall cover data exfiltration by authorised users."
+    ]},
+    kpis:["Training completion %","Phishing susceptibility trend","% of accounts revamped same-day on exit"],
+    gap:r => ["Introduce " + (r<3 ? "signed acceptable-use rules and mandatory annual awareness training" : "phishing simulations, role-based training and measured security-culture programmes")+"."]
+  }
+];
+
+/* -----------------------------------------------------------------
+   WIZARD STATE + SAVE / LOAD (localStorage)
+----------------------------------------------------------------- */
+const KEY = "policyforge_v1";
+const W = {
+  company:"", sector:"", geography:"", region:"", size:"500", ownership:"", hq:"",
+  numEmployees:"250 - 999", contactName:"", role:"Information Security Manager",
+  fw:[], payments:false, dataSubjectEU:false, sdls:false,
+  riskC:60, riskI:70, riskA:60, target:4,
+  posture:{}, team:"", budget:"", insurance:false, mssp:false, reviewMonths:"12", ciso:"", yearsPolicy:"1",
+  custom:""
+};
+
+const postureSeeded = {};
+DOMAINS.forEach(d => postureSeeded[d.id] = 3);
+Object.assign(W.posture, postureSeeded);
+
+function saveW(){ try{ localStorage.setItem(KEY, JSON.stringify(W)); }catch(e){} }
+function loadW(){
+  try{ const j = localStorage.getItem(KEY); if(j){ const p = JSON.parse(j); Object.assign(W, p); W.posture = Object.assign({}, postureSeeded, p.posture||{}); } }catch(e){}
+  document.getElementById("status-chip").textContent = W.company ? "In progress — " + W.company : "Interview";
+}
+
+/* -----------------------------------------------------------------
+   UI HELPERS
+----------------------------------------------------------------- */
+function esc(s){ return String(s??"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function show(id){ ["view-landing","view-wizard","view-report"].forEach(v => $("#"+v).hidden = v !== id); window.scrollTo({top:0,behavior:"smooth"}); }
+
+function renderStepper(cur){
+  const el = $("#stepper");
+  el.innerHTML = STEPS.map((s,i) =>
+    `<div class="step-item ${i===cur?"on":(i<cur?"done":"")}"><div class="n">${i<cur?"&#10003;":i+1}</div><div class="lbl">${s.label}</div></div>`
+    + (i < STEPS.length-1 ? '<div class="step-line"></div>' : '')).join("");
+}
+
+/* --- framework chips --- */
+function fwChipsHtml(selected, autoList){
+  return FRAMEWORKS.map(f => {
+    const on = selected.includes(f.id), auto = autoList.includes(f.id);
+    return `<button type="button" class="fw-chip ${on?"on":""} ${auto?"auto":""}" data-fw="${f.id}" title="${esc(f.note)}">${f.name}${auto?"<span class=\"auto-tag\">suggested</span>":""}</button>`;
+  }).join("");
+}
+function wireFwChips(){
+  document.querySelectorAll(".fw-chip").forEach(c => c.addEventListener("click", () => {
+    const id = c.dataset.fw;
+    const i = W.fw.indexOf(id);
+    if(i>=0) W.fw.splice(i,1); else W.fw.push(id);
+    c.classList.toggle("on"); saveW();
+  }));
+}
+
+/* --- segmented rating --- */
+function segHtml(name, labels, value){
+  return `<div class="seg" data-name="${name}">${labels.map((l,i) =>
+    `<button type="button" class="${i===value-1?"on":""}" data-v="${i+1}">${l}</button>`).join("")}</div>`;
+}
+function wireSegs(fn){
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+    const seg = b.closest(".seg"); const name = seg.dataset.name; const v = +b.dataset.v;
+    seg.querySelectorAll("button").forEach(x => x.classList.toggle("on", x===b));
+    fn(name, v); saveW();
+  }));
+}
+
+/* --- domain posture grid --- */
+function domState(r){ return r<=2?"low":(r===3?"mid":"high"); }
+function domLabel(r){ return ["","Embryonic","Developing","Maturing","Advanced","Optimized"][r]; }
+function domGrid(){
+  return DOMAINS.map(d => `
+    <div class="dom-card">
+      <div class="d-top"><div class="d-ic">${String(d.num).padStart(2,"0")}</div>
+        <div><div class="d-ttl">${d.title}</div>
+        <div class="d-st ${domState(W.posture[d.id])}" data-st="${d.id}">${domLabel(W.posture[d.id])}</div></div></div>
+      <div class="dom-score" data-score="${d.id}">${W.posture[d.id]}<small> /5</small></div>
+      ${segHtml("posture."+d.id, ["1","2","3","4","5"], W.posture[d.id])}
+    </div>`).join("");
+}
+
+/* -----------------------------------------------------------------
+   PAGE RENDERERS
+----------------------------------------------------------------- */
+let curStep = 0;
+function renderStep(){
+  renderStepper(curStep);
+  const card = $("#wizardCard");
+  switch(curStep){
+    case 0: card.innerHTML = step0Html(); wireStep0(); break;
+    case 1: card.innerHTML = step1Html(); wireStep1(); break;
+    case 2: card.innerHTML = step2Html(); wireStep2(); break;
+    case 3: card.innerHTML = step3Html(); wireStep3(); break;
+    case 4: card.innerHTML = step4Html(); wireStep4(); break;
+    case 5: card.innerHTML = step5Html(); wireStep5(); break;
+  }
+  saveW();
+}
+
+function stepFooter(prev,next,nextTxt){
+  return `<div class="wizard-actions">
+    ${prev!==null ? `<button class="btn btn-ghost" data-act="prev">&#8592; Back</button>` : `<span></span>`}
+    <button class="btn ${next ? "btn-primary" : "btn-good"}" data-act="${next?"next":"gen"}">${nextTxt||(next?"Continue &#8594;":"Generate policy &#9889;")}</button>
+  </div>`;
+}
+
+/* ---- Step 0 : Company ---- */
+function step0Html(){
+  return `<div class="w-card-head"><h2>Tell us about the organisation</h2><p>This shapes scope, tone and the regulators we flag for you.</p></div>
+  <div class="grid">
+    <div class="field" style="grid-column:1/-1"><label>Company / organisation name <b>*</b></label>
+      <input type="text" id="fCompany" placeholder="e.g. Northstar Financial Group" value="${esc(W.company)}"></div>
+    <div class="field"><label>Sector</label><select id="fSector">${SECTORS.map(s=>`<option ${s===W.sector?"selected":""}>${s}</option>`).join("")}</select></div>
+    <div class="field"><label>Head-office region</label><select id="fGeography">${GEOGRAPHIES.map(g=>`<option ${g===W.geography?"selected":""}>${g}</option>`).join("")}</select></div>
+    <div class="field"><label>Employee headcount</label><select id="fSize">
+      ${["1 - 49","50 - 249","250 - 999","1,000 - 9,999","10,000+"].map(s=>`<option ${s===W.numEmployees?"selected":""}>${s}</option>`).join("")}
+    </select></div>
+    <div class="field"><label>Ownership structure</label><select id="fOwnership">
+      ${["Privately held","Publicly listed","Government / public body","Partnership","Non-profit","Group of companies"].map(o=>`<option ${o===W.ownership?"selected":""}>${o}</option>`).join("")}
+    </select></div>
+    <div class="field"><label>Primary place of activity (HQ city / state)</label><input type="text" id="fHQ" placeholder="e.g. London, UK" value="${esc(W.hq)}"></div>
+    <div class="field"><label>Designated security contact / role</label>
+      <input type="text" id="fRole" placeholder="e.g. Information Security Manager" value="${esc(W.role)}"></div>
+    <div class="field"><label>Sponsor name (optional)</label><input type="text" id="fContact" placeholder="e.g. Alex Morgan" value="${esc(W.contactName)}"></div>
+  </div>
+  ${stepFooter(null,true)}`;
+}
+function wireStep0(){
+  $("#fCompany").addEventListener("input", e => { W.company = e.target.value; $("#status-chip").textContent = W.company ? "In progress — " + W.company : "Interview"; });
+  $("#fSector").addEventListener("change", e => W.sector = e.target.value);
+  $("#fGeography").addEventListener("change", e => W.geography = e.target.value);
+  $("#fSize").addEventListener("change", e => W.numEmployees = e.target.value);
+  $("#fOwnership").addEventListener("change", e => W.ownership = e.target.value);
+  $("#fHQ").addEventListener("input", e => W.hq = e.target.value);
+  $("#fRole").addEventListener("input", e => W.role = e.target.value);
+  $("#fContact").addEventListener("input", e => W.contactName = e.target.value);
+}
+
+/* ---- Step 1 : Compliance ---- */
+function suggestedFw(){
+  const set = new Set(["nist"]);
+  (SECTOR_FW[W.sector]||[]).forEach(x => set.add(x));
+  const g = GEO_FW[W.geography]||[]; g.forEach(x => set.add(x));
+  return [...set];
+}
+const PAY_SECTORS = ["Financial services","Retail / e-commerce"];
+function step1Html(){
+  const auto = suggestedFw();
+  const payVisible = PAY_SECTORS.includes(W.sector);
+  return `<div class="w-card-head"><h2>Compliance & regulatory intent</h2><p>Select the frameworks the policy must satisfy. Suggested ones are marked for you — add or remove freely.</p></div>
+  <div class="field" style="margin-bottom:16px"><label>Apply these frameworks / standards</label>
+    <div class="chip-grid">${fwChipsHtml(W.fw, auto)}</div></div>
+  <div class="grid">
+    ${payVisible ? `<div class="field"><label>Do you handle card payments?</label>
+      ${segHtml("payments",["No","Yes"], W.payments?2:1)}</div>` : ""}
+    <div class="field"><label>Do you collect EU/UK personal data?</label>
+      ${segHtml("dseu", ["No","Yes"], W.dataSubjectEU?2:1)}</div>
+    <div class="field"><label>Do you provide services via a live web platform / SaaS?</label>
+      ${segHtml("sdls", ["No","Yes"], W.sdls?2:1)}</div>
+  </div>
+  <p class="hint" style="margin-top:14px">Auto-detection: ${auto.map(a => FRAMEWORKS.find(f=>f.id===a).name).join(", ")}.</p>
+  ${stepFooter(true,true)}`;
+}
+function wireStep1(){
+  wireFwChips();
+  wireSegs((name,v) => { if(name==="payments") W.payments = v===2; if(name==="dseu") W.dataSubjectEU = v===2; if(name==="sdls") W.sdls = v===2; });
+}
+
+/* ---- Step 2 : Risk appetite ---- */
+function sliderRow(key,label,left,right){
+  return `<div class="field">
+    <div class="slider-head"><label>${label}</label><b id="${key}-val">${W[key]}%</b></div>
+    <input type="range" id="${key}" min="10" max="95" step="5" value="${W[key]}">
+    <div class="range-row"><span>${left}</span><span>${right}</span></div></div>`;
+}
+function step2Html(){
+  return `<div class="w-card-head"><h2>Risk appetite & policy ambition</h2><p>Thresholds of acceptable exposure — stated plainly for the board and used when tiering controls.</p></div>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+    ${sliderRow("riskC","Confidentiality — acceptable data-loss tolerance","Higher tolerance","Low tolerance")}
+    ${sliderRow("riskI","Integrity — acceptable tampering tolerance","Higher tolerance","Low tolerance")}
+    ${sliderRow("riskA","Availability — acceptable downtime tolerance","Higher tolerance","Low tolerance")}
+  </div>
+  <div class="field" style="margin-top:18px"><label>Target assurance level for policy (drives gap analysis)</label>
+    ${segHtml("target", ["1","2","3","4","5"], W.target)}</div>
+  <p class="hint" style="margin-top:12px">Target 4 ("advanced") is typical for enterprises with board-level cyber accountability; 5 for regulated critical-infrastructure firms.</p>
+  ${stepFooter(true,true)}`;
+}
+function wireStep2(){
+  ["riskC","riskI","riskA"].forEach(k => {
+    const r = $("#"+k);
+    const sync = () => { W[k] = +r.value; $("#"+k+"-val").textContent = r.value + "%"; };
+    r.addEventListener("input", () => { W[k]=+r.value; $("#"+k+"-val").textContent = r.value+"%"; });
+    $("#"+k+"-val").textContent = W[k]+"%";
+  });
+  wireSegs((name,v) => { if(name==="target") W.target = v; });
+}
+
+/* ---- Step 3 : Posture ---- */
+function step3Html(){
+  return `<div class="w-card-head"><h2>Current security posture per domain</h2><p>Honest 1–5 self-ratings. Gaps drive remediation clauses and the board risk picture.</p></div>
+  <div class="dom-grid">${domGrid()}</div>
+  ${stepFooter(true,true)}`;
+}
+function wireStep3(){
+  wireSegs((name,v) => {
+    if(name.startsWith("posture.")){
+      const id = name.split(".")[1]; W.posture[id] = v;
+      const card = document.querySelector(`.dom-card .d-st[data-st="${id}"]`).parentElement.parentElement;
+      card.querySelector(".d-st").className = "d-st " + domState(v);
+      card.querySelector(".d-st").textContent = domLabel(v);
+      card.querySelector(".dom-score").innerHTML = v + '<small> /5</small>';
+    }
+  });
+}
+
+/* ---- Step 4 : Capability ---- */
+function step4Html(){
+  return `<div class="w-card-head"><h2>Security capability & ownership</h2><p>What resources back this policy — transparency the board will expect.</p></div>
+  <div class="grid">
+    <div class="field"><label>Security team size</label><select id="fTeam">
+      ${["No dedicated security staff","1 - 3 dedicated staff","4 - 15 staff (with lead)","16+ staff / security function","MSSP-only coverage"].map(o=>`<option ${o===W.team?"selected":""}>${o}</option>`).join("")}
+    </select></div>
+    <div class="field"><label>Indicative security budget band</label><select id="fBudget">
+      ${["Not separately budgeted","Under 0.5% of revenue","0.5 - 1.5% of revenue","Over 1.5% of revenue"].map(o=>`<option ${o===W.budget?"selected":""}>${o}</option>`).join("")}
+    </select></div>
+    <div class="field"><label>Policy review cycle</label><select id="fReview">
+      ${["Quarterly","Semi-annually","Annually","Every 2 years"].map(o=>`<option ${o===W.reviewMonths?"selected":""}>${o}</option>`).join("")}
+    </select></div>
+    <div class="field"><label>Latest review date</label><input type="text" id="fDatePolicy" value="${esc(W.yearsPolicy)}" placeholder="e.g. 2026"></div>
+    <div class="field"><label>Cyber insurance in place?</label>${segHtml("insurance",["No","Yes"], W.insurance?2:1)}</div>
+    <div class="field"><label>MSSP / managed SOC retained?</label>${segHtml("mssp",["No","Yes"], W.mssp?2:1)}</div>
+    <div class="field" style="grid-column:1/-1"><label>CISO / accountable security leader</label><input type="text" id="fCiso" value="${esc(W.ciso)}" placeholder="e.g. Name, or 'Chief Information Security Officer'"></div>
+    <div class="field" style="grid-column:1/-1"><label>Optional board note / custom directive (appended to the executive summary)</label><textarea id="fCustom" placeholder="e.g. Budget approval for SIEM uplift requested this FY.">${esc(W.custom)}</textarea></div>
+  </div>
+  ${stepFooter(true,true)}`;
+}
+function wireStep4(){
+  $("#fTeam").addEventListener("change", e => W.team = e.target.value);
+  $("#fBudget").addEventListener("change", e => W.budget = e.target.value);
+  $("#fReview").addEventListener("change", e => W.reviewMonths = e.target.value);
+  $("#fDatePolicy").addEventListener("input", e => W.yearsPolicy = e.target.value);
+  $("#fCiso").addEventListener("input", e => W.ciso = e.target.value);
+  $("#fCustom").addEventListener("input", e => W.custom = e.target.value);
+  wireSegs((name,v) => { if(name==="insurance") W.insurance = v===2; if(name==="mssp") W.mssp = v===2; });
+}
+
+/* ---- Step 5 : Review & generate ---- */
+function generateBtnHtml(){ return `<button class="btn btn-good" data-act="gen">Generate board-ready policy &#9889;</button>`; }
+function step5Html(){
+  const fwNames = (W.fw.length ? W.fw : suggestedFw()).map(f => FRAMEWORKS.find(x=>x.id===f).name);
+  const rated = DOMAINS.filter(d => W.posture[d.id] >= W.target).length;
+  return `<div class="w-card-head"><h2>Ready to draft the policy</h2><p>Quick sanity-check before we generate the document.</p></div>
+  <div class="grid">
+    <div class="field"><label>Organisation</label><div class="hint" style="font-size:15px">${esc(W.company||"— not set —")} &middot; ${esc(W.sector||"—")} &middot; ${esc(W.numEmployees)} staff</div></div>
+    <div class="field"><label>Applies frameworks</label><div class="hint" style="font-size:14px">${fwNames.join(", ")}</div></div>
+    <div class="field"><label>Domains at/above target assurance (${W.target}/5)</label><div class="hint" style="font-size:14px">${rated} of ${DOMAINS.length} &middot; risk appetite set by the ${W.riskC}% / ${W.riskI}% / ${W.riskA}% confidentiality / integrity / availability thresholds</div></div>
+    <div class="field"><label>Executive owner</label><div class="hint" style="font-size:15px">${esc(W.ciso||W.role||"—")}${W.insurance?" &middot; cyber insurance in place":""}</div></div>
+  </div>
+  <div style="text-align:right">${generateBtnHtml()}</div>`;
+}
+function wireStep5(){
+  const g = document.querySelector('[data-act="gen"]');
+  if(g) g.addEventListener("click", () => buildAndShowReport());
+}
+
+/* navigation wiring (delegated) */
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]");
+  if(!b) return;
+  const act = b.dataset.act;
+  if(act==="prev" && curStep>0){ curStep--; renderStep(); }
+  if(act==="next" && curStep<STEPS.length-1){ curStep++; renderStep(); }
+  if(act==="gen") buildAndShowReport();
+});
+
+function goWizard(step){ curStep = step; show("view-wizard"); renderStep(); }
+
+/* -----------------------------------------------------------------
+   POLICY ENGINE
+----------------------------------------------------------------- */
+const POSTURE_TERMS = {1:"embryonic",2:"developing",3:"maturing",4:"advanced",5:"optimised"};
+function tierName(r){ return POSTURE_TERMS[r] || "maturing"; }
+
+function buildModel(){
+  const fw = (W.fw.length ? W.fw : suggestedFw());
+  const target = Math.max(1, Math.min(5, +W.target || 4));
+  const domains = DOMAINS.map(d => {
+    const rating = Math.max(1, Math.min(5, +W.posture[d.id] || 3));
+    const gap = rating < target;
+    const src = DOMAINS.find(x => x.id === d.id);
+    const gapText = gap ? src.gap(rating)[0] : null;
+    return { ...d, rating, gap, gapSize: target - rating, gapText };
+  });
+  const gaps = domains.filter(d => d.gap);
+  const aligned = domains.filter(d => !d.gap).length;
+  const avg = domains.reduce((s,d) => s + d.rating, 0) / domains.length;
+  const pct = avg/5*100;
+  const grade = pct>=88 ? "A" : pct>=76 ? "B" : pct>=62 ? "C" : pct>=48 ? "D" : "F";
+  const gradeColor = {A:"grade-A",B:"grade-B",C:"grade-C",D:"grade-D",F:"grade-F"}[grade];
+  const sorted = [...domains].sort((a,b) => b.gapSize - a.gapSize || a.rating - b.rating);
+  const top3 = sorted.slice(0,3).map(d => ({
+    domain: d.title,
+    text: d.gap ? `Posture rating ${d.rating}/5 vs target ${target}/5` : "Continual assurance contrast",
+    clue: d.gapText
+  }));
+  const heat = sorted.slice(0,8).map((d,i) => {
+    const likelihood = Math.max(1, Math.min(5, (i*2 + d.rating + 1) % 5 + 1));
+    const impact = Math.max(1, Math.min(5, target + (d.gap?1:0)));
+    return { domain: d.title, likelihood, impact, residual: (5 - d.rating) }
+  });
+  return { fw, target, domains, gaps, aligned, avg, pct, grade, gradeColor, top3, heat };
+}
+
+/* single bullet-list */
+function ul(items){ return `<ul class="c-list">${items.map(i=>`<li>${i}</li>`).join("")}</ul>`; }
+
+function rolesFor(d){
+  const base = d.id==="workforce" ? "Human Resources Director" : d.id==="supply" ? "Procurement / Vendor Management Lead" :
+              d.id==="data" ? "Data Protection Officer" : d.id==="appsec" ? "Head of Engineering" : "Security Operations Manager";
+  return `${base}; Information Security Officer; line managers accountable within their remit.`;
+}
+
+function domainChapter(d, model){
+  const rating = d.rating;
+  const ctrl = (arr) => arr.filter(Boolean);
+  const from = d.from || {};
+  const enhanced = [];
+  for(let k in from){ if(rating >= +k) enhanced.push(...from[k]); }
+  const gapClauses = d.gapText ? [d.gapText] : [];
+  const lead = d.always[0].replace(/\.$/,".");
+  return {
+    id: d.id, num: d.num, title: d.title,
+    accord: alignedSentences(d, model),
+    policy: ul(ctrl([...d.always, ...enhanced].map(z => z && z.replace(/\.$/,".")+". This chapter requires the domain lead to confirm resourcing."))),
+    roles: rolesFor(d),
+    gap: gapClauses.length ? ul(gapClauses) : ""
+  };
+}
+function alignedSentences(d, model){
+  const r = d.rating;
+  const parts = [];
+  parts.push(`The organisation ("${d.title}") operates at a ${tierName(r)} maturity in the organisation's current environment.`);
+  parts.push(`The ${model.target}/5 target assurance for this domain is ${r>=model.target ? "met or exceeded" : "not yet met"}${r>=model.target ? "." : "; proportionate remediation is mandated below."}`);
+  return parts.join(" ");
+}
+
+function frameworkSections(model){
+  return model.fw.map(f => {
+    const F = FRAMEWORKS.find(x => x.id === f);
+    return `<tr><td><b>${F.name}</b></td><td>${F.note}</td><td>Alignment committee: Information Security Officer with ${W.ciso||W.role||"the accountable leader"}.</td><td>Policy, Evidence & Control Register</td></tr>`;
+  }).join("");
+}
+
+function roadmapItems(model){
+  const g = model.domains.filter(d=>d.gap);
+  const row = (t, arr) => `<tr><td><b>${t}</b></td><td>${ul(arr)}</td></tr>`;
+  let rows = "";
+  if(g.length){
+    rows += row("0 - 30 days", g.slice(0,3).map(d => `Stand up an owner and baseline for ${d.title.toLowerCase()} (current ${d.rating}/5).`));
+    rows += g.length>3 ? row("31 - 90 days", g.slice(3,6).map(d => `Implement foundational controls for ${d.title.toLowerCase()} and evidence the quarterly review.`)) : "";
+    rows += g.length>6 ? row("91 - 180 days", g.slice(6,9).map(d => `Close remaining control gaps for ${d.title.toLowerCase()}; rehearse incident and recovery plans by drill.`)) : "";
+  } else {
+    rows += row("0 - 180 days", ["Maintain current assurance levels; schedule independent testing and re-certification."]);
+  }
+  rows += row("181 - 365 days", [`Complete annual penetration and audit testing across all domains; prepare the ${new Date().getFullYear()+1} assurance cycle and board update.`]);
+  rows += row("360+ days", ["Institutionalise continuous monitoring, re-certify framework mappings and refresh this policy at the documented review cadence."]);
+  return rows;
+}
+
+function kpiRows(model){
+  return model.domains.map(d => `<tr><td>${d.title}</td><td>${d.kpis[0]||"—"}</td><td>${d.kpis[1]||"—"}</td><td>${d.kpis[2]||"—"}</td></tr>`).join("");
+}
+
+function riskChaptersHtml(model){
+  return model.domains.map(d => {
+    const ch = domainChapter(d, model);
+    return `
+    <div class="page-break"></div>
+    <h2 class="sec-anchor" id="sec-${ch.num}">${ch.num}. ${ch.title}</h2>
+    <p class="lead">${ch.accord}</p>
+    <h3>${ch.num}.1 Policy statement</h3>
+    ${ch.policy}
+    <h3>${ch.num}.2 Roles & responsibilities</h3>
+    <p>Accountable owner: ${ch.roles}</p>
+    ${ch.gap ? `<h3 class="remediate">${ch.num}.3 Prioritised remediation (gap closure to target ${model.target}/5)</h3>${ch.gap}` : ""}
+    <h3>${ch.num}.${ch.gap?4:3} Example KPIs for the board</h3>
+    <p>${d.kpis.join("; ")}.</p>`;
+  }).join("");
+}
+
+/* -----------------------------------------------------------------
+   DOCUMENT BUILDER  (used in-app + for export)
+----------------------------------------------------------------- */
+function metaTable(){
+  return `<table class="mt">
+    <tr><td>Document</td><td>Enterprise Cybersecurity Policy</td></tr>
+    <tr><td>Version</td><td>1.0 (Approved for circulation)</td></tr>
+    <tr><td>Date</td><td>${new Date().toISOString().slice(0,10)}</td></tr>
+    <tr><td>Owner</td><td>${esc(W.ciso||W.role||"Information Security")}</td></tr>
+    <tr><td>Organisation</td><td>${esc(W.company||"—")}</td></tr>
+    <tr><td>Sector / Scope</td><td>${esc(W.sector||"—")} &middot; ${esc(W.numEmployees)} employees &middot; HQ ${esc(W.geography||"—")}</td></tr>
+    <tr><td>Classification</td><td>Internal — Board Confidentially</td></tr>
+  </table>`;
+}
+function path(){ return `Policy &gt; Governance &gt; Security &gt; Organisation`; }
+
+function docBody(model){
+  const org = esc(W.company || "the Organisation");
+  const chap = (n,t) => `<h2 class="sec-anchor" id="sec-${n}">${n}. ${t}</h2>`;
+  const bp = (html) => `<p>${html}</p>`;
+  const gradeChit = `<span class="grade-badge ${model.gradeColor}">Overall posture grade: ${model.grade}</span>`;
+  const heatRows = model.heat.map(h =>
+    `<tr><td>${esc(h.domain)}</td><td class="heat-l${h.likelihood}">${h.likelihood}</td><td class="heat-i${h.impact}">${h.impact}</td>
+     <td class="heat-r${Math.max(1,Math.min(9, h.residual + h.impact))}">${Math.round(h.residual*20)}%</td></tr>`).join("");
+  const top3 = model.top3.map(t => `<li><b>${esc(t.domain)}</b> — ${esc(t.text)}${t.clue ? " (" + esc(t.clue) + ")" : ""}</li>`).join("");
+  const alignedList = model.domains.filter(d=>!d.gap).map(d=>d.title).join("; ");
+  const headers = `${esc(W.company||"the Organisation")} policies a "${tierName(model.target)}" (${model.target}/5) assurance level.`;
+
+  return `
+  <!-- COVER -->
+  <div class="page-break"><div class="cover">
+    <div class="cover-top">${path()}</div>
+    <h1 class="cover-title">Enterprise Cybersecurity<br>Policy</h1>
+    <div class="cover-org">${org}</div>
+    <div class="cover-sub">${esc(W.sector||"")} &middot; ${esc(W.numEmployees)} employees &middot; ${esc(W.geography||"")}</div>
+    <div class="cover-meta">
+      <div>Version <b>1.0</b></div><div>Date ${new Date().toISOString().slice(0,10)}</div>
+      <div>Status <b class="chip-ink">Approved</b></div><div>Owner ${esc(W.ciso||W.role||"—")}</div>
+    </div>
+    ${gradeChit}<br>
+    <div class="cover-foot">Prepared by PolicyForge &middot; ${esc(W.contactName||W.ciso||"Security")} &middot; Confidential</div>
+  </div></div>
+
+  <!-- DOCUMENT CONTROL -->
+  <div class="page-break">
+  <h1 class="h1-lg">Document Control</h1>
+  ${metaTable()}
+  <h3>Version history</h3>
+  <table>
+    <tr><th>Version</th><th>Date</th><th>Status</th><th>Change description</th></tr>
+    <tr><td>0.9</td><td>Draft</td><td>In review</td><td>Initial chapters for legal and security officer review.</td></tr>
+    <tr><td>1.0</td><td>${new Date().toISOString().slice(0,10)}</td><td>Approved</td><td>Incorporated board feedback; approved for circulation.</td></tr>
+  </table>
+  <h3>Table of Contents</h3>
+  <div class="toc">
+    <a href="#sec-1">1. Executive Summary</a>
+    <a href="#sec-2">2. Scope, Applicability &amp; Policy Framework</a>
+    <a href="#sec-3">3. Governance, Roles &amp; Accountability</a>
+    <a href="#sec-4">4. Policy Principles &amp; Board Risk Appetite</a>
+    <a href="#sec-5">5. Residual Risk Assessment &amp; Gap Analysis</a>
+    ${model.domains.map(d=>`<a href="#sec-${5+d.num}">${5+d.num}. ${d.title}</a>`).join("")}
+    <a href="#sec-18">18. Compliance &amp; Regulatory Mapping</a>
+    <a href="#sec-19">19. Implementation Roadmap</a>
+    <a href="#sec-20">20. Monitoring, Audit &amp; Board KPIs</a>
+    <a href="#sec-21">21. Review, Maintenance &amp; Approval</a>
+  </div>
+  </div>
+
+  <!-- 1 EXEC SUMMARY -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-1">1. Executive Summary</h1>
+  ${bp(`This policy sets the security operating framework for <b>${org}</b>, covering ${esc(W.numEmployees)} employees across ${esc(W.geography||"its operating footprint")}. It is written for the board: plain English commitments, measurable outcomes and the controls behind them.`)}
+  ${bp(`The organisation maintains <b>${model.aligned} of ${model.domains.length}</b> security domains at or above the target assurance level of "${tierName(model.target)}" (${model.target}/5). ${gradeChit}`)}
+  ${bp(`Compliance intent is mapped to: <b>${model.fw.map(f=>FRAMEWORKS.find(x=>x.id===f).name).join("; ")}</b>. Where gaps remain, remediation owners, timelines and evidence expectations are set out in Section 19.`)}
+  ${bp(`Board call-to-action: (1) ratify this policy and its delegation of authority; (2) approve the prioritised remediation plan; (3) receive security posture reporting at the ${esc(W.reviewMonths||"regular")} review cycle defined in Section 21.`)}
+  ${W.custom ? bp(`<b>Board directive (included for the record):</b> ${esc(W.custom)}`) : ""}
+  <h3>- Governance commitments at a glance</h3>
+  ${ul(model.domains.map(d=>`${d.title}: policy controls + KPIs in Sections ${5+d.num}, assurance ${d.rating}/5, owner ${esc(W.ciso||W.role||"Accountable leader")}.`))}
+  </div>
+
+  <!-- 2 SCOPE -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-2">2. Scope, Applicability &amp; Policy Framework</h1>
+  ${bp(`This policy applies to all personnel, contractors, partners and approved third parties of <b>${org}</b> across every office, remote location and cloud/hosted environment, and to all information systems, data and physical assets they use.`)}
+  ${bp(`Secondary policies referenced: Acceptable Use; Access Management; Data Protection &amp; Records Retention; Incident Response; Business Continuity &amp; Disaster Recovery; Third-Party Risk Management; Cloud Security. Each domain chapter (Sections 6–17) is a controlled annex of this policy.`)}
+  ${bp(`${headers} Supporting standards used: ${model.fw.map(f=>FRAMEWORKS.find(x=>x.id===f).name).join(", ")}.`)}
+  </div>
+
+  <!-- 3 GOVERNANCE -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-3">3. Governance, Roles &amp; Accountability</h1>
+  ${bp(`The board retains ultimate accountability for cyber risk and delegates operational authority as follows.`)}
+  <table>
+    <tr><th>Role</th><th>Accountability</th></tr>
+    <tr><td><b>Board of Directors / Audit Committee</b></td><td>Ratification of policy, risk appetite, material breach notification and annual posture review.</td></tr>
+    <tr><td><b>Accountable leader (${esc(W.ciso||W.role||"CISO")})</b></td><td>Day-to-day ownership of this policy, resourcing the security function and reporting posture at each board cycle.</td></tr>
+    <tr><td><b>Security function (${esc(W.team||"as configured")})</b></td><td>Control operation, monitoring, incident response and gap-closure delivery within the timescales in Section 19.</td></tr>
+    <tr><td><b>Executives &amp; line managers</b></td><td>Enforcement within their remit: access hygiene, staff awareness and escalation discipline.</td></tr>
+    <tr><td><b>All personnel</b></td><td>Compliance with the policy; duty to report incidents and suspected non-compliance without fear of reprisal.</td></tr>
+  </table>
+  ${W.mssp ? bp(`A managed security service provider augments the function for 24/7 monitoring and response (see Sections 10 and 15).`) : ""}
+  </div>
+
+  <!-- 4 PRINCIPLES -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-4">4. Policy Principles &amp; Board Risk Appetite</h1>
+  ${bp(`Security is managed to a defined risk appetite approved by the board. The practical thresholds applied:`)}
+  <table>
+    <tr><th>Dimension</th><th>Stated appetite</th></tr>
+    <tr><td><b>Confidentiality</b></td><td>Tolerance for data-loss exposure: ${W.riskC}% of the acceptable level (lower = stricter).</td></tr>
+    <tr><td><b>Integrity</b></td><td>Tolerance for tampering/unreliable data: ${W.riskI}% (lower = stricter).</td></tr>
+    <tr><td><b>Availability</b></td><td>Tolerance for downtime: ${W.riskA}% (lower = stricter).</td></tr>
+    <tr><td><b>Assurance target</b></td><td>${tierName(model.target)} (${model.target}/5) across all domains until explicit change control.</td></tr>
+  </table>
+  ${bp(`Design principles applied throughout: risk-based (controls follow exposure, not fashion), layered (defence in depth), accountable (one named owner per control), measurable (KPIs in Sections 17–20), and proportionate (fit for a ${esc(W.numEmployees)}-employee ${esc(W.sector||"")} enterprise).`)}
+  </div>
+
+  <!-- 5 RISK -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-5">5. Residual Risk Assessment &amp; Gap Analysis</h1>
+  ${bp(`Residual risk is expressed as the distance between current posture and the target assurance level, rated against impact and likelihood on a 1–5 scale. The board heat map below is drawn from the ${new Date().getFullYear()} posture assessment.`)}
+  <table>
+    <tr><th>Domain</th><th>Likelihood (1–5)</th><th>Impact (1–5)</th><th>Residual risk (relative)</th></tr>
+    ${heatRows}
+  </table>
+  <h3>- Top priority risks for the board</h3>
+  ${ul(model.top3.map(t=>t.domain + " — " + t.text))}
+  <h3>- Domains at or above target</h3>
+  ${alignedList ? bp(alignedList + ".") : bp("None yet at target; the remediation plan in Section 19 is the board action point.")}
+  </div>
+
+  <!-- DOMAIN CHAPTERS -->
+  ${riskChaptersHtml(model)}
+
+  <!-- 18 COMPLIANCE -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-18">18. Compliance &amp; Regulatory Mapping</h1>
+  ${bp(`The board-level commitment to regulation is tactical, not decorative: each framework below has an owner, evidence source and review cycle, all traceable through the control register.`)}
+  <table>
+    <tr><th>Framework</th><th>Board-relevant rationale</th><th>Owner</th><th>Evidence source</th></tr>
+    ${frameworkSections(model)}
+  </table>
+  ${ul(["Breach notification obligations are owned by the accountable leader and rehearsed in the incident playbook (Section 15).",
+        "Data subject rights under EU/UK legal bases are vested in the Privacy/DPO function (Section 7)." + (W.dataSubjectEU?"":" (currently marked out of scope)."),
+        "Internal audit reviews regulatory evidence sets annually before board attestation."])}
+  </div>
+
+  <!-- 19 ROADMAP -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-19">19. Implementation Roadmap</h1>
+  ${bp(`Gap closure is sequenced from quick-wins to institutionalisation. Owners have escalation rights if milestones slip; the board reviews progress at each ${esc(W.reviewMonths||"regular")} cycle.`)}
+  <table>
+    <tr><th>Horizon</th><th>Commitment</th></tr>
+    ${roadmapItems(model)}
+  </table>
+  <p class="note">Milestone dates are baselined at the first review meeting. No milestone may be deferred without written board-notification.</p>
+  </div>
+
+  <!-- 20 KPI -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-20">20. Monitoring, Audit &amp; Board KPIs</h1>
+  ${bp(`The board receives exception-based reporting on the following indicators. Green = on track against target; amber = 60 days remediation plan; red = immediate escalation.`)}
+  <table>
+    <tr><th>Domain</th><th>Indicator 1</th><th>Indicator 2</th><th>Indicator 3</th></tr>
+    ${kpiRows(model)}
+  </table>
+  ${bp(`Annual independent testing (penetration and audit) validates the indicators. Detection effectiveness is independently assessed via table-top and red-team activities where risk appetite demands.`)}
+  </div>
+
+  <!-- 21 APPROVAL -->
+  <div class="page-break">
+  <h1 class="sec-anchor" id="sec-21">21. Review, Maintenance &amp; Approval</h1>
+  ${bp(`This policy is reviewed at the documented cadence (${esc(W.reviewMonths||"specified" )}) and on: material incident, material business change, regulatory change, or change of accountable leader. Version control is maintained per the Document Control above.`)}
+  <h3>Approval block</h3>
+  <table class="sign">
+    <tr><th>Role</th><th>Name</th><th>Signature</th><th>Date</th></tr>
+    <tr><td>Chief Executive / Chair</td><td></td><td></td><td></td></tr>
+    <tr><td>Accountable security leader</td><td>${esc(W.ciso||"")}</td><td></td><td></td></tr>
+    <tr><td>Chair, Audit &amp; Risk Committee</td><td></td><td></td><td></td></tr>
+  </table>
+  ${bp(`Approved by the board on the date of first signature. Circulation of this document outside the organisation is governed by the confidentiality notice below.`)}
+  <p class="legal">Confidentiality: this policy contains commercially sensitive information. It is intended solely for the addressees; no external disclosure without the accountable leader's written consent.</p>
+  </div>
+  `;
+}
+
+/* -----------------------------------------------------------------
+   RENDER + EXPORT
+----------------------------------------------------------------- */
+const REPORT_CSS = `
+  .report-sheet-pad{font-size:15px;line-height:1.6}
+  .cover{text-align:center;padding:40px 0 20px}
+  .cover-top{font-size:12px;letter-spacing:2px;color:#64748b;margin-bottom:60px;text-transform:uppercase}
+  .cover-title{font-size:38px;line-height:1.15;color:#0f172a;margin-bottom:18px}
+  .cover-org{font-size:20px;font-weight:600;color:#1d4ed8}
+  .cover-sub{color:#475569;margin:8px 0 30px;font-size:14px}
+  .cover-meta{display:inline-block;text-align:left;border:1px solid #cbd5e1;border-radius:8px;padding:14px 22px}
+  .cover-meta div{font-size:13px;color:#475569;padding:2px 0}
+  .cover-meta b{color:#0f172a}
+  .cover-foot{color:#94a3b8;font-size:12px;margin-top:70px}
+  .grade-badge,.chip-ink{display:inline-block;font-size:13px;font-weight:800;padding:5px 12px;border-radius:999px}
+  .grade-A{background:#dcfce7;color:#15803d}.grade-B{background:#d1fae5;color:#047857}
+  .grade-C{background:#fef3c7;color:#b45309}.grade-D{background:#ffedd5;color:#c2410c}.grade-F{background:#fee2e2;color:#b91c1c}
+  .h1-lg{font-size:26px;color:#0f172a;border-bottom:2px solid #1d4ed8;padding-bottom:8px;margin-bottom:20px}
+  h2.sec-anchor{font-size:21px;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:7px;margin:0 0 12px}
+  h1.sec-anchor{font-size:24px;color:#0f172a;border-bottom:2px solid #1d4ed8;padding-bottom:8px;margin-bottom:18px}
+  h3{font-size:15px;color:#1d4ed8;margin:18px 0 8px}
+  p{margin:10px 0}
+  .lead{color:#334155;font-size:15px}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{border:1px solid #cbd5e1;padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f1f5f9;color:#0f172a}
+  ul.c-list{padding-left:18px;margin:8px 0}
+  ul.c-list li{margin:5px 0}
+  .toc a{display:block;padding:6px 10px;color:#1e40af;text-decoration:none;border-bottom:1px solid #eef2f7}
+  .toc a:hover{background:#eff6ff}
+  .mt td:first-child{font-weight:700;width:230px;background:#f8fafc}
+  .remediate{background:#fef2c0;padding:8px 12px;border-radius:6px;color:#7c3f12}
+  .note{background:#eff6ff;border-left:3px solid #1d4ed8;padding:10px 12px;font-size:14px}
+  .legal{font-size:12.5px;color:#64748b;margin-top:26px;border-top:1px solid #cbd5e1;padding-top:12px}
+  .sign td{height:38px}
+  .heat-l1,.heat-l2{}.heat-l4,.heat-l5{background:#fef2f2;color:#b91c1c;font-weight:700}
+  .heat-i4,.heat-i5{background:#fef2f2;color:#b91c1c;font-weight:700}
+  .heat-r9,.heat-r8{background:#fecaca;color:#991b1b;font-weight:700}
+  .heat-r7,.heat-r6{background:#ffedd5;color:#c2410c;font-weight:700}
+  .page-break{page-break-after:always;break-after:page}
+  @media print{ .page-break{page-break-after:always} }
+`;
+
+function buildAndShowReport(){
+  const model = buildModel();
+  const html = `<div class="report-sheet-pad"><style>${REPORT_CSS}</style>${docBody(model)}</div>`;
+  $("#report-sheet").innerHTML = html;
+  $("#status-chip").textContent = "Policy ready — " + (W.company||"draft");
+  show("view-report");
+  saveW();
+}
+
+function downloadStandalone(){
+  const model = buildModel();
+  const org = (W.company||"Organisation").replace(/[^\w\- ]/g,"").replace(/\s+/g,"_");
+  const date = new Date().toISOString().slice(0,10);
+  const name = `CyberSecurity_Policy_${org}_${date}.html`;
+  const desktopCSS = REPORT_CSS + `
+    @page{size:A4;margin:16mm 15mm}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:#fff;color:#1c2536;font-family:Georgia,'Times New Roman',serif}
+    .report-sheet-pad{max-width:880px;margin:0 auto;padding:40px 36px 60px}
+    .toc a{transition:.15s}
+  `;
+  const standalone = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Enterprise Cybersecurity Policy — ${esc(W.company||"the Organisation")}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><style>${desktopCSS}</style></head>
+<body><div class="report-sheet-pad">${docBody(model)}</div></body></html>`;
+  const blob = new Blob([standalone], {type:"text/html;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* -----------------------------------------------------------------
+   GLOBAL EVENTS
+----------------------------------------------------------------- */
+$("#startBtn").addEventListener("click", () => goWizard(0));
+$("#backBtn").addEventListener("click", () => goWizard(0));
+$("#resetBtn").addEventListener("click", () => { if(confirm("Discard current interview and start fresh?")){ localStorage.removeItem(KEY); location.reload(); } });
+$("#printBtn").addEventListener("click", () => window.print());
+$("#downloadBtn").addEventListener("click", downloadStandalone);
+
+$("#sampleBtn").addEventListener("click", () => {
+  Object.assign(W, {
+    company:"Northstar Financial Group", sector:"Financial services", geography:"European Union / UK",
+    ownership:"Privately held", hq:"London, UK", numEmployees:"1,000 - 9,999", role:"Information Security Manager",
+    contactName:"A. Morgan", ciso:"I. Telford — Group CISO", team:"4 - 15 staff (with lead)", budget:"0.5 - 1.5% of revenue",
+    insurance:true, mssp:true, reviewMonths:"Semi-annually", yearsPolicy:"2026",
+    riskC:45, riskI:60, riskA:55, target:4,
+    fw:["nist","iso","soc2","gdpr","pci"],
+    posture:{ access:4, data:4, device:3, network:3, appsec:3, cloud:3, supply:2, incident:3, bc:4, monitor:3, assets:3, workforce:4 },
+    custom:"Board to consider earmarking budget for SIEM uplift and annual independent penetration testing this FY."
+  });
+  goWizard(0);
+});
+
+loadW();
+renderStepper(0);
+</script>
+</body>
+</html>

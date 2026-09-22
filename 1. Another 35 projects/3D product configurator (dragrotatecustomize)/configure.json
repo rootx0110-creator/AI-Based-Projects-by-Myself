@@ -1,0 +1,30 @@
+{
+  "app": {
+    "name": "ORBIT 3D Product Configurator",
+    "entry": "src/launch.js",
+    "serverPortRange": [8642, 8652],
+    "windowSize": [1280, 860]
+  },
+  "branding": {
+    "product": "ORBIT 3D Product Configurator",
+    "company": "ORBIT Labs",
+    "version": "1.0.0"
+  },
+  "packaging": {
+    "engine": "csc-self-extracting",
+    "installerOutput": "3D-Product-Configurator.exe",
+    "steps": [
+      "1. build.js bundles the web app (src/) with the portable Node runtime into dist/payload/",
+      "2. payload is zipped and compiled launcher (C# via .NET csc.exe) gets the zip appended with a 32-byte ORBIT1 trailer",
+      "3. Running the .exe self-extracts to %LOCALAPPDATA%\\Orbit3D\\app, starts node with heartbeat lifecycle, opens the app window"
+    ],
+    "silentInstall": true,
+    "extractionDir": "%LOCALAPPDATA%\\Orbit3D\\app"
+  },
+  "features": {
+    "controls": ["drag-rotate", "scroll-zoom", "right-drag-pan", "click-to-select-part", "auto-rotate", "fullscreen"],
+    "customization": ["12 finishes", "per-part coloring", "cushion toggle", "armrest toggle", "metal legs", "engraving"],
+    "export": ["html-report-download", "png-snapshot", "config-json-copy"],
+    "persistence": "localStorage"
+  }
+}

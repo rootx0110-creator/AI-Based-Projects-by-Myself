@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Admin — {{ ctf_name }}{% endblock %}
+{% block content %}
+<div class="wrap" id="admin-root">
+  <div class="flex" style="margin-bottom:1.2rem">
+    <h1 style="font-size:1.3rem;letter-spacing:.12em;color:#fff">▸ ADMIN CONSOLE</h1>
+    <a class="btn small pink right" href="{{ url_for('ctf.report_download') }}">⬇ HTML Report</a>
+  </div>
+
+  <section class="grid cols-2">
+    <div class="panel glow">
+      <h2 id="form-title">{{ 'Edit challenge' }}</h2>
+      <form id="ch-form">
+        <label>Title</label>
+        <input type="text" id="f-title" required>
+        <label>Category</label>
+        <input type="text" id="f-cat" value="misc" placeholder="web / crypto / pwn / forensics / misc">
+        <label>Points</label>
+        <input type="number" id="f-pts" value="100" min="25">
+        <div class="flex mt">
+          <label style="display:flex;align-items:center;gap:.4rem;margin:0"><input type="checkbox" id="f-dyn" style="width:auto"> ⚡ dynamic scoring</label>
+          <label style="display:flex;align-items:center;gap:.4rem;margin:0"><input type="checkbox" id="f-hidden" style="width:auto"> 🚫 hidden</label>
+        </div>
+        <label>Flag</label>
+        <input type="text" id="f-flag" required placeholder="flag{...}">
+        <label>Hint (optional)</label>
+        <input type="text" id="f-hint" placeholder="shown after unlock (future)">
+        <label>Description</label>
+        <textarea id="f-desc" rows="5" placeholder="Describe the mission..."></textarea>
+        <div class="mt flex">
+          <button class="btn primary" type="submit">💾 Save challenge</button>
+          <button class="btn ghost" type="button" id="f-reset">New</button>
+        </div>
+      </form>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h2>Platform settings</h2>
+        <form id="cfg-form">
+          <label>CTF name</label>
+          <input type="text" id="cfg-name">
+          <div class="flex mt">
+            <label style="display:flex;align-items:center;gap:.4rem;margin:0"><input type="checkbox" id="cfg-reg" style="width:auto"> registration open</label>
+            <label style="display:flex;align-items:center;gap:.4rem;margin:0"><input type="checkbox" id="cfg-comp" style="width:auto"> competition open</label>
+          </div>
+          <div class="mt"><button class="btn primary" type="submit">💾 Save settings</button></div>
+        </form>
+      </div>
+      <div class="panel mt">
+        <h2>Operatives</h2>
+        <table id="user-list">
+          <thead><tr><th>ID</th><th>Username</th><th>Role</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel mt">
+    <h2>Challenges</h2>
+    <table id="ch-list-wrap">
+      <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Points</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="ch-list"></tbody>
+    </table>
+  </section>
+</div>
+
+<script>
+  // populate user table from overview endpoint (small inline helper)
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const data = await (await fetch("/admin/api/overview")).json();
+      const tb = document.querySelector("#user-list tbody");
+      tb.innerHTML = data.users.map(u =>
+        `<tr><td>${u.id}</td><td>${u.username}</td><td>${u.admin ? "👑 admin" : "operative"}</td></tr>`).join("");
+    } catch (_) {}
+    const reset = document.getElementById("f-reset");
+    if (reset) reset.addEventListener("click", () => {
+      const f = document.getElementById("ch-form");
+      f.reset(); f.dataset.id = "";
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IRT // SIM — Immersive Incident Response Trainer</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<canvas id="game"></canvas>
+<div id="fx"></div>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div class="hud-top">
+    <div class="panel objpanel" id="objpanel">
+      <div class="panel-title">MISSION RUNBOOK <span class="okchip" id="chipCount">0/9</span></div>
+      <div id="objActive" class="obj-active">—</div>
+      <div id="objVerb" class="obj-verb"></div>
+      <div id="objNext" class="obj-next">Locked objectives unlock in order.</div>
+    </div>
+
+    <div class="hud-top-right">
+      <div class="panel smallpanel">
+        <div class="panel-title">ELAPSED</div>
+        <div id="clockDisplay" class="clock">00:00</div>
+        <div class="subline" id="alarmLine">alarm: —</div>
+      </div>
+      <div class="panel smallpanel">
+        <div class="panel-title">LIVE SCORE</div>
+        <div id="scoreLive" class="clock glow-good">—</div>
+      </div>
+      <canvas id="minimap" width="200" height="200"></canvas>
+    </div>
+  </div>
+
+  <div id="toastZone"></div>
+
+  <div class="hud-bottom">
+    <div class="panel statuspanel">
+      <div class="pipLabel">RESPONDER</div>
+      <div id="healthbar" class="bar"><span id="healthfill"></span></div>
+      <div id="healthline">100 HP · NO PPE</div>
+      <div class="badges">
+        <span class="badge" id="bFire">🔥 FIRE ACTIVE</span>
+        <span class="badge" id="bSmoke" class="off">💨 SMOKE</span>
+        <span class="badge" id="bPpe" class="off">🧤 PPE ON</span>
+        <span class="badge" id="bPower" class="off">⚡ POWERED</span>
+      </div>
+    </div>
+    <div id="prompt" class="prompt hidden">
+      <kbd>E</kbd> <span id="promptText">Interact</span>
+    </div>
+  </div>
+
+  <div class="clockvignette">
+    <div class="cv-top">IRT<span class="cv-s">//</span>SIM</div>
+    <div class="cv-bot">INCIDENT RESPONSE TRAINING · DATA-CENTER FIRE · v1.0</div>
+  </div>
+</div>
+
+<!-- ============ MENU / COVER ============ -->
+<div id="screen-menu">
+  <div class="menu-bg"></div>
+  <div class="menu-inner">
+    <div class="kicker">IMMERSIVE TRAINING ENVIRONMENT</div>
+    <h1 class="glitch" data-text="INCIDENT">INCIDENT</h1>
+    <h1 class="glitch accent" data-text="RESPONDER">RESPONDER</h1>
+    <div class="subtitle">3D WALKTHROUGH · DATA-CENTER FIRE · ZONE 03</div>
+
+    <div class="menucards">
+      <div class="mcard" id="mBestScore"><div class="mval">—</div><div class="mlab">PERSONAL BEST</div></div>
+      <div class="mcard" id="mRuns"><div class="mval">—</div><div class="mlab">SESSIONS</div></div>
+      <div class="mcard" id="mSeal"><div class="mval">—</div><div class="mlab">SEAL RANK</div></div>
+    </div>
+
+    <div class="menu-actions">
+      <button id="btnStart" class="primary big">▶ &nbsp;START TRAINING</button>
+      <button id="btnHow" class="ghost">HOW TO PLAY</button>
+      <button id="btnProfile" class="ghost">PROFILE &amp; LOG</button>
+    </div>
+    <div class="menu-foot">Runs 100% offline · reports stay on this machine · v1.0</div>
+  </div>
+</div>
+
+<!-- ============ BRIEFING ============ -->
+<div id="screen-brief" class="screen hidden">
+  <div class="brief-inner">
+    <div class="kicker">OPERATION BRIEF</div>
+    <div class="brief-title">DATA-CENTER FIRE — ZONE 03 UPS-EAST</div>
+    <div class="brief-grid">
+      <div class="brief-item"><b>LOCATION</b> Facility 7B · Server Block 4, UPS-EAST bay</div>
+      <div class="brief-item"><b>INCIDENT</b> Electrical fire on energized UPS rack — smoke reported</div>
+      <div class="brief-item"><b>ROLE</b> First responder on duty · act solo until crew arrives</div>
+      <div class="brief-item"><b>GOAL</b> Contain within the runbook, protect life &amp; preserve equipment</div>
+    </div>
+    <div class="brief-runbook">
+      <div class="brief-rtitle">EXPECTED SEQUENCE</div>
+      <div id="briefList"></div>
+    </div>
+    <button id="btnBriefStart" class="primary big">I UNDERSTAND — GO LIVE <span id="countdown">…</span></button>
+    <div class="menu-foot">E = interact · WASD = move · mouse = look</div>
+  </div>
+</div>
+
+<!-- ============ DECISION MODAL ============ -->
+<div id="screen-decision" class="screen hidden">
+  <div class="decision-inner">
+    <div class="dec-kicker" id="decTag">DECISION POINT</div>
+    <div class="dec-title" id="decTitle">MAKE A CALL</div>
+    <p class="dec-body" id="decBody"></p>
+    <div id="decOptions" class="dec-options"></div>
+  </div>
+</div>
+
+<!-- ============ REPORT ============ -->
+<div id="screen-report" class="screen hidden">
+  <div class="report-inner">
+    <div class="kicker">AFTER-ACTION REPORT</div>
+    <div class="report-title" id="repOutcome">INCIDENT CONTAINED</div>
+    <div class="report-meta">
+      <span id="repRunId">RUN-0000</span> ·
+      <span id="repTime">0s</span> ·
+      <span id="repGrade">GRADE A</span>
+    </div>
+
+    <div class="report-scores">
+      <canvas id="radar" width="300" height="300"></canvas>
+      <div class="report-stats">
+        <div class="bigscore"><span id="repScore">0</span><small>/100</small></div>
+        <div class="statline"><span>SAFETY</span><b id="sSafety">0</b></div>
+        <div class="statline"><span>SPEED</span><b id="sSpeed">0</b></div>
+        <div class="statline"><span>ACCURACY</span><b id="sAccuracy">0</b></div>
+        <div class="statline"><span>COVERAGE</span><b id="sCoverage">0</b></div>
+        <div class="statline"><span>CHECKLIST</span><b id="sChecklist">0/9</b></div>
+        <div class="statline"><span>DECISIONS</span><b id="sDecisions">0/0</b></div>
+      </div>
+    </div>
+
+    <div class="report-actions">
+      <button id="btnDownload" class="primary big">⬇ &nbsp;DOWNLOAD REPORT (HTML)</button>
+      <button id="btnRestart" class="ghost">NEW SESSION</button>
+    </div>
+    <div class="menu-foot" id="repFoot">Report generated locally · saved to your Downloads</div>
+  </div>
+</div>
+
+<div id="imgHack" style="display:none"></div>
+
+<script src="assets/three.min.js"></script>
+<script src="js/world.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/player.js"></script>
+<script src="js/scenario.js"></script>
+<script src="js/report.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

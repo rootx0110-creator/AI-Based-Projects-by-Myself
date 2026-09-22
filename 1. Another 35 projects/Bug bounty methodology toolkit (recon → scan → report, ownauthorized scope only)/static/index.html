@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BBM Toolkit — Recon · Scan · Report</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="bg-orbs" aria-hidden="true">
+  <span class="orb orb-a"></span>
+  <span class="orb orb-b"></span>
+  <span class="orb orb-c"></span>
+  <div class="grid-overlay"></div>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 48 48" width="40" height="40" aria-hidden="true">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+      <path d="M24 3 42 10v14c0 11-7.6 18.7-18 21C13.6 42.7 6 35 6 24V10L24 3z"
+            fill="none" stroke="url(#lg)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M16 24l6 6 11-12" fill="none" stroke="url(#lg)" stroke-width="3.4"
+            stroke-linecap="round" stroke-linejoin="round" class="logo-check"/>
+    </svg>
+    <div class="brand-text">
+      <h1>BBM Toolkit</h1>
+      <p>recon <span class="arrow">→</span> scan <span class="arrow">→</span> report</p>
+    </div>
+  </div>
+  <div class="top-status">
+    <span class="pill" id="authPill" title="Authorization gate">AUTH: OFF</span>
+    <span class="pill" id="scopePill" title="In-scope entries">SCOPE: 0</span>
+    <span class="pill pill-run" id="runPill" title="Pipeline status">IDLE</span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="scope" role="tab">
+    <svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6l8-4z"/></svg>
+    Scope &amp; Authorization
+  </button>
+  <button class="tab" data-tab="pipeline" role="tab">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13"/><circle cx="19" cy="12" r="2"/></svg>
+    Recon Pipeline
+  </button>
+  <button class="tab" data-tab="findings" role="tab">
+    <svg viewBox="0 0 24 24"><path d="M12 3l9 16H3L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>
+    Findings <span class="badge" id="findBadge">0</span>
+  </button>
+  <button class="tab" data-tab="report" role="tab">
+    <svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg>
+    Report
+  </button>
+  <button class="tab" data-tab="toolkit" role="tab">
+    <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 01-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 015.4-5.4l-2.5 2.5"/></svg>
+    Toolkit
+  </button>
+</nav>
+
+<main>
+  <!-- ======================= SCOPE ======================= -->
+  <section class="panel active" id="panel-scope">
+    <div class="hero-card">
+      <div class="hero-glow"></div>
+      <h2>Authorized scope only</h2>
+      <p>Declare the targets you own or are explicitly authorized to test.
+         Out-of-scope rules always win. The pipeline stays locked until you sign the attestation.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <h3>Add target</h3>
+          <span class="hint">domain · *.wildcard · IP · CIDR · URL</span>
+        </div>
+        <form id="scopeForm" class="scope-form">
+          <div class="row">
+            <input id="scopeValue" type="text" placeholder="example.com  |  *.example.com  |  10.0.0.0/24  |  https://app.example.com" required>
+            <select id="scopeStatus">
+              <option value="in">in scope</option>
+              <option value="out">out of scope</option>
+            </select>
+          </div>
+          <div class="row">
+            <input id="scopeNote" type="text" placeholder="note (optional) — program name, rules ref…">
+            <button type="submit" class="btn btn-primary">Add</button>
+          </div>
+        </form>
+        <div class="table-wrap">
+          <table id="scopeTable">
+            <thead><tr><th>Value</th><th>Type</th><th>Status</th><th>Note</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <p class="empty" id="scopeEmpty">No scope entries yet.</p>
+        </div>
+        <div class="card-foot">
+          <button class="btn btn-ghost" id="clearScopeBtn">Clear all</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>Authorization attestation</h3>
+          <span class="hint">required to run</span>
+        </div>
+        <div class="gate" id="gateBox">
+          <div class="gate-icon" id="gateIcon">LOCK</div>
+          <p id="gateText">Pipeline gate is <strong>closed</strong>.</p>
+        </div>
+        <label class="check">
+          <input type="checkbox" id="authCheck">
+          <span>I confirm that I own these targets <em>or</em> I am authorized to test them
+            (bug bounty program scope, written agreement, or lab under my control).</span>
+        </label>
+        <textarea id="authStatement" rows="3"
+          placeholder="Attestation statement, e.g. I am authorized to test acme.com under the HackerOne ACME program rules dated 2026-09-22."></textarea>
+        <div class="row mt">
+          <button class="btn btn-primary" id="authBtn">Confirm authorization</button>
+          <button class="btn btn-ghost" id="revokeBtn">Revoke</button>
+        </div>
+        <p class="hint mt" id="authMeta">Not attested.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= PIPELINE ======================= -->
+  <section class="panel" id="panel-pipeline">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <h3>Pipeline control</h3>
+          <span class="hint">passive checks · rate-limited</span>
+        </div>
+        <div class="run-actions">
+          <button class="btn btn-primary btn-lg" id="startBtn">▶ Start recon run</button>
+          <button class="btn btn-danger" id="stopBtn" disabled>■ Stop</button>
+        </div>
+        <div class="progress">
+          <div class="progress-bar" id="progBar" style="width:0%"></div>
+        </div>
+        <div class="progress-meta">
+          <span id="stageLabel">Idle</span>
+          <span id="progPct">0%</span>
+        </div>
+        <ol class="stages" id="stageList">
+          <li data-stage="validate-scope"><span class="dot"></span>Validate scope &amp; targets</li>
+          <li data-stage="dns-enum"><span class="dot"></span>DNS enumeration</li>
+          <li data-stage="http-probe"><span class="dot"></span>HTTP(S) probing</li>
+          <li data-stage="headers-audit"><span class="dot"></span>Security headers audit</li>
+          <li data-stage="exposed-files"><span class="dot"></span>robots / sitemap / security.txt</li>
+          <li data-stage="tls-inspect"><span class="dot"></span>TLS certificate inspection</li>
+          <li data-stage="fingerprint"><span class="dot"></span>Technology fingerprinting</li>
+          <li data-stage="consolidate-findings"><span class="dot"></span>Consolidate findings</li>
+        </ol>
+        <div class="host-meter">
+          <span>Hosts: <strong id="hostMeter">0 / 0</strong></span>
+          <span>Current: <strong id="currentHost">—</strong></span>
+        </div>
+      </div>
+
+      <div class="card card-terminal">
+        <div class="card-head">
+          <h3>Live log</h3>
+          <button class="btn btn-ghost btn-sm" id="clearLogBtn">clear</button>
+        </div>
+        <div class="terminal" id="terminal" aria-live="polite">
+          <div class="term-line term-dim">// pipeline output will stream here</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Methodology</h3></div>
+      <div class="phases">
+        <div class="phase"><div class="phase-num">1</div>
+          <div><strong>Recon</strong><p>Scope validation, DNS records, HTTP(S) reachability, titles, redirects.</p></div></div>
+        <div class="phase"><div class="phase-num">2</div>
+          <div><strong>Scan</strong><p>Security-header audit, exposed files, TLS certificate inspection, fingerprinting.</p></div></div>
+        <div class="phase"><div class="phase-num">3</div>
+          <div><strong>Report</strong><p>Consolidate, severity-rank, generate a downloadable HTML report.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= FINDINGS ======================= -->
+  <section class="panel" id="panel-findings">
+    <div class="card">
+      <div class="card-head">
+        <h3>Findings</h3>
+        <div class="row">
+          <div class="sev-legend">
+            <span class="sev sev-high" id="cHigh">0 high</span>
+            <span class="sev sev-medium" id="cMed">0 medium</span>
+            <span class="sev sev-low" id="cLow">0 low</span>
+            <span class="sev sev-info" id="cInfo">0 info</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="clearFindingsBtn">Clear</button>
+        </div>
+      </div>
+      <div id="findingsList" class="findings-list">
+        <p class="empty">No findings yet — complete a run on the Pipeline tab.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= REPORT ======================= -->
+  <section class="panel" id="panel-report">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h3>Engagement report</h3><span class="hint">standalone HTML</span></div>
+        <p>The report includes the attestation, scope, methodology, severity-ranked findings with
+           evidence and remediation, full recon data, and the run log appendix.</p>
+        <div class="row mt">
+          <button class="btn btn-primary btn-lg" id="downloadBtn">⬇ Download HTML report</button>
+          <button class="btn btn-ghost" id="previewBtn">Refresh preview</button>
+        </div>
+        <p class="hint mt" id="reportHint">Preview loads on demand.</p>
+        <div class="report-meta" id="reportMeta"></div>
+      </div>
+      <div class="card card-preview">
+        <div class="card-head"><h3>Preview</h3></div>
+        <iframe id="reportFrame" title="Report preview" sandbox=""></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= TOOLKIT ======================= -->
+  <section class="panel" id="panel-toolkit">
+    <div class="hero-card">
+      <div class="hero-glow"></div>
+      <h2>Command cookbook</h2>
+      <p>Pre-scoped command templates for external tools. The app never executes them —
+         review each command, confirm it stays inside your rules of engagement, then run manually.</p>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h3>Scoped commands</h3>
+        <div class="row">
+          <input id="toolDomain" class="inline-input" type="text" placeholder="target domain (e.g. example.com)" value="">
+          <button class="btn btn-primary btn-sm" id="genBtn">Generate</button>
+        </div>
+      </div>
+      <div id="cmdList" class="cmd-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Engagement checklist</h3></div>
+      <ul class="checklist">
+        <li>Read the program policy — note prohibited techniques and rate limits.</li>
+        <li>Declare in-scope and out-of-scope assets in the Scope tab exactly as the policy lists them.</li>
+        <li>Sign the attestation only when authorization is genuine.</li>
+        <li>Run passive recon first; escalate to active scanning only if the policy allows it.</li>
+        <li>Save the HTML report — attach it to your submission or triage ticket.</li>
+        <li>Never test assets you do not own or are not listed in the authorized scope.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>Bug Bounty Methodology Toolkit · passive recon · authorized scope only</span>
+  <span id="verLabel"></span>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

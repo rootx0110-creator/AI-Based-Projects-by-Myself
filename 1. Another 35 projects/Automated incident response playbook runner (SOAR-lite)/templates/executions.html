@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Executions · SOAR-Lite{% endblock %}
+{% block page %}Execution Log{% endblock %}
+{% block crumb %}every automated playbook run, step by step{% endblock %}
+{% block newbtn %}none{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="filters grow">
+    <button class="chip active" data-st="" onclick="setSt(this,'')">All</button>
+    <button class="chip" data-st="running" onclick="setSt(this,'running')">Running</button>
+    <button class="chip" data-st="completed" onclick="setSt(this,'completed')">Completed</button>
+    <button class="chip" data-st="completed_with_errors" onclick="setSt(this,'completed_with_errors')">With errors</button>
+    <button class="chip" data-st="failed" onclick="setSt(this,'failed')">Failed</button>
+    <button class="chip" data-st="cancelled" onclick="setSt(this,'cancelled')">Cancelled</button>
+  </div>
+  <button class="btn ghost" onclick="location.reload()">↻ Refresh</button>
+</div>
+
+<div id="exec-summary" class="grid cards-4" style="margin-bottom:14px"></div>
+
+<div class="card tight" style="padding:0">
+  <div class="tbl-wrap" id="exec-tbl" style="border:0"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let EXECS = [], ST = "";
+function setSt(btn, val) {
+  document.querySelectorAll(".chip[data-st]").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active"); ST = val; render();
+}
+
+function render() {
+  const { esc } = window.SOAR;
+  const rows = ST ? EXECS.filter(e => e.status === ST) : EXECS;
+  const el = document.getElementById("exec-tbl");
+  if (!rows.length) {
+    el.innerHTML = `<div class="empty-state"><div class="em">🗂️</div>No executions under this filter.</div>`;
+    return;
+  }
+  el.innerHTML = `<table class="tbl">
+    <thead><tr><th>Run</th><th>Incident</th><th>Playbook</th><th>Status</th><th>Steps</th><th>Failed</th><th>Created</th><th>Finished</th></tr></thead>
+    <tbody>${rows.map(e => {
+      const steps = (e.steps || []);
+      const failed = steps.filter(s => s.status === "failed").length;
+      const done = steps.filter(s => s.status !== "pending").length;
+      return `<tr data-id="${esc(e.id)}">
+        <td class="num nowrap">${esc(e.id.slice(0, 14))}…</td>
+        <td class="num nowrap"><a href="/incidents/${esc(e.incident_id)}">${esc(e.ref_no || "—")}</a></td>
+        <td>${esc(e.playbook_name)}</td>
+        <td><span class="badge st-${esc(e.status)}">${esc(e.status)}</span></td>
+        <td class="num"><div class="progress" style="width:90px;height:6px"><span style="width:${steps.length ? (done/steps.length*100)|0 : 0}%"></span></div>
+            <div class="muted" style="font-size:11px;margin-top:3px">${done}/${steps.length}</div></td>
+        <td class="num" style="color:${failed ? "#f87171" : "inherit"}">${failed}</td>
+        <td class="mono-sm nowrap">${esc((e.created_at||"").replace("T"," ").replace("Z",""))}</td>
+        <td class="mono-sm nowrap">${e.finished_at ? esc((e.finished_at||"").replace("T"," ").replace("Z","")) : "—"}</td>
+      </tr>`;
+    }).join("")}</tbody></table>`;
+  document.querySelectorAll("#exec-tbl tr[data-id]").forEach(r =>
+    window.SOAR.rowClick(r, "/api/executions/" + r.dataset.id));
+}
+
+(async () => {
+  const { api } = window.SOAR;
+  const d = await api("/api/executions");
+  EXECS = d.executions;
+  const total = EXECS.length;
+  const running = EXECS.filter(e => ["queued","running"].includes(e.status)).length;
+  const ok = EXECS.filter(e => e.status === "completed").length;
+  const err = EXECS.filter(e => e.status === "completed_with_errors").length;
+  const bad = EXECS.filter(e => e.status === "failed").length;
+  const cand = EXECS.filter(e => e.status === "cancelled").length;
+  const successRate = total ? Math.round((ok + err) / total * 100) : 0;
+  const cards = [
+    ["Total runs", total, "#3aa3ff", "all-time executions"],
+    ["Live / queued", running, "#22d3ee", "currently processing"],
+    ["Success", ok + " ok · " + err + " w/errors", "#22a06b", successRate + "% completion"],
+    ["Failed / cancelled", (bad + cand), "#ef4444", bad + " failed · " + cand + " cancelled"],
+  ];
+  document.getElementById("exec-summary").innerHTML = cards.map(c => `
+    <div class="kpi" style="--kpi-color:${c[2]}"><div class="label">${c[0]}</div>
+    <div class="value" style="font-size:22px">${c[1]}</div><div class="drift">${c[3]}</div></div>`).join("");
+  render();
+  setInterval(async () => {
+    try { EXECS = (await api("/api/executions")).executions; render(); } catch (e) {}
+  }, 3000);
+})();
+</script>
+{% endblock %}

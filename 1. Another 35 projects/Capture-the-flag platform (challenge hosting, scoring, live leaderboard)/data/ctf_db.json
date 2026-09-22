@@ -1,0 +1,492 @@
+{
+  "config": {
+    "ctf_name": "NEON GRID CTF",
+    "started_at": "2026-09-22T17:41:06.954905+00:00",
+    "registration_open": true,
+    "competition_open": true
+  },
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password_hash": "5ce6fe10b16520cc025de014a9ae6fc6$221e18b566397688b9670ec00274d1a4eee2a0d158d0fd5d69c8fdb534550626",
+      "is_admin": true,
+      "created_at": "2026-09-22T17:41:07.099808+00:00"
+    },
+    {
+      "id": 2,
+      "username": "neo",
+      "password_hash": "c96c812f8c48c9eb7a92fec1e912e32d$b04613aaa260fe8f063ab3a1f68bad6b1aa8274ad361771d87a39d5997eee43a",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:07.203952+00:00"
+    },
+    {
+      "id": 3,
+      "username": "trinity",
+      "password_hash": "32c27c8dd8542ffbe04e7d27ab7f6855$140beb076aa28a341a080b0a13cd90d5dc82ca4d7787a19d50eba6e47245ddc0",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:07.325288+00:00"
+    },
+    {
+      "id": 4,
+      "username": "morpheus",
+      "password_hash": "c7b0b0f98173b442220f9909277ee4cc$35803d22d33ef8313d6c67567e598788e40caed0f95dddf50e2d1de89d311059",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:07.673200+00:00"
+    },
+    {
+      "id": 5,
+      "username": "cipher",
+      "password_hash": "dd3d0a58d7e95067e55b990eaa2f3d0d$fe9923cbdd30649f84833b7f7d56a04ffc239d3a1b0653aa2c44de6535c23876",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:07.764413+00:00"
+    },
+    {
+      "id": 6,
+      "username": "dozer",
+      "password_hash": "5576826cb48a3cf8e2b34bde99b8192b$df75ba75741701e2f04fca043ea6024203f5eddba3ba1071f41bc99a3f7dafb2",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:07.863286+00:00"
+    },
+    {
+      "id": 7,
+      "username": "tank",
+      "password_hash": "4cfc3e028128254e80b40726af7c8db1$2bde99193325f7670af81b482b6d84d6c17ff19ba052bbb58c623828ec7c4992",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:07.963921+00:00"
+    },
+    {
+      "id": 8,
+      "username": "switch",
+      "password_hash": "5c0c682b0e5dfea306fa088608f85618$219502ff8ba04c1efeecd1b8604baeef82fd767488a98f85de4a399c57b78c37",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:08.069435+00:00"
+    },
+    {
+      "id": 9,
+      "username": "apoc",
+      "password_hash": "98c9a9e34fe43bce637888a57eadc9d9$85a3e89660b91df0df96753e509cd84a4b09d70ee69ee5e9ff3175f91616c534",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:08.156846+00:00"
+    },
+    {
+      "id": 10,
+      "username": "mouse",
+      "password_hash": "93ce8e592ff973022703be77ffc6d027$d66b687c4d5e334772663416e3f04a9b61a832caf25cca9c5b925403bdccf2f4",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:08.242292+00:00"
+    },
+    {
+      "id": 11,
+      "username": "sati",
+      "password_hash": "bbc2899ea1d4e3a486f9c52d15c63c12$fbbc10d5e2ef10e4eba4d9aa60c402ead28c57d91eaf0686d10e9790e120d566",
+      "is_admin": false,
+      "created_at": "2026-09-22T17:41:08.340768+00:00"
+    }
+  ],
+  "submissions": [
+    {
+      "id": 1,
+      "user_id": 2,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:05:08.342216+00:00"
+    },
+    {
+      "id": 2,
+      "user_id": 2,
+      "challenge_id": 2,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:16:08.342216+00:00"
+    },
+    {
+      "id": 3,
+      "user_id": 2,
+      "challenge_id": 3,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T14:30:08.342216+00:00"
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "challenge_id": 4,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T14:18:08.342216+00:00"
+    },
+    {
+      "id": 5,
+      "user_id": 2,
+      "challenge_id": 5,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T15:31:08.342216+00:00"
+    },
+    {
+      "id": 6,
+      "user_id": 2,
+      "challenge_id": 6,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T15:22:08.342216+00:00"
+    },
+    {
+      "id": 7,
+      "user_id": 3,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:12:08.342216+00:00"
+    },
+    {
+      "id": 8,
+      "user_id": 3,
+      "challenge_id": 2,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:32:08.342216+00:00"
+    },
+    {
+      "id": 9,
+      "user_id": 3,
+      "challenge_id": 3,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T14:17:08.342216+00:00"
+    },
+    {
+      "id": 10,
+      "user_id": 3,
+      "challenge_id": 4,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:39:08.342216+00:00"
+    },
+    {
+      "id": 11,
+      "user_id": 3,
+      "challenge_id": 5,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T15:38:08.342216+00:00"
+    },
+    {
+      "id": 12,
+      "user_id": 3,
+      "challenge_id": 6,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T14:40:08.342216+00:00"
+    },
+    {
+      "id": 13,
+      "user_id": 4,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:37:08.342216+00:00"
+    },
+    {
+      "id": 14,
+      "user_id": 4,
+      "challenge_id": 2,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:00:08.342216+00:00"
+    },
+    {
+      "id": 15,
+      "user_id": 4,
+      "challenge_id": 3,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:17:08.342216+00:00"
+    },
+    {
+      "id": 16,
+      "user_id": 4,
+      "challenge_id": 4,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:35:08.342216+00:00"
+    },
+    {
+      "id": 17,
+      "user_id": 4,
+      "challenge_id": 5,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:54:08.342216+00:00"
+    },
+    {
+      "id": 18,
+      "user_id": 5,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:17:08.342216+00:00"
+    },
+    {
+      "id": 19,
+      "user_id": 5,
+      "challenge_id": 2,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:46:08.342216+00:00"
+    },
+    {
+      "id": 20,
+      "user_id": 5,
+      "challenge_id": 3,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:52:08.342216+00:00"
+    },
+    {
+      "id": 21,
+      "user_id": 5,
+      "challenge_id": 4,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:37:08.342216+00:00"
+    },
+    {
+      "id": 22,
+      "user_id": 6,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:19:08.342216+00:00"
+    },
+    {
+      "id": 23,
+      "user_id": 6,
+      "challenge_id": 2,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:18:08.342216+00:00"
+    },
+    {
+      "id": 24,
+      "user_id": 6,
+      "challenge_id": 3,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:43:08.342216+00:00"
+    },
+    {
+      "id": 25,
+      "user_id": 6,
+      "challenge_id": 4,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:00:08.342216+00:00"
+    },
+    {
+      "id": 26,
+      "user_id": 7,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:05:08.342216+00:00"
+    },
+    {
+      "id": 27,
+      "user_id": 7,
+      "challenge_id": 2,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:37:08.342216+00:00"
+    },
+    {
+      "id": 28,
+      "user_id": 7,
+      "challenge_id": 3,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:41:08.342216+00:00"
+    },
+    {
+      "id": 29,
+      "user_id": 8,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:38:08.342216+00:00"
+    },
+    {
+      "id": 30,
+      "user_id": 8,
+      "challenge_id": 2,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:41:08.342216+00:00"
+    },
+    {
+      "id": 31,
+      "user_id": 8,
+      "challenge_id": 3,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:41:08.342216+00:00"
+    },
+    {
+      "id": 32,
+      "user_id": 9,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T13:07:08.342216+00:00"
+    },
+    {
+      "id": 33,
+      "user_id": 9,
+      "challenge_id": 2,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:03:08.342216+00:00"
+    },
+    {
+      "id": 34,
+      "user_id": 10,
+      "challenge_id": 1,
+      "submitted": "flag{guess}",
+      "correct": true,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T12:11:08.342216+00:00"
+    },
+    {
+      "id": 35,
+      "user_id": 10,
+      "challenge_id": 2,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T11:57:08.342216+00:00"
+    },
+    {
+      "id": 36,
+      "user_id": 11,
+      "challenge_id": 1,
+      "submitted": "flag{wrong}",
+      "correct": false,
+      "ip": "127.0.0.1",
+      "submitted_at": "2026-09-22T11:41:08.342216+00:00"
+    }
+  ],
+  "challenges": [
+    {
+      "id": 1,
+      "title": "Welcome to the Grid",
+      "category": "warmup",
+      "points": 100,
+      "description": "Every CTF starts somewhere. The flag is hiding in plain sight right on this page.",
+      "flag": "flag{welcome_to_the_grid}",
+      "dynamic": false,
+      "hidden": false,
+      "flag_hint": null,
+      "created_at": "2026-09-22T17:41:06.954905+00:00"
+    },
+    {
+      "id": 2,
+      "title": "Base Camp",
+      "category": "encoding",
+      "points": 150,
+      "description": "A strange message arrived encoded: ZmxhZ3tiYXNlNjRfaXNfZWFzeX0= Decode it.",
+      "flag": "flag{base64_is_easy}",
+      "dynamic": false,
+      "hidden": false,
+      "flag_hint": "Base64 decode",
+      "created_at": "2026-09-22T17:41:06.954905+00:00"
+    },
+    {
+      "id": 3,
+      "title": "Caesar's Salad",
+      "category": "crypto",
+      "points": 200,
+      "description": "A strange inscription was found: synt{pnrfne_jnf_urer}. Romans spoke 13 letters at a time.",
+      "flag": "flag{caesar_was_here}",
+      "dynamic": false,
+      "hidden": false,
+      "flag_hint": "ROT13",
+      "created_at": "2026-09-22T17:41:06.954905+00:00"
+    },
+    {
+      "id": 4,
+      "title": "Robots Have Secrets",
+      "category": "web",
+      "points": 250,
+      "description": "A webmaster left a note for crawlers at /robots.txt on the demo site. What is disallowed?",
+      "flag": "flag{robots_txt_ftw}",
+      "dynamic": false,
+      "hidden": false,
+      "flag_hint": "Check robots.txt",
+      "created_at": "2026-09-22T17:41:06.954905+00:00"
+    },
+    {
+      "id": 5,
+      "title": "Power Surge",
+      "category": "pwn",
+      "points": 500,
+      "description": "Dynamic scoring challenge. The more teams solve it, the fewer points it pays. Flag: flag{dynamic_decay}",
+      "flag": "flag{dynamic_decay}",
+      "dynamic": true,
+      "hidden": false,
+      "flag_hint": null,
+      "created_at": "2026-09-22T17:41:06.954905+00:00"
+    },
+    {
+      "id": 6,
+      "title": "Ghost in the Feed",
+      "category": "forensics",
+      "points": 350,
+      "description": "Someone hid a flag inside the live activity feed events. Find the anomaly.",
+      "flag": "flag{feed_watcher}",
+      "dynamic": false,
+      "hidden": false,
+      "flag_hint": "Watch the websocket feed",
+      "created_at": "2026-09-22T17:41:06.954905+00:00"
+    }
+  ],
+  "next_ids": {
+    "user": 12,
+    "submission": 1
+  },
+  "demo_seeded": true
+}

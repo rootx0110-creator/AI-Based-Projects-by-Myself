@@ -1,0 +1,39 @@
+SOAR-LITE DEVELOPMENT ROADMAP
+==============================
+
+DONE
+----
+[x] Core engine: incidents, playbooks, execution engine, integration bus
+[x] 8 simulated integrations (SIEM, TI, sandbox, EDR, firewall, DNS, mail, ticketing)
+[x] Risk scoring (weighted, tunable)
+[x] HTML incident report generator (self-contained, downloadable)
+[x] Web UI: dashboard, incident queue/detail, playbook library, executions, settings
+[x] JSON persistence, atomic writes, boot-time recovery
+[x] Demo seed data
+[x] Hot-reload playbooks
+[x] Reset/backup admin capability
+[x] README / ARCHITECTURE / MEMORY / STATE docs
+
+NEXT (priority order)
+---------------------
+[ ] 1. Playbook visual editor (node-graph) + schema-aware validation UI
+[ ] 2. Real integrations behind the adapter interface (VirusTotal, MISP,
+        CrowdStrike, GLPI/ServiceNow tickets) via request-based adapters
+[ ] 3. Multi-analyst: auth, roles, assignment, per-analyst dashboards
+[ ] 4. Webhook / email ingestion (Schneier-grade intake channels)
+[ ] 5. Report enhancements: raw JSON evidence section, branding, PDF export
+[ ] 6. Execution retention policy + archival jobs
+[ ] 7. SLA timers per playbook step and breach alerts
+[ ] 8. Audit log (who/what/when) for compliance demos
+[ ] 9. Dark/light theme toggle (CSS vars already in place)
+[ ]10. Export playbook run as MITRE ATT&CK mapping view
+
+LATER
+-----
+[ ] GraphQL or OpenAPI-generated client
+[ ] Dockerfile + docker-compose
+[ ] i18n (en/fr/es)
+[ ] Push notifications (browser + mattermost/webhooks)
+[ ] Simulated adversary "attacker bot" to generate incidents on a schedule
+
+NOTE: tick items with x when completed and update memory.md accordingly.

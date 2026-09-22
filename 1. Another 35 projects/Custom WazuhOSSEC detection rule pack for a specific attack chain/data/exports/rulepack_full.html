@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Full Pack Report - RulePackStudio</title>
+<style>
+  :root {
+    --bg:#0f1420; --panel:#171d2c; --panel2:#1d2438; --line:#2a3350;
+    --fg:#e6ebf5; --muted:#8a94ad; --accent:#4f8cff;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font:14px/1.55 'Segoe UI', system-ui, sans-serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:32px 24px 80px; }
+  header { border-bottom:2px solid var(--line); padding-bottom:18px; margin-bottom:8px; }
+  .kicker { color:var(--accent); text-transform:uppercase; letter-spacing:2.5px;
+            font-size:11px; font-weight:700; }
+  h1 { margin:6px 0 4px; font-size:26px; }
+  .sub { color:var(--muted); }
+  h2 { margin:34px 0 12px; color:var(--fg); font-size:19px;
+       border-left:4px solid var(--accent); padding-left:10px; }
+  .cards { display:flex; flex-wrap:wrap; gap:14px; margin:20px 0; }
+  .card { flex:1 1 160px; background:var(--panel); border:1px solid var(--line);
+          border-radius:12px; padding:16px 18px; }
+  .card .n { font-size:30px; font-weight:800; }
+  .card .l { color:var(--muted); font-size:12px; text-transform:uppercase;
+             letter-spacing:1px; }
+  table { width:100%; border-collapse:collapse; background:var(--panel);
+          border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th { text-align:left; color:var(--muted); text-transform:uppercase;
+       font-size:11px; letter-spacing:1px; padding:10px 12px;
+       background:var(--panel2); }
+  td { padding:10px 12px; border-top:1px solid var(--line); vertical-align:top; }
+  tr:hover td { background:#20273c; }
+  .chip { display:inline-block; padding:2px 9px; border-radius:20px;
+          font-size:11px; font-weight:700; color:#fff; }
+  .Llow { background:#7f8c8d; } .Lmed { background:#f39c12; }
+  .Lhigh { background:#e67e22; } .Lcrit { background:#e74c3c; }
+  .pill { display:inline-block; background:var(--panel2); border:1px solid var(--line);
+          border-radius:8px; padding:4px 10px; margin-right:6px; font-size:12px; }
+  pre { background:#0a0e18; border:1px solid var(--line); border-radius:8px;
+        padding:14px; overflow-x:auto; font:12.5px/1.5 Consolas, monospace;
+        color:#c8f0d0; }
+  .bar { height:14px; border-radius:7px; background:var(--panel2); overflow:hidden;
+         position:relative; }
+  .bar > span { display:block; height:100%; }
+  .barrow { display:flex; align-items:center; gap:12px; margin:8px 0; }
+  .barrow .lbl { width:120px; color:var(--muted); font-size:12px; }
+  .barrow .val { width:70px; text-align:right; font-size:12px; color:var(--muted); }
+  .stage { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+           padding:12px 16px; margin:8px 0; display:flex; align-items:center;
+           gap:14px; }
+  .stage .dot { width:10px; height:10px; border-radius:50%; flex:0 0 10px; }
+  .stage .sname { font-weight:700; width:230px; }
+  .stage .tactic { color:var(--accent); font-size:12px; width:70px; }
+  .stage .meta { color:var(--muted); font-size:12px; flex:1; }
+  .ruleblk { background:var(--panel); border:1px solid var(--line);
+             border-radius:12px; padding:16px; margin:14px 0; }
+  .ruleblk h3 { margin:0 0 6px; font-size:15px; display:flex; gap:10px;
+                align-items:center; }
+  .muted { color:var(--muted); } .small { font-size:12px; }
+  footer { margin-top:40px; color:var(--muted); font-size:11px;
+           border-top:1px solid var(--line); padding-top:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="kicker">Detection Engineering Report</div><h1>Full Pack Report</h1><div class="sub">Web-Kill-Chain Detection Pack v1.0.0 &middot; 26 rules &middot; 11/11 stages &middot; avg level 8.7</div></header><div class="cards"><div class="card"><div class="n">26</div><div class="l">Rules enabled</div></div><div class="card"><div class="n">11</div><div class="l">Stages of 11</div></div><div class="card"><div class="n">8.7</div><div class="l">Average severity</div></div><div class="card"><div class="n">0</div><div class="l">Disabled</div></div></div><h2>Severity distribution</h2><div class="barrow"><span class="lbl">Low</span><div class="bar" style="flex:1"><span style="width:4%;background:#7f8c8d"></span></div><span class="val">1 (4%)</span></div>
+<div class="barrow"><span class="lbl">Medium</span><div class="bar" style="flex:1"><span style="width:27%;background:#f39c12"></span></div><span class="val">7 (27%)</span></div>
+<div class="barrow"><span class="lbl">High</span><div class="bar" style="flex:1"><span style="width:50%;background:#e67e22"></span></div><span class="val">13 (50%)</span></div>
+<div class="barrow"><span class="lbl">Critical</span><div class="bar" style="flex:1"><span style="width:19%;background:#e74c3c"></span></div><span class="val">5 (19%)</span></div><h2>Kill-chain coverage</h2><div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Reconnaissance</span><span class="tactic">TA0043</span><span class="meta">Probing the target web estate.</span><span style="font-weight:800">2</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Initial Access</span><span class="tactic">TA0001</span><span class="meta">Gaining an initial foothold via the web app.</span><span style="font-weight:800">3</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Execution</span><span class="tactic">TA0002</span><span class="meta">Running code on the compromised host.</span><span style="font-weight:800">3</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Persistence</span><span class="tactic">TA0003</span><span class="meta">Maintaining access across restarts.</span><span style="font-weight:800">3</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Privilege Escalation</span><span class="tactic">TA0004</span><span class="meta">Gaining higher-level permissions.</span><span style="font-weight:800">2</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Defense Evasion</span><span class="tactic">TA0005</span><span class="meta">Evading or disabling security controls.</span><span style="font-weight:800">3</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Credential Access</span><span class="tactic">TA0006</span><span class="meta">Stealing credentials from the host.</span><span style="font-weight:800">2</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Discovery</span><span class="tactic">TA0007</span><span class="meta">Enumerating host and domain resources.</span><span style="font-weight:800">2</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Lateral Movement</span><span class="tactic">TA0008</span><span class="meta">Moving to other hosts on the network.</span><span style="font-weight:800">2</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Command &amp; Control</span><span class="tactic">TA0011</span><span class="meta">Beaconing back to the attacker.</span><span style="font-weight:800">2</span></div>
+<div class="stage"><span class="dot" style="background:#2ecc71"></span><span class="sname">Exfiltration</span><span class="tactic">TA0010</span><span class="meta">Transferring data off the estate.</span><span style="font-weight:800">2</span></div><h2>Rules</h2><div class="ruleblk"><h3><span class="chip Lhigh">L8</span><span>100023</span></h3><p style="margin:4px 0 6px">Outbound connection to an atypical service port.</p><p class="small"><span class="pill">Command &amp; Control</span> <span class="pill">MITRE T1071</span> <span class="pill">src: sysmon</span> <span class="pill">windows,c2,</span></p><pre>&lt;rule id=&quot;100023&quot; level=&quot;8&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;3&lt;/field&gt;
+  &lt;field name=&quot;win.eventdata.state&quot;&gt;Connect&lt;/field&gt;
+  &lt;regex&gt;(:4444|:8080|:8443|:53)&lt;/regex&gt;
+  &lt;description&gt;Outbound connection to an atypical service port.&lt;/description&gt;
+  &lt;group&gt;windows,c2,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lmed">L7</span><span>100024</span></h3><p style="margin:4px 0 6px">Potential dns tunneling or encrypted dns resolver use.</p><p class="small"><span class="pill">Command &amp; Control</span> <span class="pill">MITRE T1573</span> <span class="pill">src: syslog</span> <span class="pill">local,c2,</span></p><pre>&lt;rule id=&quot;100024&quot; level=&quot;7&quot;&gt;
+  &lt;decoded_as&gt;syslog&lt;/decoded_as&gt;
+  &lt;regex&gt;(dns\.(google|cloudflare|nextdns)|kryptos|\.top|\.xyz|\.link)&lt;/regex&gt;
+  &lt;description&gt;Potential dns tunneling or encrypted dns resolver use.&lt;/description&gt;
+  &lt;group&gt;local,c2,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lcrit">L12</span><span>100017</span></h3><p style="margin:4px 0 6px">Potential credential dumping of the lsass process.</p><p class="small"><span class="pill">Credential Access</span> <span class="pill">MITRE T1003.001</span> <span class="pill">src: sysmon</span> <span class="pill">windows,credential_access,</span></p><pre>&lt;rule id=&quot;100017&quot; level=&quot;12&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;10&lt;/field&gt;
+  &lt;field name=&quot;win.eventdata.targetImage&quot;&gt;lsass.exe&lt;/field&gt;
+  &lt;regex&gt;(mimikatz|procdump|comsvcs|rundll32)&lt;/regex&gt;
+  &lt;description&gt;Potential credential dumping of the lsass process.&lt;/description&gt;
+  &lt;group&gt;windows,credential_access,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L10</span><span>100018</span></h3><p style="margin:4px 0 6px">Credential store file accessed on a local host.</p><p class="small"><span class="pill">Credential Access</span> <span class="pill">MITRE T1003.008</span> <span class="pill">src: syslog</span> <span class="pill">local,credential_access,</span></p><pre>&lt;rule id=&quot;100018&quot; level=&quot;10&quot;&gt;
+  &lt;decoded_as&gt;syslog&lt;/decoded_as&gt;
+  &lt;regex&gt;(cat|less|tail|dd|strings).*(/etc/shadow|/etc/passwd)&lt;/regex&gt;
+  &lt;description&gt;Credential store file accessed on a local host.&lt;/description&gt;
+  &lt;group&gt;local,credential_access,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lcrit">L12</span><span>100014</span></h3><p style="margin:4px 0 6px">Windows security event log was cleared.</p><p class="small"><span class="pill">Defense Evasion</span> <span class="pill">MITRE T1070.001</span> <span class="pill">src: windows_security</span> <span class="pill">windows,defense_evasion,</span></p><pre>&lt;rule id=&quot;100014&quot; level=&quot;12&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;1102&lt;/field&gt;
+  &lt;description&gt;Windows security event log was cleared.&lt;/description&gt;
+  &lt;group&gt;windows,defense_evasion,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lmed">L7</span><span>100015</span></h3><p style="margin:4px 0 6px">Attempted removal or truncation of system logs.</p><p class="small"><span class="pill">Defense Evasion</span> <span class="pill">MITRE T1070.004</span> <span class="pill">src: syslog</span> <span class="pill">local,defense_evasion,</span></p><pre>&lt;rule id=&quot;100015&quot; level=&quot;7&quot;&gt;
+  &lt;decoded_as&gt;syslog&lt;/decoded_as&gt;
+  &lt;regex&gt;(rm .*(auth\.log|syslog|messages|wazuh)|truncate -s 0 /var/log)&lt;/regex&gt;
+  &lt;description&gt;Attempted removal or truncation of system logs.&lt;/description&gt;
+  &lt;group&gt;local,defense_evasion,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L10</span><span>100016</span></h3><p style="margin:4px 0 6px">Security agent or detection service targeted for termination.</p><p class="small"><span class="pill">Defense Evasion</span> <span class="pill">MITRE T1562.001</span> <span class="pill">src: syslog</span> <span class="pill">local,defense_evasion,</span></p><pre>&lt;rule id=&quot;100016&quot; level=&quot;10&quot;&gt;
+  &lt;decoded_as&gt;syslog&lt;/decoded_as&gt;
+  &lt;regex&gt;(kill|pkill|killall).*(ossec|wazuh|auditd|falcon|defender)&lt;/regex&gt;
+  &lt;description&gt;Security agent or detection service targeted for termination.&lt;/description&gt;
+  &lt;group&gt;local,defense_evasion,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lmed">L5</span><span>100019</span></h3><p style="margin:4px 0 6px">Batch of local host or network enumeration commands.</p><p class="small"><span class="pill">Discovery</span> <span class="pill">MITRE T1082</span> <span class="pill">src: windows_security</span> <span class="pill">windows,discovery,</span></p><pre>&lt;rule id=&quot;100019&quot; level=&quot;5&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4688&lt;/field&gt;
+  &lt;regex&gt;(whoami|systeminfo|ipconfig /all|tasklist|\?netstat)&lt;/regex&gt;
+  &lt;description&gt;Batch of local host or network enumeration commands.&lt;/description&gt;
+  &lt;group&gt;windows,discovery,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lmed">L5</span><span>100020</span></h3><p style="margin:4px 0 6px">Active directory or local account enumeration.</p><p class="small"><span class="pill">Discovery</span> <span class="pill">MITRE T1087.002</span> <span class="pill">src: windows_security</span> <span class="pill">windows,discovery,</span></p><pre>&lt;rule id=&quot;100020&quot; level=&quot;5&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4688&lt;/field&gt;
+  &lt;regex&gt;net (user|group|localgroup).* /&lt;/regex&gt;
+  &lt;description&gt;Active directory or local account enumeration.&lt;/description&gt;
+  &lt;group&gt;windows,discovery,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lmed">L7</span><span>100006</span></h3><p style="margin:4px 0 6px">cmd.exe spawning a powershell child process.</p><p class="small"><span class="pill">Execution</span> <span class="pill">MITRE T1059.001</span> <span class="pill">src: windows_security</span> <span class="pill">windows,execution,</span></p><pre>&lt;rule id=&quot;100006&quot; level=&quot;7&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4688&lt;/field&gt;
+  &lt;regex&gt;cmd\.exe&lt;/regex&gt;
+  &lt;match&gt;powershell&lt;/match&gt;
+  &lt;description&gt;cmd.exe spawning a powershell child process.&lt;/description&gt;
+  &lt;group&gt;windows,execution,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lcrit">L12</span><span>100007</span></h3><p style="margin:4px 0 6px">Obfuscated powershell or in-memory download cradle.</p><p class="small"><span class="pill">Execution</span> <span class="pill">MITRE T1059.001</span> <span class="pill">src: windows_security</span> <span class="pill">windows,execution,</span></p><pre>&lt;rule id=&quot;100007&quot; level=&quot;12&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4688&lt;/field&gt;
+  &lt;regex&gt;(hide-window|bypass|-enc|frombase64|iex|downloadstring)&lt;/regex&gt;
+  &lt;description&gt;Obfuscated powershell or in-memory download cradle.&lt;/description&gt;
+  &lt;group&gt;windows,execution,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lcrit">L12</span><span>100008</span></h3><p style="margin:4px 0 6px">Web server process spawned a shell or utility child.</p><p class="small"><span class="pill">Execution</span> <span class="pill">MITRE T1059</span> <span class="pill">src: sysmon</span> <span class="pill">windows,execution,</span></p><pre>&lt;rule id=&quot;100008&quot; level=&quot;12&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4688&lt;/field&gt;
+  &lt;field name=&quot;win.eventdata.parentImage&quot;&gt;w3wp.exe&lt;/field&gt;
+  &lt;regex&gt;(cmd|powershell|rundll32|bitsadmin|mshta)\.exe&lt;/regex&gt;
+  &lt;description&gt;Web server process spawned a shell or utility child.&lt;/description&gt;
+  &lt;group&gt;windows,execution,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L10</span><span>100025</span></h3><p style="margin:4px 0 6px">Exfiltration or transfer utility executed on host.</p><p class="small"><span class="pill">Exfiltration</span> <span class="pill">MITRE T1048</span> <span class="pill">src: windows_security</span> <span class="pill">windows,exfiltration,</span></p><pre>&lt;rule id=&quot;100025&quot; level=&quot;10&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4688&lt;/field&gt;
+  &lt;regex&gt;(certutil -urlcache|b64decode|scp|ftp\.exe|nc\.exe)&lt;/regex&gt;
+  &lt;description&gt;Exfiltration or transfer utility executed on host.&lt;/description&gt;
+  &lt;group&gt;windows,exfiltration,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L9</span><span>100026</span></h3><p style="margin:4px 0 6px">User document directory staged into an archive.</p><p class="small"><span class="pill">Exfiltration</span> <span class="pill">MITRE T1560.001</span> <span class="pill">src: windows_security</span> <span class="pill">windows,exfiltration,</span></p><pre>&lt;rule id=&quot;100026&quot; level=&quot;9&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4688&lt;/field&gt;
+  &lt;regex&gt;(7z|rar|zip|tar).*(Documents|Downloads|Desktop|AppData)&lt;/regex&gt;
+  &lt;description&gt;User document directory staged into an archive.&lt;/description&gt;
+  &lt;group&gt;windows,exfiltration,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L10</span><span>100003</span></h3><p style="margin:4px 0 6px">Likely command injection pattern in web request.</p><p class="small"><span class="pill">Initial Access</span> <span class="pill">MITRE T1190</span> <span class="pill">src: apache_access</span> <span class="pill">web_access,rce,</span></p><pre>&lt;rule id=&quot;100003&quot; level=&quot;10&quot;&gt;
+  &lt;decoded_as&gt;apache&lt;/decoded_as&gt;
+  &lt;regex&gt;(cmd|exec|system|eval|wget|curl|/bin/(sh|bash)|powershell|cmd\.exe)&lt;/regex&gt;
+  &lt;description&gt;Likely command injection pattern in web request.&lt;/description&gt;
+  &lt;group&gt;web_access,rce,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L8</span><span>100004</span></h3><p style="margin:4px 0 6px">Script file created inside a monitored webroot.</p><p class="small"><span class="pill">Initial Access</span> <span class="pill">MITRE T1505.003</span> <span class="pill">src: syscheck</span> <span class="pill">syscheck,web_upload,</span></p><pre>&lt;rule id=&quot;100004&quot; level=&quot;8&quot;&gt;
+  &lt;if_sid&gt;554&lt;/if_sid&gt;
+  &lt;regex&gt;\.(php|jsp|jspx|aspx|asp|pl|cgi)$&lt;/regex&gt;
+  &lt;description&gt;Script file created inside a monitored webroot.&lt;/description&gt;
+  &lt;group&gt;syscheck,web_upload,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L10</span><span>100005</span></h3><p style="margin:4px 0 6px">Log4Shell JNDI lookup pattern detected in request.</p><p class="small"><span class="pill">Initial Access</span> <span class="pill">MITRE T1190</span> <span class="pill">src: apache_access</span> <span class="pill">web_access,rce,</span></p><pre>&lt;rule id=&quot;100005&quot; level=&quot;10&quot;&gt;
+  &lt;decoded_as&gt;apache&lt;/decoded_as&gt;
+  &lt;regex&gt;\$\{jndi:(ldap|rmi|dns)://&lt;/regex&gt;
+  &lt;description&gt;Log4Shell JNDI lookup pattern detected in request.&lt;/description&gt;
+  &lt;group&gt;web_access,rce,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lcrit">L12</span><span>100021</span></h3><p style="margin:4px 0 6px">Access to an administrative share over the network.</p><p class="small"><span class="pill">Lateral Movement</span> <span class="pill">MITRE T1021.002</span> <span class="pill">src: windows_security</span> <span class="pill">windows,lateral_movement,</span></p><pre>&lt;rule id=&quot;100021&quot; level=&quot;12&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;5140&lt;/field&gt;
+  &lt;regex&gt;(admin\$|c\$)&lt;/regex&gt;
+  &lt;description&gt;Access to an administrative share over the network.&lt;/description&gt;
+  &lt;group&gt;windows,lateral_movement,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L8</span><span>100022</span></h3><p style="margin:4px 0 6px">Failed RDP logon attempt from a network source.</p><p class="small"><span class="pill">Lateral Movement</span> <span class="pill">MITRE T1110.001</span> <span class="pill">src: windows_security</span> <span class="pill">windows,lateral_movement,</span></p><pre>&lt;rule id=&quot;100022&quot; level=&quot;8&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4625&lt;/field&gt;
+  &lt;field name=&quot;win.eventdata.logonType&quot;&gt;10&lt;/field&gt;
+  &lt;description&gt;Failed RDP logon attempt from a network source.&lt;/description&gt;
+  &lt;group&gt;windows,lateral_movement,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L9</span><span>100009</span></h3><p style="margin:4px 0 6px">Suspicious windows service installed from writable path.</p><p class="small"><span class="pill">Persistence</span> <span class="pill">MITRE T1543.003</span> <span class="pill">src: windows_security</span> <span class="pill">windows,persistence,</span></p><pre>&lt;rule id=&quot;100009&quot; level=&quot;9&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;7045&lt;/field&gt;
+  &lt;regex&gt;(powershell|\\temp|\\tmp|\\appdata|\\users)&lt;/regex&gt;
+  &lt;description&gt;Suspicious windows service installed from writable path.&lt;/description&gt;
+  &lt;group&gt;windows,persistence,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L10</span><span>100010</span></h3><p style="margin:4px 0 6px">Persistence attempt via a registry Run key modification.</p><p class="small"><span class="pill">Persistence</span> <span class="pill">MITRE T1547.001</span> <span class="pill">src: sysmon</span> <span class="pill">windows,persistence,</span></p><pre>&lt;rule id=&quot;100010&quot; level=&quot;10&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;13&lt;/field&gt;
+  &lt;match&gt;CurrentVersion\Run&lt;/match&gt;
+  &lt;description&gt;Persistence attempt via a registry Run key modification.&lt;/description&gt;
+  &lt;group&gt;windows,persistence,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L8</span><span>100011</span></h3><p style="margin:4px 0 6px">Scheduled job installed or edited (cron).</p><p class="small"><span class="pill">Persistence</span> <span class="pill">MITRE T1053</span> <span class="pill">src: syslog</span> <span class="pill">local,persistence,</span></p><pre>&lt;rule id=&quot;100011&quot; level=&quot;8&quot;&gt;
+  &lt;decoded_as&gt;syslog&lt;/decoded_as&gt;
+  &lt;regex&gt;(crontab|at(\.| |\d))&lt;/regex&gt;
+  &lt;match&gt;crontab&lt;/match&gt;
+  &lt;description&gt;Scheduled job installed or edited (cron).&lt;/description&gt;
+  &lt;group&gt;local,persistence,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Llow">L4</span><span>100012</span></h3><p style="margin:4px 0 6px">Sudo privilege elevation event observed.</p><p class="small"><span class="pill">Privilege Escalation</span> <span class="pill">MITRE T1548.003</span> <span class="pill">src: syslog</span> <span class="pill">local,privilege_escalation,</span></p><pre>&lt;rule id=&quot;100012&quot; level=&quot;4&quot;&gt;
+  &lt;decoded_as&gt;syslog&lt;/decoded_as&gt;
+  &lt;match&gt;sudo&lt;/match&gt;
+  &lt;description&gt;Sudo privilege elevation event observed.&lt;/description&gt;
+  &lt;group&gt;local,privilege_escalation,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lhigh">L10</span><span>100013</span></h3><p style="margin:4px 0 6px">UAC bypass stub or elevated binary invocation.</p><p class="small"><span class="pill">Privilege Escalation</span> <span class="pill">MITRE T1548.002</span> <span class="pill">src: windows_security</span> <span class="pill">windows,privilege_escalation,</span></p><pre>&lt;rule id=&quot;100013&quot; level=&quot;10&quot;&gt;
+  &lt;decoded_as&gt;windows_eventchannel&lt;/decoded_as&gt;
+  &lt;field name=&quot;win.system.eventID&quot;&gt;4688&lt;/field&gt;
+  &lt;regex&gt;(\\sysnative\\cmd|fodhelper|eventvwr\.exe|sdclt\.exe)&lt;/regex&gt;
+  &lt;description&gt;UAC bypass stub or elevated binary invocation.&lt;/description&gt;
+  &lt;group&gt;windows,privilege_escalation,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lmed">L5</span><span>100001</span></h3><p style="margin:4px 0 6px">Web scanner probing known application paths.</p><p class="small"><span class="pill">Reconnaissance</span> <span class="pill">MITRE T1595</span> <span class="pill">src: apache_access</span> <span class="pill">web_access,recon,</span></p><pre>&lt;rule id=&quot;100001&quot; level=&quot;5&quot;&gt;
+  &lt;decoded_as&gt;apache&lt;/decoded_as&gt;
+  &lt;regex&gt;GET /(view|include|modules|admin|\.\./)&lt;/regex&gt;
+  &lt;description&gt;Web scanner probing known application paths.&lt;/description&gt;
+  &lt;group&gt;web_access,recon,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><div class="ruleblk"><h3><span class="chip Lmed">L5</span><span>100002</span></h3><p style="margin:4px 0 6px">Known vulnerability scanner user agent observed.</p><p class="small"><span class="pill">Reconnaissance</span> <span class="pill">MITRE T1595.002</span> <span class="pill">src: apache_access</span> <span class="pill">web_access,recon,</span></p><pre>&lt;rule id=&quot;100002&quot; level=&quot;5&quot;&gt;
+  &lt;decoded_as&gt;apache&lt;/decoded_as&gt;
+  &lt;regex&gt;sqlmap|nikto|masscan|acunetix|burp|nmap_&lt;/regex&gt;
+  &lt;description&gt;Known vulnerability scanner user agent observed.&lt;/description&gt;
+  &lt;group&gt;web_access,recon,&lt;/group&gt;
+&lt;/rule&gt;</pre></div><footer>
+  Generated by RulePackStudio &middot; 2026-09-19 14:02:42 &middot; offline HTML report
+  &mdash; no external resources loaded.
+</footer>
+</div>
+</body>
+</html>
